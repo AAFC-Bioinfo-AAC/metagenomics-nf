@@ -19,5 +19,18 @@ do
    prefix=$(basename $i _R1.fastq.gz)
    j=${prefix}_R2.fastq.gz
 
-  fastp -i $i -I /isilon/projects/J-002460_LLQ/data/$j -o paired_trimmed/${prefix}_trimmed_R1.fastq.gz -O paired_trimmed/${prefix}_trimmed_R2.fastq.gz --unpaired1 unpaired_trimmed/${prefix}_unpaired_R1.fastq.gz --unpaired2 unpaired_trimmed/${prefix}_unpaired_R2.fastq.gz --length_required 100 --cut_tail --cut_front --cut_mean_quality 15 --qualified_quality_phred 15 cut_window_size 4 --detect_adapter_for_pe --report_title="${prefix}" --html=${prefix}.html --thread=$NSLOTS
+  fastp -i $i |
+        -I /isilon/projects/J-002460_LLQ/data/$j \
+        -o paired_trimmed/${prefix}_trimmed_R1.fastq.gz \
+        -O paired_trimmed/${prefix}_trimmed_R2.fastq.gz \
+        --unpaired1 unpaired_trimmed/${prefix}_unpaired_R1.fastq.gz \
+        --unpaired2 unpaired_trimmed/${prefix}_unpaired_R2.fastq.gz \
+        --length_required 100 \
+        --cut_tail --cut_front \
+        --cut_mean_quality 15 \
+        --qualified_quality_phred 15 \
+        --cut_window_size 4 \
+        --detect_adapter_for_pe \
+        --report_title="${prefix}" \
+        --html=${prefix}.html
 done
