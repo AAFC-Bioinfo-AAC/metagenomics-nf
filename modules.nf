@@ -1,6 +1,7 @@
 
 
 process QUALITY_FILTERING {
+
   publishDir "$projectDir/fastp"
 
   label "mem_xlarge" 
