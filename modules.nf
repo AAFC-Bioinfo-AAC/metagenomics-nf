@@ -4,7 +4,7 @@ process QUALITY_FILTERING {
 
   publishDir "$projectDir/fastp"
 
-  label "mem_xlarge" 
+  //label "mem_small" 
   input: 
     tuple val(datasetID), path(read1), path(read2)
  
@@ -14,7 +14,8 @@ process QUALITY_FILTERING {
       path("${datasetID}_trimmed_R1.fastq.gz"), \
       path("${datasetID}_trimmed_R2.fastq.gz"), \
       path("${datasetID}_unpaired_R1.fastq.gz"), \
-      path("${datasetID}_unpaired_R2.fastq.gz")
+      path("${datasetID}_unpaired_R2.fastq.gz"), \
+      path("${datasetID}.html")
   
   script:
   """
