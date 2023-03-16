@@ -17,7 +17,7 @@ process QUALITY_FILTERING {
   
   script:
   """
-    fastp -i $read1 |
+    fastp -i $read1 \
         -I $read2 \
         -o ${datasetID}_trimmed_R1.fastq.gz \
         -O ${datasetID}_trimmed_R2.fastq.gz \
