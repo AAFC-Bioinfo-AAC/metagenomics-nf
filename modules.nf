@@ -3,10 +3,9 @@
 process QUALITY_FILTERING {
   publishDir "$projectDir/fastp"
 
-  tag "$genome.baseName"
   label "mem_xlarge" 
   input: 
-    tuple datasetID, path(read1), path(read2)
+    tuple val(datasetID), path(read1), path(read2)
  
   output:   
     tuple \
@@ -16,8 +15,6 @@ process QUALITY_FILTERING {
       path("${datasetID}_unpaired_R1.fastq.gz"), \
       path("${datasetID}_unpaired_R2.fastq.gz")
   
-${datasetID}.final.uniq.bam
-
   script:
   """
     fastp -i $read1 |
