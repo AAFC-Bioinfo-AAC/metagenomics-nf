@@ -10,18 +10,11 @@
  */
 nextflow.enable.dsl = 2
 
-/*
- * Define the default parameters
- */ 
-params.genome     = "$baseDir/data/genome.fa"
-params.reads      = "$baseDir/data/raw_reads/*.fastq"
-params.results    = "results"
-
-
 log.info """\
 M E T A G E N O M I C  -  Workflow - AAFC    v 0.1 
 ================================
 genome   : $params.genome
+genome basename : $params.genome_basename
 reads    : $params.reads
 results  : $params.results
 """
@@ -29,6 +22,7 @@ results  : $params.results
 include { 
   QUALITY_FILTERING;
   BOWTIE2} from './modules.nf'
+
 
 
 /* 
@@ -47,8 +41,6 @@ workflow {
 
     // PART 1: Data preparation
     QUALITY_FILTERING(read_pairs_ch)
-    BOWTIE2(params.genome, 
+    BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
-    
-
 }

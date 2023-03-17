@@ -42,10 +42,11 @@ process BOWTIE2 {
 
   publishDir "$projectDir/bowtie2"
 
-  //label "mem_small" 
-  input: 
-    path(genome), \
-    tuple
+  //label "mem_large" 
+  input:
+    path genome, stageAs: "genome" //to rename the folder containing the bt2 files
+    val(genome_basename)
+    tuple \
       val(datasetID), \
       path(trimmed_R1), \
       path(trimmed_R2), \
@@ -60,21 +61,9 @@ process BOWTIE2 {
   
   script:
   """
-  bowtie2 -x $genome -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
+  bowtie2 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
   """
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 /*
