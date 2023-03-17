@@ -37,6 +37,46 @@ process QUALITY_FILTERING {
 }
 
 
+
+process BOWTIE2 {
+
+  publishDir "$projectDir/bowtie2"
+
+  //label "mem_small" 
+  input: 
+    path(genome), \
+    tuple
+      val(datasetID), \
+      path(trimmed_R1), \
+      path(trimmed_R2), \
+      path(unpaired_R1), \
+      path(unpaired_R2), \
+      path(html)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}.sam")
+  
+  script:
+  """
+  bowtie2 -x $genome -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
+  """
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * Process 1A: Create a FASTA genome index (.fai) with samtools for GATK
  */

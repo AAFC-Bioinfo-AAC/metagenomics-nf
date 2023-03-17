@@ -28,7 +28,7 @@ results  : $params.results
 
 include { 
   QUALITY_FILTERING;
-  CALLING_VARIANTS_PER_SAMPLE} from './modules.nf'
+  BOWTIE2} from './modules.nf'
 
 
 /* 
@@ -47,5 +47,8 @@ workflow {
 
     // PART 1: Data preparation
     QUALITY_FILTERING(read_pairs_ch)
+    BOWTIE2(params.genome, 
+            QUALITY_FILTERING.out)
+    
 
 }
