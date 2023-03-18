@@ -66,6 +66,62 @@ process BOWTIE2 {
 }
 
 
+process SAM2BAM {
+
+  publishDir "$projectDir/unmapped_bam"
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_unmapped.bam")
+  
+  script:
+  """
+  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID} > ${datasetID}_unmapped.bam
+  """
+}
+
+process SORTBAM {
+
+  publishDir "$projectDir/unmapped_sorted_bam"
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_unmapped.sorted.bam")
+  
+  script:
+  """
+  samtools sort -@ 2 -n ${datasetID} > ${datasetID}_unmapped.sorted.bam
+  """
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
  * Process 1A: Create a FASTA genome index (.fai) with samtools for GATK
  */

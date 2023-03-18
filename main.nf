@@ -21,7 +21,7 @@ results  : $params.results
 
 include { 
   QUALITY_FILTERING;
-  BOWTIE2} from './modules.nf'
+  BOWTIE2, SAM2BAM} from './modules.nf'
 
 
 
@@ -43,4 +43,5 @@ workflow {
     QUALITY_FILTERING(read_pairs_ch)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
+    SAM2BAM(BOWTIE2.out)
 }
