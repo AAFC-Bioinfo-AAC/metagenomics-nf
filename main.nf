@@ -21,7 +21,9 @@ results  : $params.results
 
 include { 
   QUALITY_FILTERING;
-  BOWTIE2, SAM2BAM} from './modules.nf'
+  BOWTIE2;
+  SAM2BAM;
+  SORTBAM} from './modules.nf'
 
 
 
@@ -44,4 +46,6 @@ workflow {
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
     SAM2BAM(BOWTIE2.out)
+    SORTBAM(SAM2BAM.out)
+
 }

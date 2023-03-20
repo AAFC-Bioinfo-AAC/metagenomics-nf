@@ -82,7 +82,7 @@ process SAM2BAM {
   
   script:
   """
-  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID} > ${datasetID}_unmapped.bam
+  samtools view -@ 30 -bS -f 12 -F 256 ${aln} > ${datasetID}_unmapped.bam
   """
 }
 
@@ -102,7 +102,7 @@ process SORTBAM {
   
   script:
   """
-  samtools sort -@ 2 -n ${datasetID} > ${datasetID}_unmapped.sorted.bam
+  samtools sort -@ 2 -n ${aln} > ${datasetID}_unmapped.sorted.bam
   """
 }
 
