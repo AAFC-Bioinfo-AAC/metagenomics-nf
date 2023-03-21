@@ -25,7 +25,9 @@ include {
   SAM2BAM;
   SORTBAM;
   OUTPUT_UNALIGNED_READS;
-  KAIJU} from './modules.nf'
+  KAIJU;
+  KAIJU_TAX_TABLE;
+  KAIJU_FULL_TAX_TABLE} from './modules.nf'
 
 
 
@@ -51,4 +53,9 @@ workflow {
     SORTBAM(SAM2BAM.out)
     OUTPUT_UNALIGNED_READS(SORTBAM.out)
     KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
+    KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
+    KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)
+    
+    
+    
 }
