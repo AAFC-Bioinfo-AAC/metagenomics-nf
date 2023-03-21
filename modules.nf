@@ -216,7 +216,7 @@ process MERGE_TAX_FILES {
   publishDir "$projectDir/kaiju_merged"
 
   input:
-    path("$projectDir/kaiju_tax_table") stageAs: "Species" //to rename the folder containing the .tsv files
+    path tsv_files, stageAs: "Species/*"   // to put input files in a folder parsed by R script 
  
   output:   
     path("kaiju_merged_species.csv")
@@ -229,7 +229,7 @@ process MERGE_TAX_FILES {
 
 
 
-
+path genome, stageAs: "genome" //to rename the folder containing the bt2 files
 
 
 
