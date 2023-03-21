@@ -119,36 +119,18 @@ process OUTPUT_UNALIGNED_READS {
   output:   
     tuple \
       val(datasetID), \
-      path("${datasetID}_R1.fastq"), \
-      path("${datasetID}_R2.fastq")
-  
-  script:
-  """
-  bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
-  """
-}
-
-process GZIP {
-  publishDir "$projectDir/unaligned_reads2"
-
-  input:
-    tuple \
-      val(datasetID), \
-      path(final_R1), \
-      path(final_R2)
- 
-  output:   
-    tuple \
-      val(datasetID), \
       path("${datasetID}_R1.fastq.gz"), \
       path("${datasetID}_R2.fastq.gz")
   
   script:
   """
-  gzip ${final_R1}
-  gzip ${final_R2}
+  bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
+  gzip ${datasetID}_R1.fastq
+  gzip ${datasetID}_R2.fastq
   """
 }
+
+
 
 process KAIJU {
   publishDir "$projectDir/kaiju_1"

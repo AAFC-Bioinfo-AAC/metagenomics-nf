@@ -25,7 +25,6 @@ include {
   SAM2BAM;
   SORTBAM;
   OUTPUT_UNALIGNED_READS;
-  GZIP;
   KAIJU} from './modules.nf'
 
 
@@ -51,6 +50,5 @@ workflow {
     SAM2BAM(BOWTIE2.out)
     SORTBAM(SAM2BAM.out)
     OUTPUT_UNALIGNED_READS(SORTBAM.out)
-    GZIP(OUTPUT_UNALIGNED_READS.out)
-    KAIJU(params.kaiju_db, GZIP.out)
+    KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
 }
