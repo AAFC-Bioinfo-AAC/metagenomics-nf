@@ -204,7 +204,7 @@ process KAIJU_FULL_TAX_TABLE {
   kaiju2table -t ${db}/nodes.dmp \
         -n ${db}/names.dmp \
         -r species \
-        -l superkingdom,phylum,class,order,family,genus,species
+        -l superkingdom,phylum,class,order,family,genus,species \
         -o ${datasetID}.all_tax.summary.tsv \
         ${kaiju_out}
   """
@@ -216,16 +216,14 @@ process MERGE_TAX_FILES {
   publishDir "$projectDir/kaiju_merged"
 
   input:
-    tuple \
-      val(datasetID), \
-      path(species_tsv)
+    path("$projectDir/kaiju_tax_table") stageAs: "Species" //to rename the folder containing the .tsv files
  
   output:   
-      path("kaiju_merged_species.csv")
+    path("kaiju_merged_species.csv")
   
   script:
   """
-  R merge_tax_files.R
+  ./merge_tax_files.R
   """
 }
 

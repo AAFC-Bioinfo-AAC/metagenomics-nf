@@ -55,7 +55,7 @@ workflow {
     KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
     KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)
-    //MERGE_TAX_FILES(KAIJU_TAX_TABLE.out)
+    MERGE_TAX_FILES(params.kaiju_merge_script, KAIJU_TAX_TABLE.out)
     
     
     
