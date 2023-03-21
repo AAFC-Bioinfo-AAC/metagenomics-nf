@@ -52,5 +52,5 @@ workflow {
     SORTBAM(SAM2BAM.out)
     OUTPUT_UNALIGNED_READS(SORTBAM.out)
     GZIP(OUTPUT_UNALIGNED_READS.out)
-    KAIJU(params.kaiju_nodes, params.kaiju_db, GZIP.out)
+    KAIJU(params.kaiju_db, GZIP.out)
 }

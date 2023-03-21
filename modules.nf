@@ -154,7 +154,6 @@ process KAIJU {
   publishDir "$projectDir/kaiju_1"
 
   input:
-    path nodes
     path db
     tuple \
       val(datasetID), \
@@ -168,8 +167,8 @@ process KAIJU {
   
   script:
   """
-  kaiju -t ${nodes} \
-        -f ${db} \
+  kaiju -t ${db}/nodes.dmp \
+        -f ${db}/kaiju_db_nr_euk.fmi \
         -i ${final_R1} \
         -j ${final_R2} \
         -v \
