@@ -212,7 +212,22 @@ process KAIJU_FULL_TAX_TABLE {
 
 
 
+process MERGE_TAX_FILES {
+  publishDir "$projectDir/kaiju_merged"
 
+  input:
+    tuple \
+      val(datasetID), \
+      path(species_tsv)
+ 
+  output:   
+      path("kaiju_merged_species.csv")
+  
+  script:
+  """
+  R merge_tax_files.R
+  """
+}
 
 
 

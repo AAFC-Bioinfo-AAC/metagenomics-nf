@@ -27,8 +27,8 @@ include {
   OUTPUT_UNALIGNED_READS;
   KAIJU;
   KAIJU_TAX_TABLE;
-  KAIJU_FULL_TAX_TABLE} from './modules.nf'
-
+  KAIJU_FULL_TAX_TABLE;
+  MERGE_TAX_FILES} from './modules.nf'
 
 
 /* 
@@ -55,6 +55,7 @@ workflow {
     KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
     KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)
+    //MERGE_TAX_FILES(KAIJU_TAX_TABLE.out)
     
     
     
