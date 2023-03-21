@@ -126,19 +126,57 @@ process OUTPUT_UNALIGNED_READS {
   """
   bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
   """
-
-
-
-
-
-
-
-
 }
 
+process GZIP {
+  publishDir "$projectDir/unaligned_reads2"
 
+  input:
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_R1.fastq.gz"), \
+      path("${datasetID}_R2.fastq.gz")
+  
+  script:
+  """
+  gzip ${final_R1}
+  gzip ${final_R2}
+  """
+}
 
+process KAIJU {
+  publishDir "$projectDir/kaiju_1"
 
+  input:
+    path nodes
+    path db
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}.out")
+  
+  script:
+  """
+  kaiju -t ${nodes} \
+        -f ${db} \
+        -i ${final_R1} \
+        -j ${final_R2} \
+        -v \
+        -o ${datasetID}.out \
+        -z 40
+  """
+}
 
 
 
