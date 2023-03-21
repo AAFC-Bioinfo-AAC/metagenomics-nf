@@ -39,6 +39,7 @@ workflow {
     // PART 1: Preparation of the raw reads channel
     // Create the `read_pairs_ch` channel that emits tuples containing three elements:
     // the pair ID, the first read-pair file and the second read-pair file
+    /*
     Channel
         .fromFilePairs( params.reads, flat:true)
         .ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
@@ -52,7 +53,27 @@ workflow {
     SAM2BAM(BOWTIE2.out)
     SORTBAM(SAM2BAM.out)
     OUTPUT_UNALIGNED_READS(SORTBAM.out)
-    KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
+    */
+    
+    
+    
+    // HACK : To start from BAM
+    // Create a channel that will emit tuple val(sampleId), path('sort.bam'), path('sort.bam.bai')
+    Channel.fromPath(params.aln)
+    .map { file ->
+        def key_part1 = file.name.toString().tokenize('.').get(0)
+        key = key_part1
+        return tuple(key, file)
+     }
+    .groupTuple(size: 2, sort: true)
+    .flatten()
+    .collate( 2 )
+    .set{ aln_ch }
+    .view()
+    
+    
+    KAIJU(params.kaiju_db, aln_ch)
+    //KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
     KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)
     MERGE_TAX_FILES(KAIJU_TAX_TABLE.out)
