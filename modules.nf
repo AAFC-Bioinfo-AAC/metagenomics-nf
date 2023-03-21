@@ -197,7 +197,7 @@ process KAIJU_FULL_TAX_TABLE {
   output:   
     tuple \
       val(datasetID), \
-      path("${datasetID}.species.summary.tsv")
+      path("${datasetID}.all_tax.summary.tsv")
   
   script:
   """
