@@ -23,7 +23,8 @@ include {
   QUALITY_FILTERING;
   BOWTIE2;
   SAM2BAM;
-  SORTBAM} from './modules.nf'
+  SORTBAM;
+  OUTPUT_UNALIGNED_READS} from './modules.nf'
 
 
 
@@ -47,5 +48,6 @@ workflow {
             QUALITY_FILTERING.out)
     SAM2BAM(BOWTIE2.out)
     SORTBAM(SAM2BAM.out)
+    OUTPUT_UNALIGNED_READS(SORTBAM.out)
 
 }

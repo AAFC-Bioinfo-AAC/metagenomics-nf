@@ -108,6 +108,44 @@ process SORTBAM {
 
 
 
+process OUTPUT_UNALIGNED_READS {
+  publishDir "$projectDir/unaligned_reads"
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_R1.fastq"), \
+      path("${datasetID}_R2.fastq")
+  
+  script:
+  """
+  bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
+  """
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 
