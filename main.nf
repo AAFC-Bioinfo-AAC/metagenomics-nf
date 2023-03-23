@@ -39,6 +39,7 @@ workflow {
     // PART 1: Preparation of the raw reads channel
     // Create the `read_pairs_ch` channel that emits tuples containing three elements:
     // the pair ID, the first read-pair file and the second read-pair file
+    
     Channel
         .fromFilePairs( params.reads, flat:true)
         .ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
@@ -53,10 +54,34 @@ workflow {
     SORTBAM(SAM2BAM.out)
     OUTPUT_UNALIGNED_READS(SORTBAM.out)
     KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
-    KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
+    ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)
-    MERGE_TAX_FILES(KAIJU_TAX_TABLE.out)
     
-    
-    
+    ch_kaiju
+      .flatten()
+      .filter ( Path ) // To get rid of datasetID values    
+      .collect()     
+      //.view()
+      .set { ch_kaiju_tsv }    
+
+    MERGE_TAX_FILES(ch_kaiju_tsv)
 }
+
+
+
+
+
+
+
+/*
+    // HACK : To start from BAM
+    // Create a channel that will emit tuple val(sampleId), path('sort.bam')
+    Channel.fromPath(params.aln)
+    .map { file ->
+        def key_part1 = file.simpleName
+        key = key_part1
+        return tuple(key, file)
+     }
+    .set{ aln_ch }
+*/
+
