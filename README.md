@@ -1,95 +1,187 @@
 # metagenomic_nf
 
 
+## Biocluster launch :rocket:
+```shell
+ nextflow run main.nf -c nextflow.config -profile biocluster -resume --with report my_report
+```
 
-## Getting started
-
-
-
-## Local lauch
+## Local launch (qcshera684498 miniserver)
 ```shell
  nextflow run main.nf -c nextflow.config -profile local -resume --with report my_report
 ```
 
-## Add your files
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Conda environments
+
+Our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
+
+Here we described the command lines use to create some of the conda environments :
+
+
+### R
+
+```shell
+conda create -n R -c conda-forge r-base=4.2.3 r-tidyr=1.3.0
+```
+
+### biobakery3
+
+According to instructions given [here](https://huttenhower.sph.harvard.edu/humann).
+
+```shell
+conda create --name biobakery3 python=3.7
+conda activate biobakery3
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda config --add channels biobakery
+mamba install humann -c biobakery
+```
+
+
+## Humann3 preparation
+In my first attempt to run humann3, I used pre-installed databases used by Sara Riccis. I do not recommand this approach, especially for using it in Nextflow.
+
+With a complete Humann3.6 installion you get Metaphlan 4.0.6.
+
+
+
+
+### Download databases with the built in humann_databases command
+
+Once you have a working conda environment, you will need to download some databases.
+
+Define a standard location for these databases, here we put them in the project folder :
+
+```shell
+INSTALL_LOCATION="/isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3"
+conda activate biobakery3
+
+#To upgrade your pangenome database: 
+humann_databases --download chocophlan full $INSTALL_LOCATION --update-config yes
+
+#To upgrade your protein database: 
+humann_databases --download uniref uniref90_diamond $INSTALL_LOCATION --update-config yes
+
+#To upgrade your annotations database: 
+humann_databases --download utility_mapping full $INSTALL_LOCATION --update-config yes
 
 ```
-cd existing_repo
-git remote add origin https://gccode.ssc-spc.gc.ca/ac_/rp/metagenomic_nf.git
-git branch -M main
-git push -uf origin main
+
+You can check the location of these databases with :
+
+
+```shell
+humann_config --print
 ```
 
-## Integrate with your tools
+> Your interpretation is correct. HUMAnN 3.6 includes compatibility files to associate MetaPhlAn 4 profiles from the Jan21 database with the HUMAnN 3 pangenome collection. We are working on a HUMAnN 3.7 release that will add compatibility with the new database. In the meantime you can add --metaphlan-options="--index mpa_vJan21_CHOCOPhlAnSGB_202103" to your HUMAnN 3.6 command to tell MetaPhlAn 4 to get/use the previous index.
 
-- [ ] [Set up project integrations](https://gccode.ssc-spc.gc.ca/ac_/rp/metagenomic_nf/-/settings/integrations)
 
-## Collaborate with your team
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+Note that despite its name, *mpa_vJan21_CHOCOPhlAnSGB_202103* appears to be the last version!
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+<p align="left"><img src="misc/index_chocophlan_db.png"></p>
 
-***
+I've also encountered this error message :
 
-# Editing this README
+```shell
+CRITICAL ERROR: The directory provided for ChocoPhlAn contains files ( mpa_vOct22_CHOCOPhlAnSGB_202212.1.bt2l ) that are not of the expected version. Please install the latest version of the database: v201901_v31
+```
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+### How to fix an annoying bug that lead MetaPhlAn from trying to download the latest database!
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+#### 1 - Understand that others encounterd this issue
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+> Thank you for posting the command! If you install the database at the default location or if you install it in a custom location and add --bowtiedb <path/to/metaphlan/database> to your --metaphlan-options it should stop MetaPhlAn from trying to download the latest database.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+> Thank you very much for the quick and helpful reply. Downgrading Metaphlan to v 4.0.3 really got rid of the initial problem. Anyhow, I still can’t stop Metaphlan from downloading the new database when I run it, even when I safe the “v21” database in the right folder. Do you know how to stop it from doing so?
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+  * https://forum.biobakery.org/t/humann3-compatibility-problem-with-metaphlan4/4894/2
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+  * https://forum.biobakery.org/t/humann3-compatibility-problem-with-metaphlan4/4894/5
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+#### 2 - Install the **good** database
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
 
-## License
-For open source projects, say how it is licensed.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+
+
+
+
+To install the latest compatible db i *mpa_vJan21_CHOCOPhlAnSGB_202103* at a specific location, do :
+
+```shell
+metaphlan --install --index mpa_vJan21_CHOCOPhlAnSGB_202103 --bowtie2db /isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3/metaphlan_vJan21/
+
+Downloading MetaPhlAn database
+Please note due to the size this might take a few minutes
+
+\Downloading and uncompressing indexes
+
+Downloading http://cmprod1.cibio.unitn.it/biobakery4/metaphlan_databases/bowtie2_indexes/mpa_vJan21_CHOCOPhlAnSGB_202103_bt2.tar
+Downloading file of size: 19909.64 MB
+19909.64 MB 100.00 %  24.52 MB/sec  0 min -0 sec
+Downloading http://cmprod1.cibio.unitn.it/biobakery4/metaphlan_databases/bowtie2_indexes/mpa_vJan21_CHOCOPhlAnSGB_202103_bt2.md5
+Downloading file of size: 0.00 MB
+0.01 MB 11070.27 %  34.68 MB/sec  0 min -0 sec
+Downloading and uncompressing additional files
+
+Downloading http://cmprod1.cibio.unitn.it/biobakery4/metaphlan_databases/mpa_vJan21_CHOCOPhlAnSGB_202103.tar
+Downloading file of size: 2623.07 MB
+2623.07 MB 100.00 %  24.74 MB/sec  0 min -0 sec
+Downloading http://cmprod1.cibio.unitn.it/biobakery4/metaphlan_databases/mpa_vJan21_CHOCOPhlAnSGB_202103.md5
+Downloading file of size: 0.00 MB
+0.01 MB 11702.86 %  38.42 MB/sec  0 min -0 sec
+
+Decompressing /isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3/metaphlan_vJan21/mpa_vJan21_CHOCOPhlAnSGB_202103_SGB.fna.bz2 into /isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3/metaphlan_vJan21/mpa_vJan21_CHOCOPhlAnSGB_202103_SGB.fna
+
+Decompressing /isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3/metaphlan_vJan21/mpa_vJan21_CHOCOPhlAnSGB_202103_VSG.fna.bz2 into /isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3/metaphlan_vJan21/mpa_vJan21_CHOCOPhlAnSGB_202103_VSG.fna
+Removing uncompressed databases
+
+Download complete
+The database is installed
+```
+
+### How to fix another annoying bug : NameError: name ‘metaphlan_v4_db_version’ is not defined
+
+Just avoid MetaPhlan version 4.0.5 and downgrade  to 4.0.3.
+
+```shell
+conda activate biobakery3
+conda install --name biobakery3 -c conda-forge -c bioconda -c biobakery metaphlan=4.0.3
+```
+
+
+
+
+## Kaiju preparation
+
+
+Add the merge_tax_files to your R conda env:
+
+```shell
+cp merge_tax_files.R ../envs/R/bin/
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
