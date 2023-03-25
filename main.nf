@@ -28,7 +28,9 @@ include {
   KAIJU;
   KAIJU_TAX_TABLE;
   KAIJU_FULL_TAX_TABLE;
-  MERGE_TAX_FILES} from './modules.nf'
+  MERGE_TAX_FILES;
+  CAT_FASTQ;
+  HUMANN_RUN} from './modules.nf'
 
 
 /* 
@@ -65,4 +67,7 @@ workflow {
       .set { ch_kaiju_tsv }    
 
     MERGE_TAX_FILES(ch_kaiju_tsv)
+    CAT_FASTQ(OUTPUT_UNALIGNED_READS.out)
+    HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
+    
 }

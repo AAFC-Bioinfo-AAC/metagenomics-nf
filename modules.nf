@@ -225,3 +225,62 @@ process MERGE_TAX_FILES {
   """
 }
 
+process CAT_FASTQ {
+  input:
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
+
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_cat.fastq.gz")
+    
+  script:
+  """
+  cat ${final_R1} ${final_R2} > ${datasetID}_cat.fastq.gz
+  """
+}
+
+
+process HUMANN_RUN {
+
+  input:
+    path chocophlan_db
+    path metaphlan_db
+    path uniref_db
+    tuple \
+      val(datasetID), \
+      path(reads)
+
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_humann3_output")
+
+  script:
+  """
+  humann -i $reads -o ${datasetID}_humann3_output \
+         --threads 40 \
+         --remove-temp-output \
+         --metaphlan-options "--bowtie2db ${metaphlan_db} --index mpa_vJan21_CHOCOPhlAnSGB_202103" \
+         --nucleotide-database $chocophlan_db \
+         --protein-database $uniref_db
+  """
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
