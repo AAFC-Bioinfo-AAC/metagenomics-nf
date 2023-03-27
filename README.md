@@ -1,23 +1,36 @@
 # metagenomic_nf
 
 
-## Biocluster launch :rocket:
+## 1 - Introduction
+
+Write an introduction here...
+
+
+
+## 2 - Install Nextflow
+
+This pipeline is build with the Nextflow language. If you are not familiar with this, you can read more here.
+
+
+
+## 3 - Set up conda environments
+
+Nextflow and conda environments work well together on the biocluster.
+
+Almost all process of the workflow use specific conda environment. For the sake of code portability, our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
+
+## 3.1 - Pre-build conda environments exist on the biocluster
+
+On the biocluster, you can use my conda environemnts or copy them :
+
 ```shell
- nextflow run main.nf -c nextflow.config -profile biocluster -resume --with report my_report
+my path
 ```
 
-## Local launch (qcshera684498 miniserver)
-```shell
- nextflow run main.nf -c nextflow.config -profile local -resume --with report my_report
-```
 
+## 3.2 - Pre-build conda environments exist on the biocluster
 
-## Conda environments
-
-Our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
-
-Here we described the command lines use to create some of the conda environments :
-
+Here we described the command lines that have been used to create some of the conda environments.
 
 ### R
 
@@ -25,52 +38,90 @@ Here we described the command lines use to create some of the conda environments
 conda create -n R -c conda-forge r-base=4.2.3 r-tidyr=1.3.0
 ```
 
-### biobakery3
+### biobakery3 (Humann3)
 
 According to instructions given [here](https://huttenhower.sph.harvard.edu/humann).
 
+First be sure to add the following channels :
+
 ```shell
-conda create --name biobakery3 python=3.7
-conda activate biobakery3
 conda config --add channels defaults
 conda config --add channels bioconda
 conda config --add channels conda-forge
 conda config --add channels biobakery
-mamba install humann -c biobakery
+```
+
+The following conda command works for me:
+
+```shell
+conda create --name biobakery3 -c conda-forge -c bioconda -c biobakery python=3.7 humann=3.6 metaphlan=4.0.3
 ```
 
 
-## Humann3 preparation
-In my first attempt to run humann3, I used pre-installed databases used by Sara Riccis. I do not recommand this approach, especially for using it in Nextflow.
+## Biocluster launch :rocket:
 
-With a complete Humann3.6 installion you get Metaphlan 4.0.6.
+```shell
+ nextflow run main.nf -c nextflow.config -profile biocluster -resume --with report my_report
+```
+
+## Local launch (qcshera684498 miniserver)
+
+```shell
+ nextflow run main.nf -c nextflow.config -profile local -resume --with report my_report
+```
 
 
 
 
-### Download databases with the built in humann_databases command
+## 4 - Humann3 preparation
+
+### 4.1 - Download databases with the built in humann_databases command
 
 Once you have a working conda environment, you will need to download some databases.
 
 Define a standard location for these databases, here we put them in the project folder :
 
-```shell
-INSTALL_LOCATION="/isilon/sherbrooke-rdc/users/brouardjs/metagenomic_nf/data/humann3"
-conda activate biobakery3
 
+#### 4.1.1 - Pangenome database
+
+```shell
+screen -S pangenome
+conda activate biobakery3
+INSTALL_LOCATION=$PWD/db
 #To upgrade your pangenome database: 
 humann_databases --download chocophlan full $INSTALL_LOCATION --update-config yes
 
+ctlr + A + D (exit screen)
+```
+
+#### 4.1.2 - Protein database
+
+```shell
+screen -S uniref
+conda activate biobakery3
+INSTALL_LOCATION=$PWD/db
 #To upgrade your protein database: 
 humann_databases --download uniref uniref90_diamond $INSTALL_LOCATION --update-config yes
 
-#To upgrade your annotations database: 
-humann_databases --download utility_mapping full $INSTALL_LOCATION --update-config yes
-
+ctlr + A + D (exit screen)
 ```
 
-You can check the location of these databases with :
+#### 4.1.3 - Annotation database
 
+```shell
+screen -S utility
+conda activate biobakery3
+INSTALL_LOCATION=$PWD/db
+#To upgrade your ut database: 
+humann_databases --download utility_mapping full $INSTALL_LOCATION --update-config yes
+
+ctlr + A + D (exit screen)
+```
+
+
+### 4.2 - Verify your installation
+
+You can check the location of these databases with :
 
 ```shell
 humann_config --print
@@ -154,7 +205,7 @@ The database is installed
 
 ### How to fix another annoying bug : NameError: name ‘metaphlan_v4_db_version’ is not defined
 
-Just avoid MetaPhlan version 4.0.5 and downgrade  to 4.0.3.
+Just avoid MetaPhlan version 4.0.5 and downgrade to 4.0.3.
 
 ```shell
 conda activate biobakery3
