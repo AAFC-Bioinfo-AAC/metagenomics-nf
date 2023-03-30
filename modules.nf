@@ -246,6 +246,7 @@ process CAT_FASTQ {
 
 process HUMANN_RUN {
 
+  publishDir "$projectDir/humann_run"
   input:
     path chocophlan_db
     path metaphlan_db
@@ -270,7 +271,24 @@ process HUMANN_RUN {
   """
 }
 
+process HUMANN_REGROUP_ABUNDANCE {
 
+
+input:
+    tuple \
+      val(datasetID), \
+      path(humann3_output)
+
+  output:
+      path("${pathway_abundance_files}")
+
+  script:
+  """
+  mkdir pathway_abundance_files
+  cp ${humann3_output}/${datasetID}_cat_pathabundance.tsv  pathway_abundance_files
+  """
+
+}
 
 
 
