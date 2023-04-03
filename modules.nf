@@ -273,29 +273,21 @@ process HUMANN_RUN {
 
 process HUMANN_REGROUP_ABUNDANCE {
 
+publishDir "$projectDir/humann_regroup"
 
 input:
     tuple \
-      val(datasetID), \
-      path(humann3_output)
+      val (datasetID), \
+      path (humann3_output, stageAs: "pathway_abundance_files/*")
 
   output:
-      path("${pathway_abundance_files}")
+      path ("Joined_pathabundance.tsv")
 
   script:
   """
-  mkdir pathway_abundance_files
-  cp ${humann3_output}/${datasetID}_cat_pathabundance.tsv  pathway_abundance_files
+  humann_join_tables -i pathway_abundance_files -o Joined_pathabundance.tsv --file_name pathabundance
   """
-
 }
-
-
-
-
-
-
-
 
 
 
