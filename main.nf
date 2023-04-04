@@ -31,7 +31,8 @@ include {
   MERGE_TAX_FILES;
   CAT_FASTQ;
   HUMANN_RUN;
-  HUMANN_ABUNDANCE} from './modules.nf'
+  HUMANN_ABUNDANCE;
+  COASSEMBLY} from './modules.nf'
 
 
 /* 
@@ -71,4 +72,7 @@ workflow {
     CAT_FASTQ(OUTPUT_UNALIGNED_READS.out)
     HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
     HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
+    COASSEMBLY(OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
+               OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
+
 }

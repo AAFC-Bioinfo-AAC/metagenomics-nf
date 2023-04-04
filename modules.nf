@@ -306,5 +306,29 @@ input:
 }
 
 
+process COASSEMBLY {
 
+label 'megahit'
+publishDir "$projectDir/coassembly_input"
+
+input:
+  path (readsR1, stageAs: "readsR1/*")
+  path (readsR2, stageAs: "readsR2/*")
+
+output:
+
+  path ("coassembly_R1.fastq.gz")
+  path ("coassembly_R1.fastq.gz")
+  path ("Megahit_coassembly/*")
+
+
+script:
+"""
+cat $readsR1 > coassembly_R1.fastq.gz
+cat $readsR2 > coassembly_R2.fastq.gz
+
+megahit -1 coassembly_R1.fastq.gz -2 coassembly_R2.fastq.gz -o Megahit_coassembly --out-prefix Coassembly -t 30 --min-contig-len 1000
+"""
+
+}
 
