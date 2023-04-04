@@ -30,7 +30,8 @@ include {
   KAIJU_FULL_TAX_TABLE;
   MERGE_TAX_FILES;
   CAT_FASTQ;
-  HUMANN_RUN} from './modules.nf'
+  HUMANN_RUN;
+  HUMANN_ABUNDANCE} from './modules.nf'
 
 
 /* 
@@ -69,5 +70,5 @@ workflow {
     MERGE_TAX_FILES(ch_kaiju_tsv)
     CAT_FASTQ(OUTPUT_UNALIGNED_READS.out)
     HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
-    
+    HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
 }
