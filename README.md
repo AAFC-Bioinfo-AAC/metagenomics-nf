@@ -49,6 +49,12 @@ The following conda command works for me:
 conda create --name biobakery3 -c conda-forge -c bioconda -c biobakery python=3.7 humann=3.6 metaphlan=4.0.3
 ```
 
+### megahit
+```shell
+conda create -n megahit -c bioconda megahit=1.2.
+```
+
+
 ## 4 - Humann3 preparation
 ### 4.1 - Download databases with the built in humann_databases command
 Once you have a working conda environment, you will need to download some databases.

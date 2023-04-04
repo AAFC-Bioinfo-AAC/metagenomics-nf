@@ -32,7 +32,8 @@ include {
   CAT_FASTQ;
   HUMANN_RUN;
   HUMANN_ABUNDANCE;
-  COASSEMBLY} from './modules.nf'
+  COASSEMBLY;
+  BOWTIE_BUILD} from './modules.nf'
 
 
 /* 
@@ -74,5 +75,5 @@ workflow {
     HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
     COASSEMBLY(OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
                OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
-
+    BOWTIE_BUILD(COASSEMBLY.out)
 }

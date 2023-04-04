@@ -317,8 +317,8 @@ input:
 
 output:
 
-  path ("coassembly_R1.fastq.gz")
-  path ("coassembly_R1.fastq.gz")
+  //path ("coassembly_R1.fastq.gz")
+  //path ("coassembly_R1.fastq.gz")
   path ("Megahit_coassembly/*")
 
 
@@ -331,4 +331,41 @@ megahit -1 coassembly_R1.fastq.gz -2 coassembly_R2.fastq.gz -o Megahit_coassembl
 """
 
 }
+
+
+process BOWTIE2_BUILD {
+label 'bowtie2'
+publishDir "$projectDir/coassembly_bwt2_index"
+
+input:
+  path (coassembly_contigs)
+
+output:
+  path ("coassembly/*")
+  
+  
+script:
+"""
+mkdir coassembly
+bowtie2-build $coassembly_contigs coassembly/coassembly
+"""
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
