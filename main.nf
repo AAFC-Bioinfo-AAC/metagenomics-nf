@@ -76,4 +76,5 @@ workflow {
     COASSEMBLY(OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
                OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
     BOWTIE_BUILD(COASSEMBLY.out)
+    BOWTIE2_MAP(BOWTIE_BUILD.out,OUTPUT_UNALIGNED_READS.out)
 }

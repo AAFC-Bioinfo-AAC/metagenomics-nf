@@ -354,7 +354,34 @@ bowtie2-build $coassembly_contigs coassembly/coassembly
 
 
 
+process BOWTIE2_MAP {
+label 'bowtie2'
 
+publishDir "$projectDir/bwt2_output_for_metabat"
+
+input:
+  path bwt2_index, stageAs: "coassembly" //to rename the folder containing the bt2 files
+  tuple \
+    val(datasetID), \
+    path(final_R1), \
+    path(final_R2)
+
+output:
+  tuple \
+    val(datasetID), \
+    path("${datasetID}.sam")
+  
+  
+script:
+"""
+mkdir bowtie2_output_for_metabat
+bowtie2 -x coassembly/coassembly \
+        -1 ${final_R1} \
+        -2 ${final_R2} \
+        -S bowtie2_output_for_metabat/${datasetID}.sam -p 30
+"""
+
+}
 
 
 
