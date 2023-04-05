@@ -456,11 +456,56 @@ process METABAT2_BIN_COASSEMBLY {
 }
 
 
+process CHECKM {
+  label 'checkm'
+  publishDir "$projectDir/checkM_output_coassembled_bin"
+  
+  input:
+    path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
+
+ 
+  output:   
+      path("checkM_output_coassembled_bin/*")
+  
+  script:
+  """
+  checkm lineage_wf \
+    --tab_table \
+    -t 30 \
+    -x fa \
+    Coassembled_bins \
+    checkM_output_coassembled_bin
+  """
+}
 
 
 
+process MEGAHIT_SINGLE {
+
+label 'megahit'
+publishDir "$projectDir/indiv_assemblies"
+
+input:
+  tuple \
+    val(datasetID), \
+    path(final_R1), \
+    path(final_R2)
+
+output:
+  path ("${datasetID}/*")
+
+script:
+"""
 
 
+megahit -1 ${final_R1} \
+        -2 ${final_R2} \
+        -o ${datasetID} \
+        --out-prefix ${datasetID} \
+        -t 40 \
+        --min-contig-len 1000
+"""
+}
 
 
 

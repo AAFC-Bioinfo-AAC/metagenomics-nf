@@ -19,8 +19,27 @@ reads    : $params.reads
 results  : $params.results
 """
 
-include {*} from './modules.nf'
-
+include { 
+  QUALITY_FILTERING;
+  BOWTIE2;
+  SAM2BAM;
+  SORTBAM;
+  OUTPUT_UNALIGNED_READS;
+  KAIJU;
+  KAIJU_TAX_TABLE;
+  KAIJU_FULL_TAX_TABLE;
+  MERGE_TAX_FILES;
+  CAT_FASTQ;
+  HUMANN_RUN;
+  HUMANN_ABUNDANCE;
+  COASSEMBLY;
+  BOWTIE2_BUILD;
+  BOWTIE2_MAP;
+  METABAT2_BIN_COASSEMBLY;
+  JGI_SUMMARIZE;
+  SORT_SAM;
+  CHECKM;
+  MEGAHIT_SINGLE} from './modules.nf'
 
 /* 
  * main pipeline logic
@@ -71,9 +90,10 @@ workflow {
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
     
     
+    CHECKM(METABAT2_BIN_COASSEMBLY.out)
     
-    
-    
+    // PART 2 : Individual assemblies
+    MEGAHIT_SINGLE(OUTPUT_UNALIGNED_READS.out)
     
     
 }
