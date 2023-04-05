@@ -33,7 +33,8 @@ include {
   HUMANN_RUN;
   HUMANN_ABUNDANCE;
   COASSEMBLY;
-  BOWTIE2_BUILD} from './modules.nf'
+  BOWTIE2_BUILD;
+  BOWTIE2_MAP} from './modules.nf'
 
 
 /* 
@@ -76,5 +77,18 @@ workflow {
     COASSEMBLY(OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
                OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
     BOWTIE2_BUILD(COASSEMBLY.out)
-    BOWTIE2_MAP(BOWTIE_BUILD.out,OUTPUT_UNALIGNED_READS.out)
+    BOWTIE2_MAP(BOWTIE2_BUILD.out,OUTPUT_UNALIGNED_READS.out)
+    
+    SORTSAM(BOWTIE2_MAP.out)
+    JGI_SUMMARIZE(SORTSAM.out.filter ( Path ).collect())
+    
+    
+    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
+    
+    
+    
+    
+    
+    
+    
 }

@@ -53,6 +53,10 @@ conda create --name biobakery3 -c conda-forge -c bioconda -c biobakery python=3.
 ```shell
 conda create -n megahit -c bioconda megahit=1.2.
 ```
+### metabat2
+```shell
+conda create -n metabat2 -c bioconda metabat2=2.15
+```
 
 
 ## 4 - Humann3 preparation

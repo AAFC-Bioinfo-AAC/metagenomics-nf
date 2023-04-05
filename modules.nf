@@ -65,7 +65,7 @@ process BOWTIE2 {
 
 
 process SAM2BAM {
-
+  label 'samtools'
   publishDir "$projectDir/unmapped_bam"
 
   input: 
@@ -85,7 +85,7 @@ process SAM2BAM {
 }
 
 process SORTBAM {
-
+  label 'samtools'
   publishDir "$projectDir/unmapped_sorted_bam"
 
   input: 
@@ -360,7 +360,7 @@ label 'bowtie2'
 publishDir "$projectDir/bwt2_output_for_metabat"
 
 input:
-  path bwt2_index, stageAs: "coassembly" //to rename the folder containing the bt2 files
+  path bwt2_index, stageAs: "coassembly/*" //to rename the folder containing the bt2 files
   tuple \
     val(datasetID), \
     path(final_R1), \
@@ -374,14 +374,119 @@ output:
   
 script:
 """
-mkdir bowtie2_output_for_metabat
 bowtie2 -x coassembly/coassembly \
         -1 ${final_R1} \
         -2 ${final_R2} \
-        -S bowtie2_output_for_metabat/${datasetID}.sam -p 30
+        -S ${datasetID}.sam -p 30
 """
 
 }
+
+
+
+
+// Add a lot of modules
+
+
+process SORTSAM {
+  label 'samtools'
+  publishDir "$projectDir/contigs_mapped"
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_sorted.bam")
+  
+  script:
+  """
+  samtools sort ${aln} > ${datasetID}_sorted.bam
+  """
+}
+
+// collect all files
+process JGI_SUMMARIZE {
+  label 'metabat2'
+  publishDir "$projectDir/jgi"
+
+  input: 
+    path (aln, stageAs: "Contigs_mapped/*")
+ 
+  output:   
+    path("Coassembly_depth.txt")
+  
+  script:
+  """
+  jgi_summarize_bam_contigs_depths \
+    --outputDepth Coassembly_depth.txt \
+    Contigs_mapped/*.bam
+  """
+}
+
+
+process METABAT2_BIN_COASSEMBLY {
+  label 'metabat2'
+  publishDir "$projectDir/metabat2_bins_coassembly"
+  
+  input:
+    tuple \
+      val(datasetID), \
+      path(aln)
+    path (megahit_coassembly_outfiles, stageAs: "megahit/*")
+    path ("Coassembly_depth.txt")
+ 
+  output:   
+      path("Coassembled_bins/*")
+  
+  script:
+  """
+  mkdir Coassembled_bins
+  metabat2 \
+    -i megahit/Coassembly.contigs.fa \
+    -a Coassembly_depth.txt \
+    -o Coassembled_bins/coassembly.bin \
+    -t 30 \
+    -m 2000 \
+    -v
+  """
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
