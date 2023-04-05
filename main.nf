@@ -19,22 +19,7 @@ reads    : $params.reads
 results  : $params.results
 """
 
-include { 
-  QUALITY_FILTERING;
-  BOWTIE2;
-  SAM2BAM;
-  SORTBAM;
-  OUTPUT_UNALIGNED_READS;
-  KAIJU;
-  KAIJU_TAX_TABLE;
-  KAIJU_FULL_TAX_TABLE;
-  MERGE_TAX_FILES;
-  CAT_FASTQ;
-  HUMANN_RUN;
-  HUMANN_ABUNDANCE;
-  COASSEMBLY;
-  BOWTIE2_BUILD;
-  BOWTIE2_MAP} from './modules.nf'
+include {*} from './modules.nf'
 
 
 /* 
