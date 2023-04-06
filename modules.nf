@@ -390,7 +390,6 @@ bowtie2 -x coassembly/coassembly \
 
 process SORTSAM {
   label 'samtools'
-  publishDir "$projectDir/contigs_mapped"
 
   input: 
     tuple \
@@ -421,7 +420,7 @@ process JGI_SUMMARIZE {
   
   script:
   """
-  jgi_summarize_bam_contigs_depths \
+  jgi_summarize_bam_contig_depths \
     --outputDepth Coassembly_depth.txt \
     Contigs_mapped/*.bam
   """
@@ -433,9 +432,6 @@ process METABAT2_BIN_COASSEMBLY {
   publishDir "$projectDir/metabat2_bins_coassembly"
   
   input:
-    tuple \
-      val(datasetID), \
-      path(aln)
     path (megahit_coassembly_outfiles, stageAs: "megahit/*")
     path ("Coassembly_depth.txt")
  
@@ -492,7 +488,9 @@ input:
     path(final_R2)
 
 output:
-  path ("${datasetID}/*")
+  tuple \
+    val(datasetID), \
+    path ("${datasetID}/*")
 
 script:
 """
@@ -509,16 +507,100 @@ megahit -1 ${final_R1} \
 
 
 
+process BOWTIE2_BUILD_SINGLE {
+label 'bowtie2'
+publishDir "$projectDir/individuals_assemblies_bwt2_index"
+
+input:
+   tuple \
+    val(datasetID), \
+    path(megahit_individual_outfiles, stageAs: "megahit/*")
+
+
+output:
+  tuple \
+    val(datasetID), \
+    path ("bwt2_index/*")
+  
+  
+script:
+"""
+mkdir bwt2_index
+bowtie2-build megahit/${datasetID}.contigs.fa bwt2_index/${datasetID}
+"""
+}
+
+
+process BOWTIE2_MAP_SINGLE {
+label 'bowtie2'
+
+publishDir "$projectDir/bwt2_output_for_metabat_individual"
+
+input:
+  tuple \
+    val(datasetID), \
+    path ("bwt2_index/*", stageAs: "index/*"), \
+    path(final_R1), \
+    path(final_R2)
+
+output:
+  tuple \
+    val(datasetID), \
+    path("${datasetID}.sam")
+  
+  
+script:
+"""
+bowtie2 -x index/${datasetID} \
+        -1 ${final_R1} \
+        -2 ${final_R2} \
+        -S ${datasetID}.sam -p 30
+"""
+}
+
+
+process SORTSAM_SINGLE {
+  label 'samtools'
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_sorted.bam")
+  
+  script:
+  """
+  samtools sort ${aln} > ${datasetID}_sorted.bam
+  """
+}
 
 
 
 
+process JGI_SUMMARIZE_SINGLE {
+  label 'metabat2'
+  publishDir "$projectDir/jgi_single"
 
-
-
-
-
-
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+    
+ 
+  output:   
+    path("${datasetID}_depth.txt")
+  
+  script:
+  """
+  jgi_summarize_bam_contig_depths \
+    --outputDepth ${datasetID}_depth.txt \
+    $aln
+  """
+}
 
 
 

@@ -37,9 +37,18 @@ include {
   BOWTIE2_MAP;
   METABAT2_BIN_COASSEMBLY;
   JGI_SUMMARIZE;
-  SORT_SAM;
+  SORTSAM;
   CHECKM;
-  MEGAHIT_SINGLE} from './modules.nf'
+  MEGAHIT_SINGLE;
+  BOWTIE2_BUILD_SINGLE;
+  BOWTIE2_MAP_SINGLE;
+  SORTSAM_SINGLE;
+  JGI_SUMMARIZE_SINGLE} from './modules.nf'
+
+
+
+
+    
 
 /* 
  * main pipeline logic
@@ -82,9 +91,9 @@ workflow {
                OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
     BOWTIE2_BUILD(COASSEMBLY.out)
     BOWTIE2_MAP(BOWTIE2_BUILD.out,OUTPUT_UNALIGNED_READS.out)
-    
     SORTSAM(BOWTIE2_MAP.out)
-    JGI_SUMMARIZE(SORTSAM.out.filter ( Path ).collect())
+    
+    JGI_SUMMARIZE(SORTSAM.out.flatten().filter ( Path ).collect())
     
     
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
@@ -94,6 +103,17 @@ workflow {
     
     // PART 2 : Individual assemblies
     MEGAHIT_SINGLE(OUTPUT_UNALIGNED_READS.out)
+    BOWTIE2_BUILD_SINGLE(MEGAHIT_SINGLE.out)
+    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(OUTPUT_UNALIGNED_READS.out))
+    SORTSAM_SINGLE(BOWTIE2_MAP_SINGLE.out)
+    JGI_SUMMARIZE_SINGLE(SORTSAM_SINGLE.out)
+    
+    
+    
+    
+    
+    
+    
     
     
 }
