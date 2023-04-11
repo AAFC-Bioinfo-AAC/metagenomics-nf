@@ -2,7 +2,6 @@ process QUALITY_FILTERING {
 
   publishDir "$projectDir/results/trimmed_reads"
 
-  //label "mem_small" 
   input: 
     tuple val(datasetID), path(read1), path(read2)
  
@@ -39,8 +38,6 @@ process QUALITY_FILTERING {
 process BOWTIE2 {
 
   publishDir "$projectDir/results/decontamination/genome/bowtie2"
-
-  //label "mem_large" 
   input:
     path genome, stageAs: "genome" //to rename the folder containing the bt2 files
     val(genome_basename)
@@ -65,6 +62,7 @@ process BOWTIE2 {
 
 
 process SAM2BAM {
+
   label 'samtools'
   publishDir "$projectDir/results/decontamination/unmapped_bam"
 
@@ -85,6 +83,7 @@ process SAM2BAM {
 }
 
 process SORTBAM {
+
   label 'samtools'
   publishDir "$projectDir/results/decontamination/unmapped_sorted_bam"
 
@@ -106,6 +105,7 @@ process SORTBAM {
 
 
 process OUTPUT_UNALIGNED_READS {
+
   publishDir "$projectDir/results/prepared_reads"
 
   input: 
@@ -129,6 +129,7 @@ process OUTPUT_UNALIGNED_READS {
 
 
 process KAIJU {
+
   publishDir "$projectDir/results/kaiju/kaiju_1"
 
   input:
@@ -157,6 +158,7 @@ process KAIJU {
 
 
 process KAIJU_TAX_TABLE {
+
   publishDir "$projectDir/results/kaiju/kaiju_tax_table"
 
   input:
@@ -182,6 +184,7 @@ process KAIJU_TAX_TABLE {
 
 
 process KAIJU_FULL_TAX_TABLE {
+
   publishDir "$projectDir/results/kaiju/kaiju_full_tax_table"
 
   input:
@@ -209,10 +212,11 @@ process KAIJU_FULL_TAX_TABLE {
 
 
 process MERGE_TAX_FILES {
+
   publishDir "$projectDir/results/kaiju/kaiju_merged"
 
   input:
-      path (tsv_files, stageAs: "Species/*")   // to put input files in a folder parsed by R script
+    path (tsv_files, stageAs: "Species/*")   // to put input files in a folder parsed by R script
 
   output:
     path("kaiju_merged_species.csv")
@@ -224,6 +228,7 @@ process MERGE_TAX_FILES {
 }
 
 process CAT_FASTQ {
+
   input:
     tuple \
       val(datasetID), \
@@ -272,15 +277,15 @@ process HUMANN_RUN {
 
 process HUMANN_ABUNDANCE {
 
-publishDir "$projectDir/results/humann/humann_results"
+  publishDir "$projectDir/results/humann/humann_results"
 
-input:
-      path (humann3_output, stageAs: "pathway_abundance_files/*")
+  input:
+    path (humann3_output, stageAs: "pathway_abundance_files/*")
 
   output:
-      path ("Joined_pathabundance.tsv")
-      path ("Joined_pathabundance_relab.tsv")
-      path ("Split_humann_pathwayabundance_tables/*")
+    path ("Joined_pathabundance.tsv")
+    path ("Joined_pathabundance_relab.tsv")
+    path ("Split_humann_pathwayabundance_tables/*")
 
   script:
   """
@@ -290,15 +295,13 @@ input:
   
   # Then normalize to relative abundance values
   humann_renorm_table \
-        --input Joined_pathabundance.tsv \
-        --output Joined_pathabundance_relab.tsv \
-        --units relab 
+    --input Joined_pathabundance.tsv \
+    --output Joined_pathabundance_relab.tsv \
+    --units relab 
 
   # Finally split the Joinded_pathabundance.tsv table into "stratified" and
   # "unstratified" tables.
-
   mkdir Split_humann_pathwayabundance_tables
-
   humann_split_stratified_table \
     --input Joined_pathabundance_relab.tsv \
     --output Split_humann_pathwayabundance_tables
@@ -309,53 +312,55 @@ input:
 // modules related to co-assemblies
 
 process COASSEMBLY {
-label 'megahit'
-publishDir "$projectDir/results/coassembly/megahit"
 
-input:
-  path (readsR1, stageAs: "readsR1/*")
-  path (readsR2, stageAs: "readsR2/*")
+  label 'megahit'
+  publishDir "$projectDir/results/coassembly/megahit"
 
-output:
-  path ("Megahit_coassembly/*")
+  input:
+    path (readsR1, stageAs: "readsR1/*")
+    path (readsR2, stageAs: "readsR2/*")
 
-script:
-"""
-cat $readsR1 > coassembly_R1.fastq.gz
-cat $readsR2 > coassembly_R2.fastq.gz
-megahit -1 coassembly_R1.fastq.gz \
-        -2 coassembly_R2.fastq.gz \
-        -o Megahit_coassembly \
-        --out-prefix Coassembly \
-        -t 30 \
-        --min-contig-len 1000
-"""
+  output:
+    path ("Megahit_coassembly/*")
+
+  script: 
+  """
+  cat $readsR1 > coassembly_R1.fastq.gz
+  cat $readsR2 > coassembly_R2.fastq.gz
+  megahit -1 coassembly_R1.fastq.gz \
+          -2 coassembly_R2.fastq.gz \
+          -o Megahit_coassembly \
+          --out-prefix Coassembly \
+          -t 30 \
+          --min-contig-len 1000
+  """
 }
 
 
 process BOWTIE2_BUILD {
-label 'bowtie2'
-publishDir "$projectDir/results/coassembly/bwt2_index"
 
-input:
-   path (megahit_coassembly_outfiles, stageAs: "megahit/*")
+  label 'bowtie2'
+  publishDir "$projectDir/results/coassembly/bwt2_index"
 
-output:
-  path ("coassembly/*")
+  input:
+    path (megahit_coassembly_outfiles, stageAs: "megahit/*")
+
+  output:
+    path ("coassembly/*")
   
-  
-script:
-"""
-mkdir coassembly
-bowtie2-build megahit/Coassembly.contigs.fa coassembly/coassembly
-"""
+  script:
+  """
+  mkdir coassembly
+  bowtie2-build megahit/Coassembly.contigs.fa coassembly/coassembly
+  """
 }
 
 
 
 process BOWTIE2_MAP {
-label 'bowtie2'
-publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
+
+  label 'bowtie2'
+  publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
 
 input:
   path bwt2_index, stageAs: "coassembly/*" //to rename the folder containing the bt2 files
@@ -379,6 +384,7 @@ bowtie2 -x coassembly/coassembly \
 }
 
 process SORTSAM {
+
   label 'samtools'
 
   input: 
@@ -397,8 +403,9 @@ process SORTSAM {
   """
 }
 
-// collect all files
+
 process JGI_SUMMARIZE {
+
   label 'metabat2'
   publishDir "$projectDir/results/coassembly/jgi"
 
@@ -418,6 +425,7 @@ process JGI_SUMMARIZE {
 
 
 process METABAT2_BIN_COASSEMBLY {
+
   label 'metabat2'
   publishDir "$projectDir/results/coassembly/metabat2_bins"
   
@@ -426,7 +434,7 @@ process METABAT2_BIN_COASSEMBLY {
     path ("Coassembly_depth.txt")
  
   output:   
-      path("Coassembled_bins/*")
+    path("Coassembled_bins/*")
   
   script:
   """
@@ -443,6 +451,7 @@ process METABAT2_BIN_COASSEMBLY {
 
 
 process CHECKM {
+
   label 'checkm'
   publishDir "$projectDir/results/coassembly/checkM_output"
   
@@ -466,6 +475,7 @@ process CHECKM {
 // modules based on individual assemblies
 
 process MEGAHIT_SINGLE {
+
   label 'megahit'
   publishDir "$projectDir/results/indiv_assemblies/megahit"
 
@@ -494,6 +504,7 @@ process MEGAHIT_SINGLE {
 
 
 process BOWTIE2_BUILD_SINGLE {
+
   label 'bowtie2'
   publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
 
@@ -516,6 +527,7 @@ process BOWTIE2_BUILD_SINGLE {
 
 
 process BOWTIE2_MAP_SINGLE {
+
   label 'bowtie2'
   publishDir "$projectDir/results/indiv_assemblies/bwt2_output_for_metabat"
 
@@ -542,6 +554,7 @@ process BOWTIE2_MAP_SINGLE {
 
 
 process SORTSAM_SINGLE {
+
   label 'samtools'
   
   input: 
@@ -560,7 +573,12 @@ process SORTSAM_SINGLE {
   """
 }
 
+
+
+
+
 process JGI_SUMMARIZE_SINGLE {
+
   label 'metabat2'
   publishDir "$projectDir/results/indiv_assemblies/jgi"
 
@@ -568,10 +586,8 @@ process JGI_SUMMARIZE_SINGLE {
     tuple \
       val(datasetID), \
       path(aln)
-      
+
   output:
-    tuple \
-    val(datasetID), \
     path("${datasetID}_depth.txt")
   
   script:
@@ -583,7 +599,9 @@ process JGI_SUMMARIZE_SINGLE {
 }
 
 
+
 process METABAT2_BIN_SINGLE {
+
   label 'metabat2'
   publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
   
@@ -612,6 +630,7 @@ process METABAT2_BIN_SINGLE {
 }
 
 process CHECKM_SINGLE {
+
   label 'checkm'
   publishDir "$projectDir/results/indiv_assemblies/checkM_output"
   

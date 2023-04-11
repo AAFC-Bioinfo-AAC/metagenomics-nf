@@ -47,9 +47,6 @@ include {
   METABAT2_BIN_SINGLE;
   CHECKM_SINGLE} from './modules.nf'
 
-
-
-
     
 
 /* 
@@ -110,10 +107,13 @@ workflow {
     SORTSAM_SINGLE(BOWTIE2_MAP_SINGLE.out)
     JGI_SUMMARIZE_SINGLE(SORTSAM_SINGLE.out)
     METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(MEGAHIT_SINGLE.out))
-    
-    
-    
-    
+    CHECKM_SINGLE(METABAT2_BIN_SINGLE.out)
+
+
+}
+
+
+/*
     // hack to test the CHECKM_SINGLE module
      Channel.fromPath(params.pseudobins)
     .map { file ->
@@ -125,8 +125,9 @@ workflow {
     .collate (2)
     .view()
     .set{ pseudobins_ch }
-    
-    CHECKM_SINGLE(METABAT2_BIN_SINGLE.out)
-    
-    
-}
+
+*/
+
+
+
+
