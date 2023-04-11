@@ -1,6 +1,6 @@
 process QUALITY_FILTERING {
 
-  publishDir "$projectDir/fastp"
+  publishDir "$projectDir/results/trimmed_reads"
 
   //label "mem_small" 
   input: 
@@ -38,7 +38,7 @@ process QUALITY_FILTERING {
 
 process BOWTIE2 {
 
-  publishDir "$projectDir/bowtie2"
+  publishDir "$projectDir/results/decontamination/genome/bowtie2"
 
   //label "mem_large" 
   input:
@@ -66,7 +66,7 @@ process BOWTIE2 {
 
 process SAM2BAM {
   label 'samtools'
-  publishDir "$projectDir/unmapped_bam"
+  publishDir "$projectDir/results/decontamination/unmapped_bam"
 
   input: 
     tuple \
@@ -86,7 +86,7 @@ process SAM2BAM {
 
 process SORTBAM {
   label 'samtools'
-  publishDir "$projectDir/unmapped_sorted_bam"
+  publishDir "$projectDir/results/decontamination/unmapped_sorted_bam"
 
   input: 
     tuple \
@@ -106,7 +106,7 @@ process SORTBAM {
 
 
 process OUTPUT_UNALIGNED_READS {
-  publishDir "$projectDir/unaligned_reads"
+  publishDir "$projectDir/results/prepared_reads"
 
   input: 
     tuple \
@@ -129,7 +129,7 @@ process OUTPUT_UNALIGNED_READS {
 
 
 process KAIJU {
-  publishDir "$projectDir/kaiju_1"
+  publishDir "$projectDir/results/kaiju/kaiju_1"
 
   input:
     path db
@@ -157,7 +157,7 @@ process KAIJU {
 
 
 process KAIJU_TAX_TABLE {
-  publishDir "$projectDir/kaiju_tax_table"
+  publishDir "$projectDir/results/kaiju/kaiju_tax_table"
 
   input:
     path db
@@ -182,7 +182,7 @@ process KAIJU_TAX_TABLE {
 
 
 process KAIJU_FULL_TAX_TABLE {
-  publishDir "$projectDir/kaiju_full_tax_table"
+  publishDir "$projectDir/results/kaiju/kaiju_full_tax_table"
 
   input:
     path db
@@ -209,12 +209,12 @@ process KAIJU_FULL_TAX_TABLE {
 
 
 process MERGE_TAX_FILES {
-  publishDir "$projectDir/kaiju_merged"
+  publishDir "$projectDir/results/kaiju/kaiju_merged"
 
   input:
       path (tsv_files, stageAs: "Species/*")   // to put input files in a folder parsed by R script
 
-  output:   
+  output:
     path("kaiju_merged_species.csv")
   
   script:
@@ -244,7 +244,7 @@ process CAT_FASTQ {
 
 process HUMANN_RUN {
 
-  publishDir "$projectDir/humann_run"
+  publishDir "$projectDir/results/humann/humann_run"
   input:
     path chocophlan_db
     path metaphlan_db
@@ -272,7 +272,7 @@ process HUMANN_RUN {
 
 process HUMANN_ABUNDANCE {
 
-publishDir "$projectDir/humann_results"
+publishDir "$projectDir/results/humann/humann_results"
 
 input:
       path (humann3_output, stageAs: "pathway_abundance_files/*")
@@ -306,10 +306,11 @@ input:
 }
 
 
-process COASSEMBLY {
+// modules related to co-assemblies
 
+process COASSEMBLY {
 label 'megahit'
-publishDir "$projectDir/coassembly"
+publishDir "$projectDir/results/coassembly/megahit"
 
 input:
   path (readsR1, stageAs: "readsR1/*")
@@ -322,7 +323,6 @@ script:
 """
 cat $readsR1 > coassembly_R1.fastq.gz
 cat $readsR2 > coassembly_R2.fastq.gz
-
 megahit -1 coassembly_R1.fastq.gz \
         -2 coassembly_R2.fastq.gz \
         -o Megahit_coassembly \
@@ -330,13 +330,12 @@ megahit -1 coassembly_R1.fastq.gz \
         -t 30 \
         --min-contig-len 1000
 """
-
 }
 
 
 process BOWTIE2_BUILD {
 label 'bowtie2'
-publishDir "$projectDir/coassembly_bwt2_index"
+publishDir "$projectDir/results/coassembly/bwt2_index"
 
 input:
    path (megahit_coassembly_outfiles, stageAs: "megahit/*")
@@ -356,8 +355,7 @@ bowtie2-build megahit/Coassembly.contigs.fa coassembly/coassembly
 
 process BOWTIE2_MAP {
 label 'bowtie2'
-
-publishDir "$projectDir/bwt2_output_for_metabat"
+publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
 
 input:
   path bwt2_index, stageAs: "coassembly/*" //to rename the folder containing the bt2 files
@@ -370,8 +368,7 @@ output:
   tuple \
     val(datasetID), \
     path("${datasetID}.sam")
-  
-  
+
 script:
 """
 bowtie2 -x coassembly/coassembly \
@@ -379,18 +376,10 @@ bowtie2 -x coassembly/coassembly \
         -2 ${final_R2} \
         -S ${datasetID}.sam -p 30
 """
-
 }
-
-
-
-
-// Add a lot of modules
-
 
 process SORTSAM {
   label 'samtools'
-  publishDir "$projectDir/contigs_mapped"
 
   input: 
     tuple \
@@ -411,7 +400,7 @@ process SORTSAM {
 // collect all files
 process JGI_SUMMARIZE {
   label 'metabat2'
-  publishDir "$projectDir/jgi"
+  publishDir "$projectDir/results/coassembly/jgi"
 
   input: 
     path (aln, stageAs: "Contigs_mapped/*")
@@ -421,7 +410,7 @@ process JGI_SUMMARIZE {
   
   script:
   """
-  jgi_summarize_bam_contigs_depths \
+  jgi_summarize_bam_contig_depths \
     --outputDepth Coassembly_depth.txt \
     Contigs_mapped/*.bam
   """
@@ -430,12 +419,9 @@ process JGI_SUMMARIZE {
 
 process METABAT2_BIN_COASSEMBLY {
   label 'metabat2'
-  publishDir "$projectDir/metabat2_bins_coassembly"
+  publishDir "$projectDir/results/coassembly/metabat2_bins"
   
   input:
-    tuple \
-      val(datasetID), \
-      path(aln)
     path (megahit_coassembly_outfiles, stageAs: "megahit/*")
     path ("Coassembly_depth.txt")
  
@@ -458,14 +444,13 @@ process METABAT2_BIN_COASSEMBLY {
 
 process CHECKM {
   label 'checkm'
-  publishDir "$projectDir/checkM_output_coassembled_bin"
+  publishDir "$projectDir/results/coassembly/checkM_output"
   
   input:
     path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
 
- 
   output:   
-      path("checkM_output_coassembled_bin/*")
+    path("checkM_output_coassembled_bin/*")
   
   script:
   """
@@ -478,53 +463,177 @@ process CHECKM {
   """
 }
 
-
+// modules based on individual assemblies
 
 process MEGAHIT_SINGLE {
+  label 'megahit'
+  publishDir "$projectDir/results/indiv_assemblies/megahit"
 
-label 'megahit'
-publishDir "$projectDir/indiv_assemblies"
+  input:
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
 
-input:
-  tuple \
-    val(datasetID), \
-    path(final_R1), \
-    path(final_R2)
+  output:
+    tuple \
+      val(datasetID), \
+      path ("${datasetID}/*")
 
-output:
-  path ("${datasetID}/*")
-
-script:
-"""
-
-
-megahit -1 ${final_R1} \
-        -2 ${final_R2} \
-        -o ${datasetID} \
-        --out-prefix ${datasetID} \
-        -t 40 \
-        --min-contig-len 1000
-"""
+  script:
+  """
+  megahit -1 ${final_R1} \
+          -2 ${final_R2} \
+          -o ${datasetID} \
+          --out-prefix ${datasetID} \
+          -t 40 \
+          --min-contig-len 1000
+  """
 }
 
 
 
+process BOWTIE2_BUILD_SINGLE {
+  label 'bowtie2'
+  publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
+
+  input:
+    tuple \
+      val(datasetID), \
+      path(megahit_individual_outfiles, stageAs: "megahit/*")
+
+  output:
+    tuple \
+      val(datasetID), \
+      path ("bwt2_index/*")
+  
+  script:
+  """
+  mkdir bwt2_index
+  bowtie2-build megahit/${datasetID}.contigs.fa bwt2_index/${datasetID}
+  """
+}
 
 
+process BOWTIE2_MAP_SINGLE {
+  label 'bowtie2'
+  publishDir "$projectDir/results/indiv_assemblies/bwt2_output_for_metabat"
+
+  input:
+    tuple \
+      val(datasetID), \
+      path ("bwt2_index/*", stageAs: "index/*"), \
+      path(final_R1), \
+      path(final_R2)
+
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}.sam")
+
+  script:
+  """
+  bowtie2 -x index/${datasetID} \
+          -1 ${final_R1} \
+          -2 ${final_R2} \
+          -S ${datasetID}.sam -p 30
+  """
+}
 
 
+process SORTSAM_SINGLE {
+  label 'samtools'
+  
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+ 
+  output:   
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_sorted.bam")
+  
+  script:
+  """
+  samtools sort ${aln} > ${datasetID}_sorted.bam
+  """
+}
+
+process JGI_SUMMARIZE_SINGLE {
+  label 'metabat2'
+  publishDir "$projectDir/results/indiv_assemblies/jgi"
+
+  input: 
+    tuple \
+      val(datasetID), \
+      path(aln)
+      
+  output:
+    tuple \
+    val(datasetID), \
+    path("${datasetID}_depth.txt")
+  
+  script:
+  """
+  jgi_summarize_bam_contig_depths \
+    --outputDepth ${datasetID}_depth.txt \
+    $aln
+  """
+}
 
 
+process METABAT2_BIN_SINGLE {
+  label 'metabat2'
+  publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
+  
+  input:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_depth.txt"), \
+      path(megahit_individual_outfiles, stageAs: "megahit/*")
 
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}/*"), optional: true
 
+  script:
+  """
+  mkdir ${datasetID}
+  metabat2 \
+    -i megahit/${datasetID}.contigs.fa \
+    -a ${datasetID}_depth.txt \
+    -o ${datasetID}/${datasetID}.individ.bin \
+    -t 30 \
+    -m 2000 \
+    -v
+  """
+}
 
+process CHECKM_SINGLE {
+  label 'checkm'
+  publishDir "$projectDir/results/indiv_assemblies/checkM_output"
+  
+  input:
+    tuple \
+      val(datasetID), \
+      path (metabat2_individ_outfiles, stageAs: "indiv_assembled_bins/*")
 
-
-
-
-
-
-
+  output:   
+      path("${datasetID}/*"), optional: true
+ 
+  script:
+  """
+  mkdir ${datasetID}
+  checkm lineage_wf \
+    --tab_table \
+    -t 40 \
+    -x fa \
+    indiv_assembled_bins \
+    ${datasetID}
+  """
+}
 
 
 

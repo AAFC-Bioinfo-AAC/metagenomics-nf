@@ -58,6 +58,14 @@ conda create -n megahit -c bioconda megahit=1.2.
 conda create -n metabat2 -c bioconda metabat2=2.15
 ```
 
+### checkM
+```shell
+conda create -n checkm -c bioconda checkm-genome=1.2.2
+```
+
+
+
+
 
 ## 4 - Humann3 preparation
 ### 4.1 - Download databases with the built in humann_databases command
