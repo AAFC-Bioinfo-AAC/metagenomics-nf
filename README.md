@@ -183,7 +183,7 @@ cp -v src/merge_tax_files.R /home/brouardjs/miniconda3/envs/R/bin/
 
 ### 6.2 - Local server (qcshera684498 miniserver)
 ```shell
- nextflow run main.nf -c nextflow.config -profile local -resume --with report my_report
+ nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report
 ```
 
 
