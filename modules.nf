@@ -56,7 +56,7 @@ process BOWTIE2 {
   
   script:
   """
-  bowtie2 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
+  bowtie2 -p 8 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
   """
 }
 
@@ -410,16 +410,20 @@ process JGI_SUMMARIZE {
   publishDir "$projectDir/results/coassembly/jgi"
 
   input: 
-    path (aln, stageAs: "Contigs_mapped/*")
+    tuple \
+      val(datasetID), \
+      path(aln)
  
-  output:   
-    path("Coassembly_depth.txt")
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_depth.txt")
   
   script:
   """
   jgi_summarize_bam_contig_depths \
-    --outputDepth Coassembly_depth.txt \
-    Contigs_mapped/*.bam
+    --outputDepth ${datasetID}_depth.txt \
+    $aln
   """
 }
 
@@ -431,18 +435,22 @@ process METABAT2_BIN_COASSEMBLY {
   
   input:
     path (megahit_coassembly_outfiles, stageAs: "megahit/*")
-    path ("Coassembly_depth.txt")
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_depth.txt")
  
-  output:   
-    path("Coassembled_bins/*")
+  output:
+    tuple \
+      val(datasetID), \
+      path("${datasetID}/*"), optional: true
   
   script:
   """
-  mkdir Coassembled_bins
+  mkdir ${datasetID}
   metabat2 \
     -i megahit/Coassembly.contigs.fa \
-    -a Coassembly_depth.txt \
-    -o Coassembled_bins/coassembly.bin \
+    -a ${datasetID}_depth.txt \
+    -o ${datasetID}/${datasetID}.bin \
     -t 30 \
     -m 2000 \
     -v
@@ -456,10 +464,12 @@ process CHECKM {
   publishDir "$projectDir/results/coassembly/checkM_output"
   
   input:
-    path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
+    tuple \
+      val(datasetID), \
+      path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
 
   output:   
-    path("checkM_output_coassembled_bin/*")
+    path("${datasetID}/*")
   
   script:
   """
@@ -468,7 +478,7 @@ process CHECKM {
     -t 30 \
     -x fa \
     Coassembled_bins \
-    checkM_output_coassembled_bin
+    ${datasetID}
   """
 }
 

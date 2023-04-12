@@ -92,7 +92,7 @@ workflow {
     BOWTIE2_MAP(BOWTIE2_BUILD.out,OUTPUT_UNALIGNED_READS.out)
     SORTSAM(BOWTIE2_MAP.out)
     
-    JGI_SUMMARIZE(SORTSAM.out.flatten().filter ( Path ).collect())
+    JGI_SUMMARIZE(SORTSAM.out)
     
     
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
