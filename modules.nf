@@ -598,7 +598,9 @@ process JGI_SUMMARIZE_SINGLE {
       path(aln)
 
   output:
-    path("${datasetID}_depth.txt")
+    tuple \
+      val(datasetID), \
+      path("${datasetID}_depth.txt")
   
   script:
   """
