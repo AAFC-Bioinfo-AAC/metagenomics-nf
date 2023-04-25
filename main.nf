@@ -115,21 +115,4 @@ workflow {
 }
 
 
-/*
-    // hack to test the CHECKM_SINGLE module
-     Channel.fromPath(params.pseudobins)
-    .map { file ->
-        def key_part1 = file.name.toString().split('.individ.bin.1.fa')
-        key = key_part1
-        return tuple(key, file)
-     }
-    .flatten()
-    .collate (2)
-    .view()
-    .set{ pseudobins_ch }
-
-*/
-
-
-
 

@@ -461,7 +461,7 @@ process METABAT2_BIN_COASSEMBLY {
 process CHECKM {
 
   label 'checkm'
-  publishDir "$projectDir/results/coassembly/checkM_output"
+  publishDir "$projectDir/results/coassembly/checkM2_output"
   
   input:
     tuple \
@@ -469,16 +469,16 @@ process CHECKM {
       path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
 
   output:   
-    path("${datasetID}/*")
+    path("checkM2_output_coassembled_bin/*")
   
   script:
   """
-  checkm lineage_wf \
-    --tab_table \
-    -t 30 \
-    -x fa \
-    Coassembled_bins \
-    ${datasetID}
+  checkm2 predict \
+    --threads 20 \
+    --x fa \
+    --input Coassembled_bins/${datasetID} \
+    --output_directory checkM2_output_coassembled_bin
+    
   """
 }
 
@@ -644,7 +644,7 @@ process METABAT2_BIN_SINGLE {
 process CHECKM_SINGLE {
 
   label 'checkm'
-  publishDir "$projectDir/results/indiv_assemblies/checkM_output"
+  publishDir "$projectDir/results/indiv_assemblies/checkM2_output"
   
   input:
     tuple \
@@ -657,12 +657,11 @@ process CHECKM_SINGLE {
   script:
   """
   mkdir ${datasetID}
-  checkm lineage_wf \
-    --tab_table \
-    -t 40 \
+  checkm2 predict \
+    --threads 20 \
     -x fa \
-    indiv_assembled_bins \
-    ${datasetID}
+    --input indiv_assembled_bins \
+    --output-directory ${datasetID}
   """
 }
 
