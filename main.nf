@@ -45,7 +45,11 @@ include {
   SORTSAM_SINGLE;
   JGI_SUMMARIZE_SINGLE;
   METABAT2_BIN_SINGLE;
-  CHECKM_SINGLE} from './modules.nf'
+  CHECKM_SINGLE;
+  SORT_BINS;
+  SORT_BINS2;
+  GET_BINS;
+  DREP} from './modules.nf'
 
     
 
@@ -98,7 +102,7 @@ workflow {
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
     
     
-    CHECKM(METABAT2_BIN_COASSEMBLY.out)
+    CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
     
     // PART 2 : Individual assemblies
     MEGAHIT_SINGLE(OUTPUT_UNALIGNED_READS.out)
@@ -108,10 +112,17 @@ workflow {
     JGI_SUMMARIZE_SINGLE(SORTSAM_SINGLE.out)
     ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(MEGAHIT_SINGLE.out))
     
-    ch_meta.view()
-    CHECKM_SINGLE(METABAT2_BIN_SINGLE.out)
+    
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
+    SORT_BINS(CHECKM.out)
+    SORT_BINS2(CHECKM_SINGLE.out)
+    GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
+             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
+             METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
 
-
+    DREP(GET_BINS.out)
+    
+    //CHECKM.out.flatten().filter ( Path ).collect(),CHECKM_SINGLE.out.flatten().filter ( Path ).collect())
 }
 
 

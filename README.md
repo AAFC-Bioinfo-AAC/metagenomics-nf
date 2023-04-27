@@ -58,9 +58,14 @@ conda create -n megahit -c bioconda megahit=1.2.
 conda create -n metabat2 -c bioconda metabat2=2.15
 ```
 
-### checkM
+### checkM2
 ```shell
-conda create -n checkm -c bioconda checkm-genome=1.2.2
+conda create -n checkm2 -c bioconda -c conda-forge checkm2
+
+```
+### drep
+```shell
+mamba create -n drep2 -c bioconda checkm-genome drep
 ```
 
 
@@ -172,18 +177,28 @@ Add the merge_tax_files to your R conda env:
 cp -v src/merge_tax_files.R /home/brouardjs/miniconda3/envs/R/bin/
 ```
 
+## Y - checkm2 preparation
 
+```shell
+checkm2 database --download --path /custom/path/
+```
+>The database path can also be set by setting the environmental variable CHECKM2DB using:
+
+```shell
+export CHECKM2DB="path/to/database"
+```
 
 ## 6 - Launch :rocket:
 
 ### 6.1 - Biocluster
 ```shell
- nextflow run main.nf -c nextflow.config -profile biocluster -resume --with report my_report
+ nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
 ```
+
 
 ### 6.2 - Local server (qcshera684498 miniserver)
 ```shell
- nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report
+ nextflow run main.nf -c nextflow.config -profile local -resume -with-report my_report
 ```
 
 

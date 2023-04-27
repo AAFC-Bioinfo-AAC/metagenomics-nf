@@ -464,20 +464,25 @@ process CHECKM {
   publishDir "$projectDir/results/coassembly/checkM2_output"
   
   input:
+    path db
     tuple \
       val(datasetID), \
       path (metabat2_coassembly_outfiles, stageAs: "Coassembled_bins/*")
 
-  output:   
-    path("checkM2_output_coassembled_bin/*")
+  output:
+    tuple \
+      val(datasetID), \
+      path("$datasetID/*")
   
   script:
   """
+  export HDF5_USE_FILE_LOCKING='FALSE'
   checkm2 predict \
+    --database_path $db \
     --threads 20 \
-    --x fa \
-    --input Coassembled_bins/${datasetID} \
-    --output_directory checkM2_output_coassembled_bin
+    -x fa \
+    --input Coassembled_bins \
+    --output_directory ${datasetID}
     
   """
 }
@@ -647,23 +652,143 @@ process CHECKM_SINGLE {
   publishDir "$projectDir/results/indiv_assemblies/checkM2_output"
   
   input:
+    path db
     tuple \
       val(datasetID), \
       path (metabat2_individ_outfiles, stageAs: "indiv_assembled_bins/*")
 
-  output:   
-      path("${datasetID}/*"), optional: true
+  output:
+      tuple \
+        val(datasetID), \
+        path("$datasetID/*")
  
   script:
   """
+  export HDF5_USE_FILE_LOCKING='FALSE'
   mkdir ${datasetID}
   checkm2 predict \
+    --database_path $db \
     --threads 20 \
     -x fa \
     --input indiv_assembled_bins \
     --output-directory ${datasetID}
   """
 }
+
+
+
+process GET_BINS {
+
+  label 'HQ_bins'
+  publishDir "$projectDir/results/bins"
+  
+  input:
+      path (tsv_files, stageAs: "checkM2_hq/*")
+      path (individ_assembled_bins, stageAs: "bins/*")
+      path (coassembled_bins, stageAs: "bins/*")
+      
+  output:
+      path("High_quality_bins.txt")
+      path("hq_bins/*")
+      path("all_bins/*")
+      
+  script:
+  """
+  mkdir hq_bins
+  mkdir all_bins
+  
+  cat checkM2_hq/*.tsv > High_quality_bins.txt
+  
+  cd bins
+  
+  for i in `cut -f 1 ../High_quality_bins.txt` ; do l=\$(readlink \$i.fa); ln -s \$l ../hq_bins ; done
+  
+  cd ..
+  
+  # a bit cray recopy the links in another folder..
+  cd bins
+  for i in `ls *.fa`; do l=\$(readlink \$i); ln -s \$l ../all_bins; done
+  """
+}
+
+
+
+
+
+process SORT_BINS {
+
+  label 'bins'
+  publishDir "$projectDir/results/sorted_bins"
+  
+  input:
+    tuple \
+      val(datasetID), \
+      path (checkm, stageAs: "checkm2_out/*")
+
+  output:   
+      path("${datasetID}_checkM2_hq.tsv")
+ 
+  script:
+  """
+  awk '{if (\$2 > 90 && \$3 < 5) {print}}' checkm2_out/quality_report.tsv >  ${datasetID}_checkM2_hq.tsv
+  """
+}
+
+process SORT_BINS2 {
+
+  label 'bins'
+  publishDir "$projectDir/results/sorted_bins"
+  
+  input:
+    tuple \
+      val(datasetID), \
+      path (checkm, stageAs: "checkm2_out/*")
+      
+  output:   
+      path("${datasetID}_checkM2_i_hq.tsv")
+ 
+  script:
+  """
+  awk '{if (\$2 > 90 && \$3 < 5) {print}}' checkm2_out/quality_report.tsv >  ${datasetID}_checkM2_i_hq.tsv
+  """
+}
+
+
+process DREP {
+  publishDir "$projectDir/results/drep"
+
+  input:
+    path hq_bins_file
+    path (hq_bins, stageAs: "hq_bins/*")
+    path (all_bins, stageAs: "all_bins/*")
+    
+  output:   
+    path("dRep_output/*")
+
+  script:
+  """
+  # Tweak the High quality bins file to be used by drep
+  echo "genome,completeness,contamination,strain_heterogeneity" > header
+  awk {'print \$1".fa,"\$2","\$3","0'} $hq_bins_file > corpus
+  cat header corpus > checkM_results.csv
+  
+  
+  dRep dereplicate -g hq_bins/*.fa \
+    -comp 90 -con 5 -p 40 \
+    -strW 1 -pa 0.90 -sa 0.99 \
+    --S_algorithm fastANI \
+    --multiround_primary_clustering \
+    --greedy_secondary_clustering \
+    --run_tertiary_clustering \
+    --genomeInfo checkM_results.csv dRep_output
+
+  """
+}
+
+
+
+
+
 
 
 
