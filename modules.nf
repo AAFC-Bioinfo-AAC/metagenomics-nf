@@ -786,13 +786,118 @@ process DREP {
 }
 
 
+process QUAST {
+
+  publishDir "$projectDir/results/quast"
+  
+  input:
+    path(coassembly, stageAs: "Megahit_coassembly/*")
+    path(dereplicated_genomes, stageAs: "dRep_output/*")
+
+
+  output:
+    path "QUAST_replicated_MAGs/*"
+    
+    
+    
+  script:
+  """
+  quast.py dRep_output/dereplicated_genomes/*.fa \
+    -o QUAST_replicated_MAGs
+  
+  metaquast.py Megahit_coassembly/Coassembly.contigs.fa \
+    -t 40 \
+    -o QUAST_coassembly
+  """
+
+
+}
 
 
 
+process GTDB_TK {
+
+  publishDir "$projectDir/results/GTDB"
+
+  input:
+    path(db)
+    path(dereplicated_genomes, stageAs: "dRep_output/*")
+ 
+  output:
+    path("GTDBtk_output/*")
+  
+  
+  script:
+  """
+  export GTDBTK_DATA_PATH=$db
+  
+  gtdbtk classify_wf \
+         --genome_dir \
+         dRep_output/dereplicated_genomes \
+         -x fa \
+         --out_dir GTDBtk_output \
+         --cpus 40
+  """
+}
 
 
+process PHYLOPHLAN {
+
+ 
+ publishDir "$projectDir/results/phylophlan"
+
+  input:
+      path(dereplicated_genomes, stageAs: "dRep_output/*")
+ 
+  output:   
+      path("Phylophlan_output/*")
+  
+  script:
+  """
+  # for generating the four default configuration files
+  phylophlan_write_default_configs.sh 
+  
+  phylophlan -d phylophlan \
+             -i dRep_output/dereplicated_genomes \
+             -o Phylophlan_output \
+             --db_type a \
+             -f supermatrix_aa.cfg \
+             --nproc 24 \
+             --diversity low \
+             --fast \
+             --verbose \
+             --genome_extension fa
+  """
+}
 
 
+process COVERM {
+
+ publishDir "$projectDir/results/coverM"
+
+  input:
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
+    path(dereplicated_genomes, stageAs: "dRep_output/*")
+ 
+  output:
+     tuple \
+       val(datasetID), \
+       path("${datasetID}_coverM_output.txt")
+  
+  script:
+  """
+  coverm genome -1 ${final_R1} \
+                -2 ${final_R2} \
+                --genome-fasta-directory dRep_output/dereplicated_genomes \
+                --genome-fasta-extension fa \
+                --min-covered-fraction 1 \
+                --threads 40 -v \
+                --output-file ${datasetID}_coverM_output.txt
+  """
+}
 
 
 

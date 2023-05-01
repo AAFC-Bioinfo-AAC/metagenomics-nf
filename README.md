@@ -63,11 +63,46 @@ conda create -n metabat2 -c bioconda metabat2=2.15
 conda create -n checkm2 -c bioconda -c conda-forge checkm2
 
 ```
+
 ### drep
 ```shell
 mamba create -n drep2 -c bioconda checkm-genome drep
 ```
 
+### quast
+
+
+```shell
+mamba create -n gtdbtk-2.1.1 -c conda-forge -c bioconda gtdbtk=2.1.1
+```
+
+### GTDB
+
+```shell
+mamba create -n gtdbtk-2.1.1 -c conda-forge -c bioconda gtdbtk=2.1.1
+
+conda activate gtdbtk-2.1.1
+
+# downgrade numpy 1.24
+python -m pip uninstall numpy
+# Reinstall numpy
+python -m pip install numpy==1.23.1
+
+
+
+https://ecogenomics.github.io/GTDBTk/installing/index.html
+```
+
+
+### phylophlan
+```shell
+mamba create -n phylophlan -c bioconda phylophlan=3.0.3
+```
+
+### coverm
+```shell
+mamba create -n coverm -c bioconda coverm
+```
 
 
 

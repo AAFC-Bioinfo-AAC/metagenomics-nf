@@ -49,7 +49,8 @@ include {
   SORT_BINS;
   SORT_BINS2;
   GET_BINS;
-  DREP} from './modules.nf'
+  DREP;GTDB_TK;PHYLOPHLAN;COVERM;
+  QUAST} from './modules.nf'
 
     
 
@@ -121,8 +122,12 @@ workflow {
              METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
 
     DREP(GET_BINS.out)
+    QUAST(COASSEMBLY.out, DREP.out)
+    GTDB_TK(params.gtdb_db, DREP.out)
+    PHYLOPHLAN(DREP.out)
+    COVERM(OUTPUT_UNALIGNED_READS.out,DREP.out)
     
-    //CHECKM.out.flatten().filter ( Path ).collect(),CHECKM_SINGLE.out.flatten().filter ( Path ).collect())
+
 }
 
 
