@@ -104,7 +104,23 @@ mamba create -n phylophlan -c bioconda phylophlan=3.0.3
 mamba create -n coverm -c bioconda coverm
 ```
 
+### kraken2 / Bracken
 
+```shell
+mamba create -n kraken2 -c bioconda kraken2=2.1.2
+```
+
+Copy a script to the the bin folder 
+
+```shell
+cp src/combine_mpa.py  your_conda_env_path/kraken2/bin/
+```
+Intall Bracken alongside kraken2
+
+
+```shell
+mamba install -c bioconda bracken
+```
 
 
 ## 4 - Humann3 preparation
@@ -227,7 +243,13 @@ export CHECKM2DB="path/to/database"
 
 ### 6.1 - Biocluster
 ```shell
- nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
+
+# resume
+
+nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report
+
+
+nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
 ```
 
 

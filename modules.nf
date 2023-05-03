@@ -903,11 +903,81 @@ process COVERM {
 
 
 
+process KRAKEN2 {
+publishDir "$projectDir/results/kraken2"
+
+input:
+  path db
+  tuple \
+    val(datasetID), \
+    path(final_R1), \
+    path(final_R2)
+ 
+output:   
+  tuple \
+    val(datasetID), \
+    path("${datasetID}.kraken"), \
+    path("Kraken2_${datasetID}.report.txt")
 
 
+script:
+"""
+kraken2 --use-names \
+--threads 8 \
+--db $db \
+--confidence 0.5 \
+--report Kraken2_${datasetID}.report.txt \
+--use-mpa-style \
+--report-zero-counts \
+--paired ${final_R1} ${final_R2} > ${datasetID}.kraken
+"""
+}
+
+process COMBINE_KRAKEN2 {
+
+publishDir "$projectDir/results/kraken2_summary"
+
+input:
+  path (reports, stageAs: "reports/*")
 
 
+output:
+  path ("Combined_Kraken2.reports.txt")
+  
+script:
 
+"""
+combine_mpa.py \
+         -i reports/*.report.txt \
+         -o Combined_Kraken2.reports.txt
+"""
+}
+
+
+process BRACKEN {
+
+publishDir "$projectDir/results/bracken"
+
+input:
+  path db
+  tuple \
+    val(datasetID), \
+    path(kraken_files), \
+    path(report_files)
+
+output:
+  tuple \
+    val(datasetID), \
+    path ("${datasetID}_bracken_report_species.txt")
+  
+script:
+"""
+bracken -d $db \
+        -i ${report_files} \
+        -r 150 -t 10 -l S \
+        -o ${datasetID}_bracken_report_species.txt
+"""
+}
 
 
 

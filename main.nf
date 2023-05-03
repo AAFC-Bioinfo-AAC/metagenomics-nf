@@ -50,7 +50,7 @@ include {
   SORT_BINS2;
   GET_BINS;
   DREP;GTDB_TK;PHYLOPHLAN;COVERM;
-  QUAST} from './modules.nf'
+  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN} from './modules.nf'
 
     
 
@@ -127,7 +127,12 @@ workflow {
     PHYLOPHLAN(DREP.out)
     COVERM(OUTPUT_UNALIGNED_READS.out,DREP.out)
     
-
+    KRAKEN2(params.kraken2, OUTPUT_UNALIGNED_READS.out)
+    
+    COMBINE_KRAKEN2(KRAKEN2.out.flatten().filter ( Path ).collect())
+    BRACKEN(params.kraken2, KRAKEN2.out)
+    
+    
 }
 
 
