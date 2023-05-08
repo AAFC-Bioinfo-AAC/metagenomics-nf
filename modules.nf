@@ -1,3 +1,23 @@
+process RENAME_SEQUENCES {
+
+  publishDir "$baseDir/data"
+
+  input:
+    path (seq, stageAs: "data/*")
+    path map_file
+    
+  output:
+    tuple \
+      path("log.txt"), \
+      path("renamed/*")
+  
+  script:
+  """
+  mkdir renamed
+  rename_sequences.py $map_file ./data renamed/ fastq.gz > log.txt
+  """
+}
+
 process QUALITY_FILTERING {
 
   publishDir "$projectDir/results/trimmed_reads"

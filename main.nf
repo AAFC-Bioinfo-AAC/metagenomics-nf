@@ -19,7 +19,8 @@ reads    : $params.reads
 results  : $params.results
 """
 
-include { 
+include {
+  RENAME_SEQUENCES;
   QUALITY_FILTERING;
   BOWTIE2;
   SAM2BAM;
@@ -52,25 +53,71 @@ include {
   DREP;GTDB_TK;PHYLOPHLAN;COVERM;
   QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN} from './modules.nf'
 
+/* 
+ * sub workflows
+ */
+
+
+
+/*
+ * rename: This workflow rename sequences by sample id given a map_file is given.
+ */
+workflow rename {
     
+    println "You are using the *rename* subworkflow."
+    take: data
+          map_file
+    main:
+      RENAME_SEQUENCES(data.collect(), map_file)
+      
+    emit:
+      RENAME_SEQUENCES.out
+}
+
+
+/*
+ * get_reads_pairs: This workflow creates the `read_pairs_ch` channel that emits tuples containing three elements:
+ * the pair ID, the first read-pair file and the second read-pair file.
+ */
+workflow get_reads_pairs {
+    
+    println "You are using the *get_reads_pairs* subworkflow."
+    take: data
+    
+    main:
+       data.flatten()
+       .filter( ~/^.*fastq.gz/ )
+       .map { file ->
+          def key_part1 = file.name.toString().tokenize('_').get(0)
+          key = key_part1
+          return tuple(key, file)
+       }
+       .groupTuple(size:2)
+       .flatten()
+       .collate ( 3 )
+       .set { read_pairs_ch }
+      
+    emit:
+      read_pairs_ch
+}
+
+
+
 
 /* 
  * main pipeline logic
  */
 workflow {
 
-    // PART 1: Preparation of the raw reads channel
-    // Create the `read_pairs_ch` channel that emits tuples containing three elements:
-    // the pair ID, the first read-pair file and the second read-pair file
-    
-    Channel
-        .fromFilePairs( params.reads, flat:true)
-        .ifEmpty { error "Cannot find any reads matching: ${params.reads}" }
-        //.view()
-        .set { read_pairs_ch } 
+    // using the rename workflow with 2 inputs
+    rename( Channel.fromPath( params.reads), params.map_file )
 
+    // using the get_reads_pairs workflow
+    get_reads_pairs(rename.out)
+    
+  
     // PART 1: Data preparation
-    QUALITY_FILTERING(read_pairs_ch)
+    QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
     SAM2BAM(BOWTIE2.out)
@@ -98,11 +145,7 @@ workflow {
     SORTSAM(BOWTIE2_MAP.out)
     
     JGI_SUMMARIZE(SORTSAM.out)
-    
-    
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
-    
-    
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
     
     // PART 2 : Individual assemblies
@@ -131,8 +174,6 @@ workflow {
     
     COMBINE_KRAKEN2(KRAKEN2.out.flatten().filter ( Path ).collect())
     BRACKEN(params.kraken2, KRAKEN2.out)
-    
-    
 }
 
 
