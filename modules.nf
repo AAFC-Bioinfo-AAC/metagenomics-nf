@@ -19,7 +19,7 @@ process RENAME_SEQUENCES {
 }
 
 process QUALITY_FILTERING {
-
+  
   publishDir "$projectDir/results/trimmed_reads"
 
   input: 
@@ -57,6 +57,9 @@ process QUALITY_FILTERING {
 
 process BOWTIE2 {
 
+  label 'mem_medium'
+  label 'cpus_small'
+  
   publishDir "$projectDir/results/decontamination/genome/bowtie2"
   input:
     path genome, stageAs: "genome" //to rename the folder containing the bt2 files
@@ -150,6 +153,9 @@ process OUTPUT_UNALIGNED_READS {
 
 process KAIJU {
 
+  label 'mem_medium'
+  label 'cpus_large'
+  
   publishDir "$projectDir/results/kaiju/kaiju_1"
 
   input:
@@ -179,6 +185,9 @@ process KAIJU {
 
 process KAIJU_TAX_TABLE {
 
+  label 'mem_medium'
+  label 'cpus_large'
+  
   publishDir "$projectDir/results/kaiju/kaiju_tax_table"
 
   input:
@@ -205,6 +214,9 @@ process KAIJU_TAX_TABLE {
 
 process KAIJU_FULL_TAX_TABLE {
 
+  label 'mem_medium'
+  label 'cpus_large'
+  
   publishDir "$projectDir/results/kaiju/kaiju_full_tax_table"
 
   input:
@@ -334,6 +346,9 @@ process HUMANN_ABUNDANCE {
 process COASSEMBLY {
 
   label 'megahit'
+  label 'mem_xlarge'
+  label 'cpus_xlarge'
+  
   publishDir "$projectDir/results/coassembly/megahit"
 
   input:
@@ -427,6 +442,8 @@ process SORTSAM {
 process JGI_SUMMARIZE {
 
   label 'metabat2'
+  label 'cpus_medium'
+  
   publishDir "$projectDir/results/coassembly/jgi"
 
   input: 
@@ -451,6 +468,8 @@ process JGI_SUMMARIZE {
 process METABAT2_BIN_COASSEMBLY {
 
   label 'metabat2'
+  label 'cpus_medium'
+  
   publishDir "$projectDir/results/coassembly/metabat2_bins"
   
   input:
@@ -481,6 +500,8 @@ process METABAT2_BIN_COASSEMBLY {
 process CHECKM {
 
   label 'checkm'
+  label 'cpus_medium'
+  
   publishDir "$projectDir/results/coassembly/checkM2_output"
   
   input:
@@ -510,8 +531,11 @@ process CHECKM {
 // modules based on individual assemblies
 
 process MEGAHIT_SINGLE {
-
+  
   label 'megahit'
+  label 'mem_xlarge'
+  label 'cpus_xlarge'
+  
   publishDir "$projectDir/results/indiv_assemblies/megahit"
 
   input:
@@ -640,6 +664,8 @@ process JGI_SUMMARIZE_SINGLE {
 process METABAT2_BIN_SINGLE {
 
   label 'metabat2'
+  label 'cpus_medium'
+  
   publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
   
   input:
@@ -669,6 +695,8 @@ process METABAT2_BIN_SINGLE {
 process CHECKM_SINGLE {
 
   label 'checkm'
+  label 'cpus_medium'
+  
   publishDir "$projectDir/results/indiv_assemblies/checkM2_output"
   
   input:
@@ -808,6 +836,8 @@ process DREP {
 
 process QUAST {
 
+  label 'cpus_large'
+  
   publishDir "$projectDir/results/quast"
   
   input:
@@ -837,6 +867,8 @@ process QUAST {
 
 process GTDB_TK {
 
+  label 'cpus_large'
+  
   publishDir "$projectDir/results/GTDB"
 
   input:
@@ -863,6 +895,7 @@ process GTDB_TK {
 
 process PHYLOPHLAN {
 
+ label 'cpus_large'
  
  publishDir "$projectDir/results/phylophlan"
 
@@ -924,6 +957,9 @@ process COVERM {
 
 
 process KRAKEN2 {
+
+label 'cpus_large'
+
 publishDir "$projectDir/results/kraken2"
 
 input:
@@ -975,6 +1011,8 @@ combine_mpa.py \
 
 
 process BRACKEN {
+
+label 'cpus_large'
 
 publishDir "$projectDir/results/bracken"
 
