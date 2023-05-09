@@ -80,51 +80,24 @@ process BOWTIE2 {
   script:
   """
   bowtie2 -p 8 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
-  """
-}
-
-
-process SAM2BAM {
-
-  label 'samtools'
-  publishDir "$projectDir/results/decontamination/unmapped_bam"
-
-  input: 
-    tuple \
-      val(datasetID), \
-      path(aln)
- 
-  output:   
-    tuple \
-      val(datasetID), \
-      path("${datasetID}_unmapped.bam")
   
-  script:
-  """
-  samtools view -@ 30 -bS -f 12 -F 256 ${aln} > ${datasetID}_unmapped.bam
-  """
-}
-
-process SORTBAM {
-
-  label 'samtools'
-  publishDir "$projectDir/results/decontamination/unmapped_sorted_bam"
-
-  input: 
-    tuple \
-      val(datasetID), \
-      path(aln)
- 
-  output:   
-    tuple \
-      val(datasetID), \
-      path("${datasetID}_unmapped.sorted.bam")
+  # step2 (old SAM2BAM process)
+  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam
+  # remove temp files
+  rm -v ${datasetID}.sam
   
-  script:
-  """
-  samtools sort -@ 2 -n ${aln} > ${datasetID}_unmapped.sorted.bam
+  
+  # step3 (old SORTBAM process)
+  samtools sort -@ 2 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam
+  # remove temp files
+  rm -v ${datasetID}_unmapped.bam
+  
   """
 }
+
+
+
+
 
 
 process OUTPUT_UNALIGNED_READS {
@@ -147,6 +120,9 @@ process OUTPUT_UNALIGNED_READS {
   bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
   gzip ${datasetID}_R1.fastq
   gzip ${datasetID}_R2.fastq
+  
+  # remove temp files
+  readlink -f ${aln} | xargs rm -v
   """
 }
 
@@ -346,7 +322,7 @@ process HUMANN_ABUNDANCE {
 process COASSEMBLY {
 
   label 'megahit'
-  label 'mem_xlarge'
+  label 'mem_xxlarge'
   label 'cpus_xlarge'
   
   publishDir "$projectDir/results/coassembly/megahit"
@@ -366,7 +342,7 @@ process COASSEMBLY {
           -2 coassembly_R2.fastq.gz \
           -o Megahit_coassembly \
           --out-prefix Coassembly \
-          -t 30 \
+          -t 100 \
           --min-contig-len 1000
   """
 }
@@ -555,7 +531,7 @@ process MEGAHIT_SINGLE {
           -2 ${final_R2} \
           -o ${datasetID} \
           --out-prefix ${datasetID} \
-          -t 40 \
+          -t 80 \
           --min-contig-len 1000
   """
 }

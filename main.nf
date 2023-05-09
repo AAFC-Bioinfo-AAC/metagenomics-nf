@@ -23,8 +23,6 @@ include {
   RENAME_SEQUENCES;
   QUALITY_FILTERING;
   BOWTIE2;
-  SAM2BAM;
-  SORTBAM;
   OUTPUT_UNALIGNED_READS;
   KAIJU;
   KAIJU_TAX_TABLE;
@@ -120,9 +118,7 @@ workflow {
     QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
-    SAM2BAM(BOWTIE2.out)
-    SORTBAM(SAM2BAM.out)
-    OUTPUT_UNALIGNED_READS(SORTBAM.out)
+    OUTPUT_UNALIGNED_READS(BOWTIE2.out)
     KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
     ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)   
