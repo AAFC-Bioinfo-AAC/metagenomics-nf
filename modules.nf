@@ -14,7 +14,7 @@ process RENAME_SEQUENCES {
   script:
   """
   mkdir renamed
-  rename_sequences.py $map_file ./data renamed/ fastq.gz > log.txt
+  $baseDir/src/rename_sequences.py $map_file ./data renamed/ fastq.gz > log.txt
   """
 }
 
@@ -75,7 +75,7 @@ process BOWTIE2 {
   output:   
     tuple \
       val(datasetID), \
-      path("${datasetID}.sam")
+      path("${datasetID}_unmapped.sorted.bam")
   
   script:
   """
@@ -256,6 +256,9 @@ process CAT_FASTQ {
 
 
 process HUMANN_RUN {
+
+  label 'mem_medium'
+  label 'cpus_large'
 
   publishDir "$projectDir/results/humann/humann_run"
   input:
@@ -1013,7 +1016,66 @@ bracken -d $db \
 """
 }
 
+process DRAM_PREPARE_DB {
 
+label 'cpus_large'
+
+
+input:
+  path gene_ko_link_loc
+  path kegg_loc
+  path viral_loc
+
+output:
+  path ("DRAM_data/*")
+  
+script:
+"""
+DRAM-setup.py prepare_databases \
+--verbose --threads 40 \
+--gene_ko_link_loc $gene_ko_link_loc \
+--kegg_loc $kegg_loc \
+--viral_loc $viral_loc \
+ --output_dir DRAM_data
+"""
+
+}
+
+process DRAM_ANNOTATION {
+
+label 'cpus_large'
+
+
+input:
+  path (dereplicated_genomes, stageAs: "dRep_output/*")
+  path (GTDB, stageAs: "GTDB_TK_output/*")
+  
+
+output:
+  path ("DRAM_annotated_MAGs/*")
+  
+
+  
+
+script:
+"""
+tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
+cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
+
+
+DDRAM.py annotate \
+  -i 'dRep_output/dereplicated_genomes/*.fa' \
+  -o DRAM_annotated_MAGs \
+  --verbose \
+  --threads 40 \
+  --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
+"""
+
+
+
+
+
+}
 
 
 

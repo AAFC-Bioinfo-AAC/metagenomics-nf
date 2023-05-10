@@ -10,6 +10,7 @@
  */
 nextflow.enable.dsl = 2
 
+
 log.info """\
 M E T A G E N O M I C  -  Workflow - AAFC    v 0.1 
 ================================
@@ -49,7 +50,7 @@ include {
   SORT_BINS2;
   GET_BINS;
   DREP;GTDB_TK;PHYLOPHLAN;COVERM;
-  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN} from './modules.nf'
+  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN;DRAM_PREPARE_DB;DRAM_ANNOTATION} from './modules.nf'
 
 /* 
  * sub workflows
@@ -170,6 +171,13 @@ workflow {
     
     COMBINE_KRAKEN2(KRAKEN2.out.flatten().filter ( Path ).collect())
     BRACKEN(params.kraken2, KRAKEN2.out)
+    
+    // There is an alrady set-up database on the biocluster
+    //DRAM_PREPARE_DB(params.gene_ko_link_loc, params.kegg_loc, params.viral_loc)
+    DRAM_ANNOTATION(DREP.out, GTDB_TK.out)
+    
+    
+    
 }
 
 
