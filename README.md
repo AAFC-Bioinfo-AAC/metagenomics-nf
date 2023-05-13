@@ -122,6 +122,21 @@ Intall Bracken alongside kraken2
 mamba install -c bioconda bracken
 ```
 
+J'ai eu de petits problèmes en cours de route avec bracken. En effet, bracken-build n'a pas été préparée dans la nouvelle db sur le biocluster. Je me suis un dossier sur mon /isilon et j'ai fait des liens de tous les fichiers de la bd kraken. Puis j'ai roulé bracken-build dans mon dossier.
+
+```shell
+qlogin -pe smp4
+cd ~/jsb/kraken
+# Je me suis fait des liens de la db partagee
+
+(kraken2) [brouardjs@biocomp-0-1 kraken_nt]$ bracken-build -d /isilon/common/reference/databases/kraken2_ncbi_nt/kraken2_ncbi_nt_20230309 -t 4 -k 35 -l 100
+```
+
+
+
+
+
+
 
 ## 4 - Humann3 preparation
 ### 4.1 - Download databases with the built in humann_databases command

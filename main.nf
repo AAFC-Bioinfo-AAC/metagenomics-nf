@@ -170,7 +170,7 @@ workflow {
     KRAKEN2(params.kraken2, OUTPUT_UNALIGNED_READS.out)
     
     COMBINE_KRAKEN2(KRAKEN2.out.flatten().filter ( Path ).collect())
-    BRACKEN(params.kraken2, KRAKEN2.out)
+    //BRACKEN(params.kraken2, KRAKEN2.out)
     
     // There is an alrady set-up database on the biocluster
     //DRAM_PREPARE_DB(params.gene_ko_link_loc, params.kegg_loc, params.viral_loc)

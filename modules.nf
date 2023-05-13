@@ -79,16 +79,16 @@ process BOWTIE2 {
   
   script:
   """
-  bowtie2 -p 8 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam
+  bowtie2 -p 8 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam &&
   
   # step2 (old SAM2BAM process)
-  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam
+  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam &&
   # remove temp files
-  rm -v ${datasetID}.sam
+  rm -v ${datasetID}.sam &&
   
   
   # step3 (old SORTBAM process)
-  samtools sort -@ 2 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam
+  samtools sort -@ 2 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam &&
   # remove temp files
   rm -v ${datasetID}_unmapped.bam
   
@@ -120,9 +120,6 @@ process OUTPUT_UNALIGNED_READS {
   bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
   gzip ${datasetID}_R1.fastq
   gzip ${datasetID}_R2.fastq
-  
-  # remove temp files
-  readlink -f ${aln} | xargs rm -v
   """
 }
 
@@ -938,6 +935,7 @@ process COVERM {
 process KRAKEN2 {
 
 label 'cpus_large'
+label 'mem_medium'
 
 publishDir "$projectDir/results/kraken2"
 
@@ -1045,7 +1043,6 @@ process DRAM_ANNOTATION {
 
 label 'cpus_large'
 
-
 input:
   path (dereplicated_genomes, stageAs: "dRep_output/*")
   path (GTDB, stageAs: "GTDB_TK_output/*")
@@ -1053,9 +1050,6 @@ input:
 
 output:
   path ("DRAM_annotated_MAGs/*")
-  
-
-  
 
 script:
 """
@@ -1070,12 +1064,60 @@ DDRAM.py annotate \
   --threads 40 \
   --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
 """
-
-
-
-
-
 }
+
+
+
+process DRAM_DISTILLATION {
+
+label 'cpus_large'
+
+input:
+  path (dereplicated_genomes, stageAs: "dRep_output/*")
+  path (GTDB, stageAs: "GTDB_TK_output/*")
+  
+
+output:
+  path ("DRAM_annotated_MAGs/*")
+
+script:
+"""
+tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
+cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
+
+
+DDRAM.py annotate \
+  -i 'dRep_output/dereplicated_genomes/*.fa' \
+  -o DRAM_annotated_MAGs \
+  --verbose \
+  --threads 40 \
+  --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
+"""
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
