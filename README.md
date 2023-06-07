@@ -132,6 +132,91 @@ cd ~/jsb/kraken
 (kraken2) [brouardjs@biocomp-0-1 kraken_nt]$ bracken-build -d /isilon/common/reference/databases/kraken2_ncbi_nt/kraken2_ncbi_nt_20230309 -t 4 -k 35 -l 100
 ```
 
+Cette commande a ete hyper longue et n'a rien donnee!
+
+
+
+### DRAM
+
+J'ai consulte [la page GitHub de ce projet](https://github.com/WrightonLabCSU/DRAM) et j'ai utilise le .yaml
+
+En fait le wiki est très riche en informations!
+
+```shell
+ mamba env create -n DRAM -f dram_environment.yaml
+```
+
+Avec Nextflow, ça devient important de spécifier l'emplacement de la db.
+
+J'ai trouvé cette explication :
+
+DRAM’s config file is kept in the same directory as the installed DRAM package and this can be a problem for many users depending on how their system is set up and who has the ability to install and update packages. 
+
+https://github.com/WrightonLabCSU/DRAM/wiki/3a.-Running-DRAM
+
+Le mieux est d'utiliser la DB preparee par ARUN et d'importer la configuration sans UNIREF
+
+```shell
+DRAM-setup.py import_config --config_loc /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/DRAM_db_20220415_without_uniref.conf
+
+DRAM-setup.py print_config
+2023-05-25 12:43:54,302 - Logging to console
+Processed search databases
+KEGG db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb
+KOfam db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kofam_profiles.hmm
+KOfam KO list: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb
+UniRef db: None
+Pfam db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/pfam.mmspro
+dbCAN db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/dbCAN-HMMdb-V10.txt
+RefSeq Viral db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/refseq_viral.20220416.mmsdb
+MEROPS peptidase db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/peptidases.20220416.mmsdb
+VOGDB db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_latest_hmms.txt
+
+Descriptions of search database entries
+Pfam hmm dat: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/Pfam-A.hmm.dat.gz
+dbCAN family activities: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/CAZyDB.07292021.fam-activities.txt
+VOG annotations: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_annotations_latest.tsv.gz
+
+Description db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/DRAM_db_20220415_without_uniref.sqlite
+
+DRAM distillation sheets
+Genome summary form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/genome_summary_form.20220415.tsv
+Module step form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/module_step_form.20220415.tsv
+ETC module database: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/etc_mdoule_database.20220415.tsv
+Function heatmap form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/function_heatmap_form.20220415.tsv
+AMG database: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/amg_database.20220415.tsv
+```
+
+vendredi!
+DRAM.py annotate --config_loc ./DRAM_db_20220415_without_uniref.conf -i 'dRep_output/dereplicated_genomes/*.fa' --threads 10 --keep_tmp_dir --low_mem_mode -o test
+
+DRAM.py annotate --config_loc ./my_config.json -i 'dRep_output/dereplicated_genomes/*.fa' --threads 10 --keep_tmp_dir --low_mem_mode -o test
+
+--custom_hmm_name hmm_A \
+        --custom_hmm_loc ./profils_cutoffs.hmm\
+
+
+Pour reproduire l'erreur :
+
+
+rm -rf test;DRAM.py annotate -i 'dRep_output/dereplicated_genomes/*.fa' \
+	--config_loc ./my_config.json \
+	--verbose \
+	-o test \
+	--threads 1
+
+DRAM.py annotate -i 'dRep_output/dereplicated_genomes/*.fa' \
+	--config_loc ./my_config.json \
+	--verbose \
+	-o test_10 \
+	--keep_tmp_dir \
+	--threads 10
+
+
+
+
+
+
 
 
 

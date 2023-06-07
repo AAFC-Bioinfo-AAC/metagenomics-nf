@@ -50,7 +50,8 @@ include {
   SORT_BINS2;
   GET_BINS;
   DREP;GTDB_TK;PHYLOPHLAN;COVERM;
-  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN;DRAM_PREPARE_DB;DRAM_ANNOTATION} from './modules.nf'
+  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN;DRAM_PREPARE_DB;DRAM_ANNOTATION;
+  DRAM_DISTILLATION} from './modules.nf'
 
 /* 
  * sub workflows
@@ -174,10 +175,8 @@ workflow {
     
     // There is an alrady set-up database on the biocluster
     //DRAM_PREPARE_DB(params.gene_ko_link_loc, params.kegg_loc, params.viral_loc)
-    DRAM_ANNOTATION(DREP.out, GTDB_TK.out)
-    
-    
-    
+    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+    DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
 }
 
 

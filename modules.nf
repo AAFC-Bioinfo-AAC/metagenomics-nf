@@ -1016,8 +1016,11 @@ bracken -d $db \
 
 process DRAM_PREPARE_DB {
 
-label 'cpus_large'
+label 'cpus_xlarge'
+label 'mem_xlarge' // Setting up DRAM can take a long time (up to 5 hours)
+                   // and uses a large about of memory (512 gb) by default
 
+publishDir "$projectDir/dram/db"
 
 input:
   path gene_ko_link_loc
@@ -1025,43 +1028,63 @@ input:
   path viral_loc
 
 output:
-  path ("DRAM_data/*")
+    path "DRAM_data/*"
+    path 'config_infos.txt'
+    path 'my_config.json', emit: DRAM_config
   
 script:
 """
 DRAM-setup.py prepare_databases \
---verbose --threads 40 \
+--verbose --threads 10 \
 --gene_ko_link_loc $gene_ko_link_loc \
 --kegg_loc $kegg_loc \
 --viral_loc $viral_loc \
  --output_dir DRAM_data
+
+# Step 2 : print the config
+# May be useful to see if it works and where are the file
+DRAM-setup.py print_config > config_infos.txt
+
+# Step 3 : export the config so that other nextflow process can use it!
+DRAM-setup.py export_config > my_config.json
+
 """
 
 }
 
 process DRAM_ANNOTATION {
 
-label 'cpus_large'
+
+label 'cpus_xxlarge'
+label 'mem_xxlarge'
+
+publishDir "$projectDir/dram/annotation"
 
 input:
+  path dram_config
   path (dereplicated_genomes, stageAs: "dRep_output/*")
   path (GTDB, stageAs: "GTDB_TK_output/*")
   
 
 output:
-  path ("DRAM_annotated_MAGs/*")
+  path ("DRAM_annotated_MAGs/*"), emit: DRAM_MAGs
+  path 'config_infos.txt'
 
 script:
 """
 tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
 cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
 
+DRAM-setup.py import_config --config_loc $dram_config
 
-DDRAM.py annotate \
+DRAM-setup.py print_config > config_infos.txt
+
+DRAM.py annotate \
   -i 'dRep_output/dereplicated_genomes/*.fa' \
   -o DRAM_annotated_MAGs \
   --verbose \
-  --threads 40 \
+  --config_loc $dram_config \
+  --threads 20 \
   --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
 """
 }
@@ -1070,28 +1093,22 @@ DDRAM.py annotate \
 
 process DRAM_DISTILLATION {
 
-label 'cpus_large'
+publishDir "$projectDir/dram/distillation"
 
 input:
-  path (dereplicated_genomes, stageAs: "dRep_output/*")
-  path (GTDB, stageAs: "GTDB_TK_output/*")
+  path (annots, stageAs: "DRAM_annotated_MAGs/*")
   
-
 output:
-  path ("DRAM_annotated_MAGs/*")
+  path ("MAG_DRAM_distilled_summaries/*")
 
 script:
 """
-tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
-cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
-
-
-DDRAM.py annotate \
-  -i 'dRep_output/dereplicated_genomes/*.fa' \
-  -o DRAM_annotated_MAGs \
-  --verbose \
-  --threads 40 \
-  --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
+DRAM.py distill \
+  -i DRAM_annotated_MAGs/annotations.tsv \
+  -o MAG_DRAM_distilled_summaries \
+  --trna_path DRAM_annotated_MAGs/trnas.tsv \
+  --rrna_path DRAM_annotated_MAGs/rrnas.tsv \
+  --genomes_per_product 575
 """
 }
 
