@@ -928,15 +928,10 @@ process COVERM {
   """
 }
 
-
-
-
-
 process KRAKEN2 {
 
-label 'cpus_large'
-label 'mem_medium'
-
+label 'cpus_xlarge'
+label 'mem_xlarge'
 publishDir "$projectDir/results/kraken2"
 
 input:
@@ -949,38 +944,65 @@ input:
 output:   
   tuple \
     val(datasetID), \
-    path("${datasetID}.kraken"), \
     path("Kraken2_${datasetID}.report.txt")
-
 
 script:
 """
 kraken2 --use-names \
 --threads 8 \
 --db $db \
---confidence 0.5 \
+--paired ${final_R1} ${final_R2} \
 --report Kraken2_${datasetID}.report.txt \
---use-mpa-style \
---report-zero-counts \
---paired ${final_R1} ${final_R2} > ${datasetID}.kraken
+--report-zero-counts
 """
 }
 
+process KRAKEN2_MPA {
+
+label 'cpus_xlarge'
+label 'mem_xlarge'
+publishDir "$projectDir/results/kraken2_mpa"
+
+input:
+  path db
+   tuple \
+    val(datasetID), \
+    path(final_R1), \
+    path(final_R2)
+ 
+output:   
+  tuple \
+    val(datasetID), \
+    path("Kraken2_${datasetID}.mpa.report.txt")
+
+script:
+"""
+kraken2 --use-names \
+--threads 8 \
+--db $db \
+--report Kraken2_${datasetID}.mpa.report.txt \
+--use-mpa-style \
+--report-zero-counts \
+--paired ${final_R1} ${final_R2}
+"""
+}
+
+
+
 process COMBINE_KRAKEN2 {
 
+label 'cpus_large'
 publishDir "$projectDir/results/kraken2_summary"
 
 input:
   path (reports, stageAs: "reports/*")
 
-
 output:
   path ("Combined_Kraken2.reports.txt")
   
 script:
-
 """
-combine_mpa.py \
+$baseDir/src/combine_mpa.py \
          -i reports/*.report.txt \
          -o Combined_Kraken2.reports.txt
 """
@@ -990,7 +1012,6 @@ combine_mpa.py \
 process BRACKEN {
 
 label 'cpus_large'
-
 publishDir "$projectDir/results/bracken"
 
 input:
@@ -1012,45 +1033,40 @@ bracken -d $db \
         -r 150 -t 10 -l S \
         -o ${datasetID}_bracken_report_species.txt
 """
-}
+} 
 
-process DRAM_PREPARE_DB {
 
-label 'cpus_xlarge'
-label 'mem_xlarge' // Setting up DRAM can take a long time (up to 5 hours)
-                   // and uses a large about of memory (512 gb) by default
 
-publishDir "$projectDir/dram/db"
+/*
+ * This process uses a custom script for producing Bracken files at various taxonomy levels
+ * Author: Xavier Monger (Anthony Vicent's lab), adapted by Jean-Simon Brouard
+ */
+ 
+process BRACKEN_ALT {
+
+label 'cpus_large'
+publishDir "$projectDir/results/bracken_smart"
 
 input:
-  path gene_ko_link_loc
-  path kegg_loc
-  path viral_loc
+  path db
+  path (dereplicated_genomes, stageAs: "k2_assembly_reports/*")
 
 output:
-    path "DRAM_data/*"
-    path 'config_infos.txt'
-    path 'my_config.json', emit: DRAM_config
-  
+  path ("braken/*")
+  path ("bracken_abundance_files/*")
+
 script:
 """
-DRAM-setup.py prepare_databases \
---verbose --threads 10 \
---gene_ko_link_loc $gene_ko_link_loc \
---kegg_loc $kegg_loc \
---viral_loc $viral_loc \
- --output_dir DRAM_data
+# produce_bracken_nf.sh call braken which is the path of the kraken2 conda env
+# but it calls also 2 scripts that are located in the src directory
+# We therefore specify the location of the kraken2 db and the location of these
+# scripts using the built-in variable baseDir
 
-# Step 2 : print the config
-# May be useful to see if it works and where are the file
-DRAM-setup.py print_config > config_infos.txt
-
-# Step 3 : export the config so that other nextflow process can use it!
-DRAM-setup.py export_config > my_config.json
-
+$baseDir/src/produce_bracken_nf.sh $params.kraken2 $baseDir/src
 """
-
 }
+
+
 
 process DRAM_ANNOTATION {
 

@@ -50,7 +50,7 @@ include {
   SORT_BINS2;
   GET_BINS;
   DREP;GTDB_TK;PHYLOPHLAN;COVERM;
-  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN;DRAM_PREPARE_DB;DRAM_ANNOTATION;
+  QUAST;KRAKEN2;COMBINE_KRAKEN2;BRACKEN;BRACKEN_ALT;DRAM_ANNOTATION;
   DRAM_DISTILLATION} from './modules.nf'
 
 /* 
@@ -102,8 +102,6 @@ workflow get_reads_pairs {
 }
 
 
-
-
 /* 
  * main pipeline logic
  */
@@ -115,7 +113,6 @@ workflow {
     // using the get_reads_pairs workflow
     get_reads_pairs(rename.out)
     
-  
     // PART 1: Data preparation
     QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
@@ -169,12 +166,12 @@ workflow {
     COVERM(OUTPUT_UNALIGNED_READS.out,DREP.out)
     
     KRAKEN2(params.kraken2, OUTPUT_UNALIGNED_READS.out)
-    
-    COMBINE_KRAKEN2(KRAKEN2.out.flatten().filter ( Path ).collect())
-    //BRACKEN(params.kraken2, KRAKEN2.out)
-    
+    KRAKEN2_MPA(params.kraken2, OUTPUT_UNALIGNED_READS.out)
+    COMBINE_KRAKEN2(KRAKEN2_MPA.out.flatten().filter ( Path ).collect())
+    BRACKEN_ALT(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
     // There is an alrady set-up database on the biocluster
     //DRAM_PREPARE_DB(params.gene_ko_link_loc, params.kegg_loc, params.viral_loc)
+    
     DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
     DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
 }

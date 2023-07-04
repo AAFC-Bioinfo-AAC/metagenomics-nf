@@ -143,7 +143,10 @@ J'ai consulte [la page GitHub de ce projet](https://github.com/WrightonLabCSU/DR
 En fait le wiki est très riche en informations!
 
 ```shell
- mamba env create -n DRAM -f dram_environment.yaml
+conda create -n DRAM_2023 -c bioconda dram
+conda activate DRAM_2023
+conda install -c bioconda mmseqs2
+
 ```
 
 Avec Nextflow, ça devient important de spécifier l'emplacement de la db.
@@ -214,7 +217,12 @@ DRAM.py annotate -i 'dRep_output/dereplicated_genomes/*.fa' \
 
 
 
+Pour fixer le bug : raise subprocess.SubprocessError(f"The subcommand {' '.join(command)} experienced an error, see the log for more info.")
 
+il faut simplement installer la dernière version de mmseqs dans l'environnement conda
+
+conda activate DRAM_2023
+conda install -c bioconda mmseqs2
 
 
 
