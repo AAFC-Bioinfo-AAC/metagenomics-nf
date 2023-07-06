@@ -228,7 +228,7 @@ process MERGE_TAX_FILES {
   
   script:
   """
-  merge_tax_files.R
+  $baseDir/src/merge_tax_files.R
   """
 }
 
@@ -321,7 +321,6 @@ process HUMANN_ABUNDANCE {
 
 process COASSEMBLY {
 
-  label 'megahit'
   label 'mem_xxlarge'
   label 'cpus_xlarge'
   
@@ -396,8 +395,6 @@ bowtie2 -x coassembly/coassembly \
 
 process SORTSAM {
 
-  label 'samtools'
-
   input: 
     tuple \
       val(datasetID), \
@@ -417,7 +414,6 @@ process SORTSAM {
 
 process JGI_SUMMARIZE {
 
-  label 'metabat2'
   label 'cpus_medium'
   
   publishDir "$projectDir/results/coassembly/jgi"
@@ -443,7 +439,6 @@ process JGI_SUMMARIZE {
 
 process METABAT2_BIN_COASSEMBLY {
 
-  label 'metabat2'
   label 'cpus_medium'
   
   publishDir "$projectDir/results/coassembly/metabat2_bins"
@@ -475,7 +470,6 @@ process METABAT2_BIN_COASSEMBLY {
 
 process CHECKM {
 
-  label 'checkm'
   label 'cpus_medium'
   
   publishDir "$projectDir/results/coassembly/checkM2_output"
@@ -508,7 +502,6 @@ process CHECKM {
 
 process MEGAHIT_SINGLE {
   
-  label 'megahit'
   label 'mem_xlarge'
   label 'cpus_xlarge'
   
@@ -589,8 +582,6 @@ process BOWTIE2_MAP_SINGLE {
 
 
 process SORTSAM_SINGLE {
-
-  label 'samtools'
   
   input: 
     tuple \
@@ -614,7 +605,6 @@ process SORTSAM_SINGLE {
 
 process JGI_SUMMARIZE_SINGLE {
 
-  label 'metabat2'
   publishDir "$projectDir/results/indiv_assemblies/jgi"
 
   input: 
@@ -639,7 +629,6 @@ process JGI_SUMMARIZE_SINGLE {
 
 process METABAT2_BIN_SINGLE {
 
-  label 'metabat2'
   label 'cpus_medium'
   
   publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
@@ -670,7 +659,6 @@ process METABAT2_BIN_SINGLE {
 
 process CHECKM_SINGLE {
 
-  label 'checkm'
   label 'cpus_medium'
   
   publishDir "$projectDir/results/indiv_assemblies/checkM2_output"
@@ -1069,10 +1057,6 @@ $baseDir/src/produce_bracken_nf.sh $params.kraken2 $baseDir/src
 
 
 process DRAM_ANNOTATION {
-
-
-label 'cpus_xxlarge'
-label 'mem_xxlarge'
 
 publishDir "$projectDir/dram/annotation"
 
