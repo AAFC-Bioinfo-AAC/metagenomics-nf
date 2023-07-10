@@ -12,14 +12,21 @@ This pipeline is build with the Nextflow language. If you are not familiar with 
 ## 3 - Set up conda environments
 Nextflow and conda environments work well together on the biocluster.
 
-Almost all process of the workflow use specific conda environment. For the sake of code portability, our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
+Almost all process of the workflow use specific conda environments. For the sake of code portability, our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
 
 ## 3.1 - Pre-build conda environments exist on the biocluster
-On the biocluster, you can use my conda environemnts or copy them :
+
+Pre-build conda envs are shared at :
 
 ```shell
-my path
+/isilon/common/conda/brouardjs.
 ```
+
+By default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
+
+I have shared my conda environments at /isilon/cWhen using the profile biocluster, 
+One can adjust the path where the Nextflow.config is set On the biocluster, you can use my conda environemnts or copy them :
+
 
 
 ## 3.2 - Pre-build conda environments exist on the biocluster

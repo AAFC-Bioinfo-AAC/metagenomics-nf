@@ -831,7 +831,7 @@ process QUAST {
 
 process GTDB_TK {
 
-  label 'cpus_large'
+  label 'cpus_xxlarge'
   
   publishDir "$projectDir/results/GTDB"
 
@@ -852,7 +852,7 @@ process GTDB_TK {
          dRep_output/dereplicated_genomes \
          -x fa \
          --out_dir GTDBtk_output \
-         --cpus 40
+         --cpus 20
   """
 }
 
@@ -1072,8 +1072,14 @@ output:
 
 script:
 """
-tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
-cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
+# If this file exists..
+if [ -f 'gtdbtk.ar53.summary.tsv' ]; then
+    tail -n +2 GTDB_TK_output/gtdbtk.ar53.summary.tsv > archae
+    cat GTDB_TK_output/gtdbtk.bac120.summary.tsv archae > gtdbtk.bac120.ar53.summary.tsv
+# if no archae file is present; work only with the bacterial file...
+else
+    mv GTDB_TK_output/gtdbtk.bac120.summary.tsv gtdbtk.bac120.ar53.summary.tsv
+fi
 
 DRAM-setup.py import_config --config_loc $dram_config
 
