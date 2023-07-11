@@ -1,11 +1,11 @@
 {
   "search_databases": {
-    "kegg": "/isilon/sherbrooke-rdc/users/brouardjs/debug_dram/new_kegg/kegg.2023-06-07.mmsdb",
+    "kegg": "/isilon/common/reference/databases/DRAM_db/DRAM_db_patch/kegg.2023-06-07.mmsdb",
     "kofam_hmm": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kofam_profiles.hmm",
     "kofam_ko_list": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb",
     "uniref": null,
-    "pfam": "/isilon/sherbrooke-rdc/users/brouardjs/debug_dram/pfam/pfam",
-    "dbcan": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/dbCAN-HMMdb-V10.txt",
+    "pfam": "/isilon/common/reference/databases/DRAM_db/DRAM_db_patch/pfam.mmspro",
+    "dbcan": null,
     "viral": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/refseq_viral.20220416.mmsdb",
     "peptidase": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/peptidases.20220416.mmsdb",
     "vogdb": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_latest_hmms.txt"

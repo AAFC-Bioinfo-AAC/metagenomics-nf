@@ -56,6 +56,19 @@ The following conda command works for me:
 conda create --name biobakery3 -c conda-forge -c bioconda -c biobakery python=3.7 humann=3.6 metaphlan=4.0.3
 ```
 
+### Bedtools
+```shell
+ conda create -n bedtools -c bioconda bedtools
+```
+
+### Fastp
+```shell
+ conda create -n fastp -c bioconda fastp
+```
+
+
+
+
 ### megahit
 ```shell
 conda create -n megahit -c bioconda megahit=1.2.
@@ -67,20 +80,23 @@ conda create -n metabat2 -c bioconda metabat2=2.15
 
 ### checkM2
 ```shell
-conda create -n checkm2 -c bioconda -c conda-forge checkm2
+mamba create -n checkm2 -c bioconda -c conda-forge checkm2
 
 ```
 
 ### drep
 ```shell
-mamba create -n drep2 -c bioconda checkm-genome drep
+mamba create -n drep -c bioconda checkm-genome drep
 ```
+
+
+ https://bioconda.github.io/recipes/drep/README.html
 
 ### quast
 
 
 ```shell
-mamba create -n gtdbtk-2.1.1 -c conda-forge -c bioconda gtdbtk=2.1.1
+mamba create -n quast-5.2.0 -c bioconda quast=5.2.0
 ```
 
 ### GTDB
@@ -99,6 +115,18 @@ python -m pip install numpy==1.23.1
 
 https://ecogenomics.github.io/GTDBTk/installing/index.html
 ```
+
+
+### bowtie2
+```shell
+mamba create -n bowtie2 -c bioconda bowtie2
+```
+
+### kaiju
+```shell
+mamba create -n kaiju -c bioconda kaiju
+```
+
 
 
 ### phylophlan
@@ -152,6 +180,7 @@ En fait le wiki est très riche en informations!
 ```shell
 conda create -n DRAM_2023 -c bioconda dram
 conda activate DRAM_2023
+# to have the latest version of mmseqs2!!
 conda install -c bioconda mmseqs2
 
 ```
@@ -233,6 +262,14 @@ conda install -c bioconda mmseqs2
 
 
 
+### Preparation of a new compatible DRAM dbCAN2 datatabse
+
+Juste use mmseqs database command as mentionned in the mmseqs2 wiki :
+```shell
+
+mmseqs databases dbCAN2 /isilon/common/reference/databases/DRAM_db/DRAM_db_patch/dbCAN2 tmp
+
+```
 
 
 
@@ -248,7 +285,7 @@ Define a standard location for these databases, here we put them in the project 
 ```shell
 screen -S pangenome
 conda activate biobakery3
-INSTALL_LOCATION=$PWD/db/humann3
+INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
 #To upgrade your pangenome database: 
 humann_databases --download chocophlan full $INSTALL_LOCATION --update-config yes
 
@@ -259,7 +296,7 @@ ctlr + A + D (exit screen)
 ```shell
 screen -S uniref
 conda activate biobakery3
-INSTALL_LOCATION=$PWD/db/humann3
+INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
 #To upgrade your protein database: 
 humann_databases --download uniref uniref90_diamond $INSTALL_LOCATION --update-config yes
 
@@ -270,7 +307,7 @@ ctlr + A + D (exit screen)
 ```shell
 screen -S utility
 conda activate biobakery3
-INSTALL_LOCATION=$PWD/db/humann3
+INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
 #To upgrade your ut database: 
 humann_databases --download utility_mapping full $INSTALL_LOCATION --update-config yes
 
@@ -354,6 +391,34 @@ checkm2 database --download --path /custom/path/
 export CHECKM2DB="path/to/database"
 ```
 
+
+
+## X - Preparation of a map file
+
+
+When setting the rename parameters to 'yes', the rename workflow will rename the file id according to a map file that should be placed in the metadata folder.
+
+The map file is a simple tsv file build with the raw sequences names.
+
+For example, given sequences names like this :
+
+```shell
+
+```
+
+The following snippet will produce the desired map_file (Please adjust accordingly)
+
+
+```shell
+cd data/reads
+for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f 5 -d '.'); printf "$id\t$n\n"; done > ../../metadata/map_file.tsv
+```
+
+
+
+
+
+
 ## 6 - Launch :rocket:
 
 ### 6.1 - Biocluster
@@ -377,9 +442,11 @@ nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report
 
 
 
+### 6.3 - Waffles
+```shell
+scp -r metagenomic_nf/src/ metagenomic_nf/*.nf metagenomic_nf/nextflow.config metagenomic_nf/metadata/config.json jsbrouard@waffles.cscscience.ca:/Drives/K/jsbrouard/AAFC-AAC/meta
 
-
-
+```
 
 
 

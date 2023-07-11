@@ -91,7 +91,6 @@ process BOWTIE2 {
   samtools sort -@ 2 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam &&
   # remove temp files
   rm -v ${datasetID}_unmapped.bam
-  
   """
 }
 
@@ -127,7 +126,7 @@ process OUTPUT_UNALIGNED_READS {
 process KAIJU {
 
   label 'mem_medium'
-  label 'cpus_large'
+  label 'cpus_xxlarge'
   
   publishDir "$projectDir/results/kaiju/kaiju_1"
 
@@ -151,7 +150,7 @@ process KAIJU {
         -j ${final_R2} \
         -v \
         -o ${datasetID}.out \
-        -z 40
+        -z 20
   """
 }
 
@@ -255,7 +254,7 @@ process CAT_FASTQ {
 process HUMANN_RUN {
 
   label 'mem_medium'
-  label 'cpus_large'
+  label 'cpus_xxlarge'
 
   publishDir "$projectDir/results/humann/humann_run"
   input:
@@ -274,11 +273,15 @@ process HUMANN_RUN {
   script:
   """
   humann -i $reads -o ${datasetID}_humann3_output \
-         --threads 40 \
+         --threads 20 \
          --remove-temp-output \
          --metaphlan-options "--bowtie2db ${metaphlan_db} --index mpa_vJan21_CHOCOPhlAnSGB_202103" \
          --nucleotide-database $chocophlan_db \
-         --protein-database $uniref_db
+         --protein-database $uniref_db &&
+
+  # Humann produces a lot of temporary files and under Nextflow
+  # The --remove-temp-output tag is not sufficient to remove all of them
+  rm -rf ${datasetID}_humann3_output/${datasetID}_cat_humann_temp*
   """
 }
 
@@ -407,7 +410,10 @@ process SORTSAM {
   
   script:
   """
-  samtools sort ${aln} > ${datasetID}_sorted.bam
+  samtools sort ${aln} > ${datasetID}_sorted.bam &&
+
+  # Remove intermediate files (SAM)
+  readlink -f ${aln} | xargs rm
   """
 }
 
@@ -595,7 +601,9 @@ process SORTSAM_SINGLE {
   
   script:
   """
-  samtools sort ${aln} > ${datasetID}_sorted.bam
+  samtools sort ${aln} > ${datasetID}_sorted.bam &&
+  # Remove intermediate files (SAM)
+  readlink -f ${aln} | xargs rm
   """
 }
 
@@ -1058,7 +1066,7 @@ $baseDir/src/produce_bracken_nf.sh $params.kraken2 $baseDir/src
 
 process DRAM_ANNOTATION {
 
-publishDir "$projectDir/dram/annotation"
+publishDir "$projectDir/results/dram/annotation"
 
 input:
   path dram_config
@@ -1099,7 +1107,7 @@ DRAM.py annotate \
 
 process DRAM_DISTILLATION {
 
-publishDir "$projectDir/dram/distillation"
+publishDir "$projectDir/results/dram/distillation"
 
 input:
   path (annots, stageAs: "DRAM_annotated_MAGs/*")
