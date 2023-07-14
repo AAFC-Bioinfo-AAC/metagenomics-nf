@@ -4,6 +4,7 @@
 ## 1 - Introduction
 Write an introduction here...
 
+You can have a look at the [Workflow diagram](misc/flowchart.png).
 
 ## 2 - Dependencies
 
@@ -44,6 +45,8 @@ You can read more about how databases were set-up in our [databases documentatio
 
 You will need to build an index of the host genome plus the phiX genome (Included in data/genome folder).
 
+(Write basic instructions to dowload pig or cow genomes and cat them with the PhiX...)
+
 
 ### 3.1.1 - Example with the pig genome
 
@@ -77,23 +80,19 @@ sbatch \
 
 When setting the rename parameters to 'yes', the rename workflow will rename the file id according to a map file that should be placed in the metadata folder.
 
-The map file is a simple tsv file build with the raw sequences names.
-
-For example, given sequences names like this :
+The map file is a simple tsv file build with the raw sequences names. **Note that there are no header in tsv file!**
 
 
-C284-d21_R1	NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R1
-C284-d21_R2	NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R2
-C9009-d7_R1	NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R1
-C9009-d7_R2	NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R2
-C283-d28_R1	NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R1
-C283-d28_R2	NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R2
+| id            |       Basenname of fastq file                    |
+|---------------|--------------------------------------------------|
+|C284-d21_R1	| NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R1|
+|C284-d21_R2	| NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R2|
+|C9009-d7_R1	| NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R1|
+|C9009-d7_R2	| NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R2|
+|C283-d28_R1	| NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R1|
+|C283-d28_R2	| NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R2|
 
 
-
-```shell
-
-```
 
 The following snippet will produce the desired map_file (Please adjust accordingly)
 
@@ -104,38 +103,26 @@ for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f
 ```
 
 
-
-
-
-
 ## 6 - Launch :rocket:
 
-### 6.1 - Biocluster
+### 6.1 - AAFC Biocluster
+
 ```shell
+# With resume
+nextflow run main.nf -profile biocluster -resume -with-report my_report
 
-# resume
-
-nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report
-
-
-nextflow run main.nf -c nextflow.config -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
+# With resume and specifying the location of the work folder
+nextflow run main.nf -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
 ```
 
 
-### 6.2 - Local server (qcshera684498 miniserver)
+### 6.2 - Waffles (NML cluster)
+
 ```shell
- nextflow run main.nf -c nextflow.config -profile local -resume -with-report my_report
+# With resume
+nextflow run main.nf -profile waffles -resume -with-report my_report
 ```
 
-
-
-
-
-### 6.3 - Waffles
-```shell
-scp -r metagenomic_nf/src/ metagenomic_nf/*.nf metagenomic_nf/nextflow.config metagenomic_nf/metadata/config.json jsbrouard@waffles.cscscience.ca:/Drives/K/jsbrouard/AAFC-AAC/meta
-
-```
 
 
 
