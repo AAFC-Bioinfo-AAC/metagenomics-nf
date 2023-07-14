@@ -5,395 +5,74 @@
 Write an introduction here...
 
 
-## 2 - Install Nextflow
-This pipeline is build with the Nextflow language. If you are not familiar with this, you can read more here.
+## 2 - Dependencies
 
 
-## 3 - Set up conda environments
-Nextflow and conda environments work well together on the biocluster.
+### 2.1 - Nextflow
 
-Almost all process of the workflow use specific conda environments. For the sake of code portability, our approach is to declare in the nextflow.config file the path of the conda environment required for each process.
+This pipeline is build with the Nextflow language. If you are not familiar with this, you can read more [here](https://www.nextflow.io/). The [documentaton](https://www.nextflow.io/docs/latest/) is well written and updated regularly. A good approach is to install Nextflow itself in a conda environment.
 
-## 3.1 - Pre-build conda environments exist on the biocluster
+### 2.2 - Conda environments
 
-Pre-build conda envs are shared at :
+Nextflow and conda environments work well together. Almost all process of the workflow use specific conda environments.
+
+However, creating multiple conda environments is tedious task. If you are working on the AAFC Biocluster, you can use pre-build conda environments that lie at this location :
 
 ```shell
-/isilon/common/conda/brouardjs.
+/isilon/common/conda/brouardjs
 ```
 
-By default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
+Note that by default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
 
-I have shared my conda environments at /isilon/cWhen using the profile biocluster, 
-One can adjust the path where the Nextflow.config is set On the biocluster, you can use my conda environemnts or copy them :
-
+Details about the recipes used to create these conda envs are detailed in the [conda_env.md](./conda_env.md) file.
 
 
-## 3.2 - Pre-build conda environments exist on the biocluster
-Here we describe the command lines that have been used to create some of the conda environments.
+### 2.3 - Databases
 
-### R
+Several databases are required to perform all steps of the pipeline.
+
+If you are running this pipeline on the AAFC Biocluster, you can take advantage of the pre-build databases whom location are specified in the Nextflow.config file.
+
+You can read more about how databases were set-up in our [databases documentation](./databases.md).
+
+
+## 3 - Prerequisites
+
+
+### 3.1 - Preparation of a reference genome for decontamination
+
+
+You will need to build an index of the host genome plus the phiX genome (Included in data/genome folder).
+
+
+### 3.1.1 - Example with the pig genome
+
+
+
+**Waffles cluster (NML) (slurm)**
+
 ```shell
-conda create -n R -c conda-forge r-base=4.2.3 r-tidyr=1.3.0
-```
-
-
-### biobakery3 (Humann3)
-The instructions are given [here](https://huttenhower.sph.harvard.edu/humann).
-
-First be sure to add the following channels :
-
-```shell
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda config --add channels biobakery
-```
-
-The following conda command works for me:
-
-```shell
-conda create --name biobakery3 -c conda-forge -c bioconda -c biobakery python=3.7 humann=3.6 metaphlan=4.0.3
-```
-
-### Bedtools
-```shell
- conda create -n bedtools -c bioconda bedtools
-```
-
-### Fastp
-```shell
- conda create -n fastp -c bioconda fastp
-```
-
-
-
-
-### megahit
-```shell
-conda create -n megahit -c bioconda megahit=1.2.
-```
-### metabat2
-```shell
-conda create -n metabat2 -c bioconda metabat2=2.15
-```
-
-### checkM2
-```shell
-mamba create -n checkm2 -c bioconda -c conda-forge checkm2
-
-```
-
-### drep
-```shell
-mamba create -n drep -c bioconda checkm-genome drep
+conda activate bowtie2
+sbatch \
+ -D $PWD \
+ --output $PWD/bowtie2-$j.out \
+ --export=ALL \
+ -J bowtie2-build \
+ -c 8 \
+ -p NMLResearch \
+ --mem 64G \
+ --wrap="bowtie2-build Pig_PhiX_genomes.fna pig/pig"
 ```
 
 
- https://bioconda.github.io/recipes/drep/README.html
+### 3.1.2 - Example with the cow genome
 
-### quast
 
-
-```shell
-mamba create -n quast-5.2.0 -c bioconda quast=5.2.0
-```
-
-### GTDB
-
-```shell
-mamba create -n gtdbtk-2.1.1 -c conda-forge -c bioconda gtdbtk=2.1.1
-
-conda activate gtdbtk-2.1.1
-
-# downgrade numpy 1.24
-python -m pip uninstall numpy
-# Reinstall numpy
-python -m pip install numpy==1.23.1
-
-
-
-https://ecogenomics.github.io/GTDBTk/installing/index.html
-```
-
-
-### bowtie2
-```shell
-mamba create -n bowtie2 -c bioconda bowtie2
-```
-
-### kaiju
-```shell
-mamba create -n kaiju -c bioconda kaiju
-```
-
-
-
-### phylophlan
-```shell
-mamba create -n phylophlan -c bioconda phylophlan=3.0.3
-```
-
-### coverm
-```shell
-mamba create -n coverm -c bioconda coverm
-```
-
-### kraken2 / Bracken
-
-```shell
-mamba create -n kraken2 -c bioconda kraken2=2.1.2
-```
-
-Copy a script to the the bin folder 
-
-```shell
-cp src/combine_mpa.py  your_conda_env_path/kraken2/bin/
-```
-Intall Bracken alongside kraken2
-
-
-```shell
-mamba install -c bioconda bracken
-```
-
-J'ai eu de petits problèmes en cours de route avec bracken. En effet, bracken-build n'a pas été préparée dans la nouvelle db sur le biocluster. Je me suis un dossier sur mon /isilon et j'ai fait des liens de tous les fichiers de la bd kraken. Puis j'ai roulé bracken-build dans mon dossier.
-
-```shell
-qlogin -pe smp4
-cd ~/jsb/kraken
-# Je me suis fait des liens de la db partagee
-
-(kraken2) [brouardjs@biocomp-0-1 kraken_nt]$ bracken-build -d /isilon/common/reference/databases/kraken2_ncbi_nt/kraken2_ncbi_nt_20230309 -t 4 -k 35 -l 100
-```
-
-Cette commande a ete hyper longue et n'a rien donnee!
-
-
-
-### DRAM
-
-J'ai consulte [la page GitHub de ce projet](https://github.com/WrightonLabCSU/DRAM) et j'ai utilise le .yaml
-
-En fait le wiki est très riche en informations!
-
-```shell
-conda create -n DRAM_2023 -c bioconda dram
-conda activate DRAM_2023
-# to have the latest version of mmseqs2!!
-conda install -c bioconda mmseqs2
-
-```
-
-Avec Nextflow, ça devient important de spécifier l'emplacement de la db.
-
-J'ai trouvé cette explication :
-
-DRAM’s config file is kept in the same directory as the installed DRAM package and this can be a problem for many users depending on how their system is set up and who has the ability to install and update packages. 
-
-https://github.com/WrightonLabCSU/DRAM/wiki/3a.-Running-DRAM
-
-Le mieux est d'utiliser la DB preparee par ARUN et d'importer la configuration sans UNIREF
-
-```shell
-DRAM-setup.py import_config --config_loc /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/DRAM_db_20220415_without_uniref.conf
-
-DRAM-setup.py print_config
-2023-05-25 12:43:54,302 - Logging to console
-Processed search databases
-KEGG db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb
-KOfam db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kofam_profiles.hmm
-KOfam KO list: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb
-UniRef db: None
-Pfam db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/pfam.mmspro
-dbCAN db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/dbCAN-HMMdb-V10.txt
-RefSeq Viral db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/refseq_viral.20220416.mmsdb
-MEROPS peptidase db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/peptidases.20220416.mmsdb
-VOGDB db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_latest_hmms.txt
-
-Descriptions of search database entries
-Pfam hmm dat: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/Pfam-A.hmm.dat.gz
-dbCAN family activities: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/CAZyDB.07292021.fam-activities.txt
-VOG annotations: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_annotations_latest.tsv.gz
-
-Description db: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/DRAM_db_20220415_without_uniref.sqlite
-
-DRAM distillation sheets
-Genome summary form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/genome_summary_form.20220415.tsv
-Module step form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/module_step_form.20220415.tsv
-ETC module database: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/etc_mdoule_database.20220415.tsv
-Function heatmap form: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/function_heatmap_form.20220415.tsv
-AMG database: /isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/amg_database.20220415.tsv
-```
-
-vendredi!
-DRAM.py annotate --config_loc ./DRAM_db_20220415_without_uniref.conf -i 'dRep_output/dereplicated_genomes/*.fa' --threads 10 --keep_tmp_dir --low_mem_mode -o test
-
-DRAM.py annotate --config_loc ./my_config.json -i 'dRep_output/dereplicated_genomes/*.fa' --threads 10 --keep_tmp_dir --low_mem_mode -o test
-
---custom_hmm_name hmm_A \
-        --custom_hmm_loc ./profils_cutoffs.hmm\
-
-
-Pour reproduire l'erreur :
-
-
-rm -rf test;DRAM.py annotate -i 'dRep_output/dereplicated_genomes/*.fa' \
-	--config_loc ./my_config.json \
-	--verbose \
-	-o test \
-	--threads 1
-
-DRAM.py annotate -i 'dRep_output/dereplicated_genomes/*.fa' \
-	--config_loc ./my_config.json \
-	--verbose \
-	-o test_10 \
-	--keep_tmp_dir \
-	--threads 10
-
-
-
-Pour fixer le bug : raise subprocess.SubprocessError(f"The subcommand {' '.join(command)} experienced an error, see the log for more info.")
-
-il faut simplement installer la dernière version de mmseqs dans l'environnement conda
-
-conda activate DRAM_2023
-conda install -c bioconda mmseqs2
-
-
-
-### Preparation of a new compatible DRAM dbCAN2 datatabse
-
-Juste use mmseqs database command as mentionned in the mmseqs2 wiki :
-```shell
-
-mmseqs databases dbCAN2 /isilon/common/reference/databases/DRAM_db/DRAM_db_patch/dbCAN2 tmp
-
-```
-
-
-
-
-
-## 4 - Humann3 preparation
-### 4.1 - Download databases with the built in humann_databases command
-Once you have a working conda environment, you will need to download some databases.
-
-Define a standard location for these databases, here we put them in the project folder :
-
-#### 4.1.1 - Pangenome database
-```shell
-screen -S pangenome
-conda activate biobakery3
-INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
-#To upgrade your pangenome database: 
-humann_databases --download chocophlan full $INSTALL_LOCATION --update-config yes
-
-ctlr + A + D (exit screen)
-```
-
-#### 4.1.2 - Protein database
-```shell
-screen -S uniref
-conda activate biobakery3
-INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
-#To upgrade your protein database: 
-humann_databases --download uniref uniref90_diamond $INSTALL_LOCATION --update-config yes
-
-ctlr + A + D (exit screen)
-```
-
-#### 4.1.3 - Annotation database
-```shell
-screen -S utility
-conda activate biobakery3
-INSTALL_LOCATION=HUMAnN_db/HUMAnN_db_20230710
-#To upgrade your ut database: 
-humann_databases --download utility_mapping full $INSTALL_LOCATION --update-config yes
-
-ctlr + A + D (exit screen)
-```
-
-
-### 4.2 - Verify your installation
-You can check the location of these databases with :
-
-```shell
-humann_config --print
-```
-
-
-### 4.3 - Fix an annoying bug that lead MetaPhlAn from trying to download the latest database!
-As is, with Humann3.6 and Metephlan 4.0.3, you will get an error message like this  :
-
-```shell
-  Downloading MetaPhlAn database
-  Please note due to the size this might take a few minutes
-
-  File /home/brouardjs/miniconda3/envs/biobakery3/lib/python3.7/site-packages/metaphlan/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.tar already present!
-
-  Downloading http://cmprod1.cibio.unitn.it/biobakery4/metaphlan_databases/mpa_vOct22_CHOCOPhlAnSGB_202212.md5
-  Downloading file of size: 0.00 MB
-  0.01 MB 11702.86 %  74.14 MB/sec  0 min -0 sec
-  MD5 checksums do not correspond! If this happens again, you should remove the database files and rerun MetaPhlAn so they are re-downloaded
-```
-
-
-We investigate this issue and found that this occur because metphlan will try to download and use the very latest version of database that is not compatible with humann3 at this time!!
-
-
-> Your interpretation is correct. HUMAnN 3.6 includes compatibility files to associate MetaPhlAn 4 profiles from the Jan21 database with the HUMAnN 3 pangenome collection. We are working on a HUMAnN 3.7 release that will add compatibility with the new database. In the meantime you can add --metaphlan-options="--index mpa_vJan21_CHOCOPhlAnSGB_202103" to your HUMAnN 3.6 command to tell MetaPhlAn 4 to get/use the previous index.
-...
-
-> Thank you for posting the command! If you install the database at the default location or if you install it in a custom location and add --bowtiedb <path/to/metaphlan/database> to your --metaphlan-options it should stop MetaPhlAn from trying to download the latest database.
 ...
 
 
-> Thank you very much for the quick and helpful reply. Downgrading Metaphlan to v 4.0.3 really got rid of the initial problem. Anyhow, I still can’t stop Metaphlan from downloading the new database when I run it, even when I safe the “v21” database in the right folder. Do you know how to stop it from doing so?
 
-
-  * https://forum.biobakery.org/t/humann3-compatibility-problem-with-metaphlan4/4894/2
-
-  * https://forum.biobakery.org/t/humann3-compatibility-problem-with-metaphlan4/4894/5
-
-
-The take home message is that the latest db that can be used by Metaphlan 3.6 is *mpa_vJan21_CHOCOPhlAnSGB_202103* (not mpa_vOct22_CHOCOPhlAnSGB_202212).
-
-
-### 4.3.1 - Solution: install the **latest compatible db** with Metaphlan3.6
-To install the latest compatible db i *mpa_vJan21_CHOCOPhlAnSGB_202103* at a specific location, do :
-
-```shell
-screen -S metaphlan
-conda activate biobakery3
-metaphlan --install --index mpa_vJan21_CHOCOPhlAnSGB_202103 --bowtie2db /mnt/sdb/metagenomic_nf/db/humann3/metaphlan_vJan21/
-```
-
-And you are all set; we have added the right command lines options to specify which database should be used by Metaphlan when Humann3 is invoked!
-
-
-
-## 5 - Kaiju preparation
-Add the merge_tax_files to your R conda env:
-
-```shell
-cp -v src/merge_tax_files.R /home/brouardjs/miniconda3/envs/R/bin/
-```
-
-## Y - checkm2 preparation
-
-```shell
-checkm2 database --download --path /custom/path/
-```
->The database path can also be set by setting the environmental variable CHECKM2DB using:
-
-```shell
-export CHECKM2DB="path/to/database"
-```
-
-
-
-## X - Preparation of a map file
+## 3.2 - Preparation of a map file
 
 
 When setting the rename parameters to 'yes', the rename workflow will rename the file id according to a map file that should be placed in the metadata folder.
@@ -401,6 +80,16 @@ When setting the rename parameters to 'yes', the rename workflow will rename the
 The map file is a simple tsv file build with the raw sequences names.
 
 For example, given sequences names like this :
+
+
+C284-d21_R1	NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R1
+C284-d21_R2	NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R2
+C9009-d7_R1	NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R1
+C9009-d7_R2	NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R2
+C283-d28_R1	NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R1
+C283-d28_R2	NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R2
+
+
 
 ```shell
 
