@@ -57,7 +57,8 @@ for f in fsa_files:
     fname = (os.path.basename(f).split('.' + sys.argv[4])[0])
     if fname in D:
         print(fname, 'has been renamed in', D[fname])
-        shutil.copyfile(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
+        #shutil.copyfile(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
+        os.symlink(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
     else:
         print(fname, 'could not have been renamed, no matching key!')
 

@@ -14,12 +14,13 @@ process RENAME_SEQUENCES {
   script:
   """
   mkdir renamed
-  $baseDir/src/rename_sequences.py $map_file ./data renamed/ fastq.gz > log.txt
+  $baseDir/src/rename_sequences.py $map_file \$PWD/data renamed/ fastq.gz > log.txt
   """
 }
 
 process QUALITY_FILTERING {
-  
+  label 'cpus_medium'
+
   publishDir "$projectDir/results/trimmed_reads"
 
   input: 
@@ -43,6 +44,7 @@ process QUALITY_FILTERING {
         --unpaired1 ${datasetID}_unpaired_R1.fastq.gz \
         --unpaired2 ${datasetID}_unpaired_R2.fastq.gz \
         --length_required 100 \
+        --thread=$task.cpus \
         --cut_tail --cut_front \
         --cut_mean_quality 15 \
         --qualified_quality_phred 15 \
@@ -58,7 +60,7 @@ process QUALITY_FILTERING {
 process BOWTIE2 {
 
   label 'mem_medium'
-  label 'cpus_small'
+  label 'cpus_large'
   
   publishDir "$projectDir/results/decontamination/genome/bowtie2"
   input:
@@ -79,18 +81,24 @@ process BOWTIE2 {
   
   script:
   """
-  bowtie2 -p 8 -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam &&
+  bowtie2 -p $task.cpus -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam &&
   
   # step2 (old SAM2BAM process)
-  samtools view -@ 30 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam &&
+  samtools view -@ 6 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam &&
   # remove temp files
   rm -v ${datasetID}.sam &&
   
   
   # step3 (old SORTBAM process)
-  samtools sort -@ 2 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam &&
+  samtools sort -@ 6 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam &&
   # remove temp files
-  rm -v ${datasetID}_unmapped.bam
+  rm -v ${datasetID}_unmapped.bam &&
+
+  # Remove intermediate files
+  readlink -f ${trimmed_R1} | xargs rm &&
+  readlink -f ${trimmed_R2} | xargs rm &&
+  readlink -f ${unpaired_R1} | xargs rm &&
+  readlink -f ${unpaired_R2} | xargs rm
   """
 }
 
@@ -116,9 +124,12 @@ process OUTPUT_UNALIGNED_READS {
   
   script:
   """
-  bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq
-  gzip ${datasetID}_R1.fastq
-  gzip ${datasetID}_R2.fastq
+  bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq &&
+  gzip ${datasetID}_R1.fastq &&
+  gzip ${datasetID}_R2.fastq &&
+  
+  # remove temp files
+  rm -v ${aln}
   """
 }
 
@@ -126,7 +137,7 @@ process OUTPUT_UNALIGNED_READS {
 process KAIJU {
 
   label 'mem_medium'
-  label 'cpus_xxlarge'
+  label 'cpus_large'
   
   publishDir "$projectDir/results/kaiju/kaiju_1"
 
@@ -150,7 +161,7 @@ process KAIJU {
         -j ${final_R2} \
         -v \
         -o ${datasetID}.out \
-        -z 20
+        -z $task.cpus
   """
 }
 
@@ -158,7 +169,6 @@ process KAIJU {
 process KAIJU_TAX_TABLE {
 
   label 'mem_medium'
-  label 'cpus_large'
   
   publishDir "$projectDir/results/kaiju/kaiju_tax_table"
 
@@ -187,7 +197,6 @@ process KAIJU_TAX_TABLE {
 process KAIJU_FULL_TAX_TABLE {
 
   label 'mem_medium'
-  label 'cpus_large'
   
   publishDir "$projectDir/results/kaiju/kaiju_full_tax_table"
 
@@ -273,7 +282,7 @@ process HUMANN_RUN {
   script:
   """
   humann -i $reads -o ${datasetID}_humann3_output \
-         --threads 20 \
+         --threads $task.cpus \
          --remove-temp-output \
          --metaphlan-options "--bowtie2db ${metaphlan_db} --index mpa_vJan21_CHOCOPhlAnSGB_202103" \
          --nucleotide-database $chocophlan_db \
@@ -281,7 +290,10 @@ process HUMANN_RUN {
 
   # Humann produces a lot of temporary files and under Nextflow
   # The --remove-temp-output tag is not sufficient to remove all of them
-  rm -rf ${datasetID}_humann3_output/${datasetID}_cat_humann_temp*
+  rm -rf ${datasetID}_humann3_output/${datasetID}_cat_humann_temp* &&
+  
+  # Remove intermediate files
+  readlink -f $reads | xargs rm
   """
 }
 
@@ -325,7 +337,7 @@ process HUMANN_ABUNDANCE {
 process COASSEMBLY {
 
   label 'mem_xxlarge'
-  label 'cpus_xlarge'
+  label 'cpus_xxlarge'
   
   publishDir "$projectDir/results/coassembly/megahit"
 
@@ -344,15 +356,21 @@ process COASSEMBLY {
           -2 coassembly_R2.fastq.gz \
           -o Megahit_coassembly \
           --out-prefix Coassembly \
-          -t 100 \
-          --min-contig-len 1000
+          -t $task.cpus \
+          --min-contig-len 1000 &&
+  
+  # Remove intermediate files (concatenated R1 and R2)
+  rm coassembly_R1.fastq.gz coassembly_R2.fastq.gz &&
+
+  # Remove intermediate files (intermediate contigs)
+  rm -rf Megahit_coassembly/intermediate_contigs
   """
 }
 
 
 process BOWTIE2_BUILD {
-
   label 'bowtie2'
+
   publishDir "$projectDir/results/coassembly/bwt2_index"
 
   input:
@@ -371,7 +389,7 @@ process BOWTIE2_BUILD {
 
 
 process BOWTIE2_MAP {
-
+  label 'cpus_large'
   label 'bowtie2'
   publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
 
@@ -392,7 +410,7 @@ script:
 bowtie2 -x coassembly/coassembly \
         -1 ${final_R1} \
         -2 ${final_R2} \
-        -S ${datasetID}.sam -p 30
+        -S ${datasetID}.sam -p $task.cpus
 """
 }
 
@@ -419,8 +437,6 @@ process SORTSAM {
 
 
 process JGI_SUMMARIZE {
-
-  label 'cpus_medium'
   
   publishDir "$projectDir/results/coassembly/jgi"
 
@@ -445,7 +461,7 @@ process JGI_SUMMARIZE {
 
 process METABAT2_BIN_COASSEMBLY {
 
-  label 'cpus_medium'
+  label 'cpus_xlarge'
   
   publishDir "$projectDir/results/coassembly/metabat2_bins"
   
@@ -467,7 +483,7 @@ process METABAT2_BIN_COASSEMBLY {
     -i megahit/Coassembly.contigs.fa \
     -a ${datasetID}_depth.txt \
     -o ${datasetID}/${datasetID}.bin \
-    -t 30 \
+    -t $task.cpus \
     -m 2000 \
     -v
   """
@@ -508,7 +524,7 @@ process CHECKM {
 
 process MEGAHIT_SINGLE {
   
-  label 'mem_xlarge'
+  label 'mem_xxlarge'
   label 'cpus_xlarge'
   
   publishDir "$projectDir/results/indiv_assemblies/megahit"
@@ -530,8 +546,11 @@ process MEGAHIT_SINGLE {
           -2 ${final_R2} \
           -o ${datasetID} \
           --out-prefix ${datasetID} \
-          -t 80 \
-          --min-contig-len 1000
+          -t $task.cpus \
+          --min-contig-len 1000 &&
+
+  # Remove intermediate files (intermediate contigs)
+  rm -rf ${datasetID}/intermediate_contigs
   """
 }
 
@@ -540,6 +559,7 @@ process MEGAHIT_SINGLE {
 process BOWTIE2_BUILD_SINGLE {
 
   label 'bowtie2'
+  label 'cpus_xlarge'
   publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
 
   input:
@@ -555,7 +575,11 @@ process BOWTIE2_BUILD_SINGLE {
   script:
   """
   mkdir bwt2_index
-  bowtie2-build megahit/${datasetID}.contigs.fa bwt2_index/${datasetID}
+  bowtie2-build \
+    megahit/${datasetID}.contigs.fa \
+    bwt2_index/${datasetID} \
+    --quiet \
+    --threads $task.cpus
   """
 }
 
@@ -563,6 +587,8 @@ process BOWTIE2_BUILD_SINGLE {
 process BOWTIE2_MAP_SINGLE {
 
   label 'bowtie2'
+  label 'cpus_large'
+
   publishDir "$projectDir/results/indiv_assemblies/bwt2_output_for_metabat"
 
   input:
@@ -582,7 +608,7 @@ process BOWTIE2_MAP_SINGLE {
   bowtie2 -x index/${datasetID} \
           -1 ${final_R1} \
           -2 ${final_R2} \
-          -S ${datasetID}.sam -p 30
+          -S ${datasetID}.sam -p $task.cpus
   """
 }
 
@@ -606,9 +632,6 @@ process SORTSAM_SINGLE {
   readlink -f ${aln} | xargs rm
   """
 }
-
-
-
 
 
 process JGI_SUMMARIZE_SINGLE {
@@ -637,8 +660,8 @@ process JGI_SUMMARIZE_SINGLE {
 
 process METABAT2_BIN_SINGLE {
 
-  label 'cpus_medium'
-  
+  label 'cpus_xlarge'
+
   publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
   
   input:
@@ -659,7 +682,7 @@ process METABAT2_BIN_SINGLE {
     -i megahit/${datasetID}.contigs.fa \
     -a ${datasetID}_depth.txt \
     -o ${datasetID}/${datasetID}.individ.bin \
-    -t 30 \
+    -t $task.cpus \
     -m 2000 \
     -v
   """
@@ -775,6 +798,8 @@ process SORT_BINS2 {
 
 
 process DREP {
+
+  label 'cpus_xxlarge'
   publishDir "$projectDir/results/drep"
 
   input:
@@ -794,7 +819,7 @@ process DREP {
   
   
   dRep dereplicate -g hq_bins/*.fa \
-    -comp 90 -con 5 -p 40 \
+    -comp 90 -con 5 --processors $task.cpus \
     -strW 1 -pa 0.90 -sa 0.99 \
     --S_algorithm fastANI \
     --multiround_primary_clustering \
@@ -808,7 +833,7 @@ process DREP {
 
 process QUAST {
 
-  label 'cpus_large'
+  label 'cpus_xlarge'
   
   publishDir "$projectDir/results/quast"
   
@@ -825,10 +850,11 @@ process QUAST {
   script:
   """
   quast.py dRep_output/dereplicated_genomes/*.fa \
+    --threads $task.cpus \
     -o QUAST_replicated_MAGs
   
   metaquast.py Megahit_coassembly/Coassembly.contigs.fa \
-    -t 40 \
+    -t $task.cpus \
     -o QUAST_coassembly
   """
 
@@ -860,14 +886,14 @@ process GTDB_TK {
          dRep_output/dereplicated_genomes \
          -x fa \
          --out_dir GTDBtk_output \
-         --cpus 20
+         --cpus $task.cpus
   """
 }
 
 
 process PHYLOPHLAN {
 
- label 'cpus_large'
+ label 'cpus_xxlarge'
  
  publishDir "$projectDir/results/phylophlan"
 
@@ -887,7 +913,7 @@ process PHYLOPHLAN {
              -o Phylophlan_output \
              --db_type a \
              -f supermatrix_aa.cfg \
-             --nproc 24 \
+             --nproc $task.cpus \
              --diversity low \
              --fast \
              --verbose \
@@ -898,6 +924,7 @@ process PHYLOPHLAN {
 
 process COVERM {
 
+ label 'cpus_xlarge'
  publishDir "$projectDir/results/coverM"
 
   input:
@@ -919,7 +946,7 @@ process COVERM {
                 --genome-fasta-directory dRep_output/dereplicated_genomes \
                 --genome-fasta-extension fa \
                 --min-covered-fraction 1 \
-                --threads 40 -v \
+                --threads $task.cpus -v \
                 --output-file ${datasetID}_coverM_output.txt
   """
 }
@@ -945,11 +972,14 @@ output:
 script:
 """
 kraken2 --use-names \
---threads 8 \
+--threads $task.cpus \
 --db $db \
 --paired ${final_R1} ${final_R2} \
 --report Kraken2_${datasetID}.report.txt \
---report-zero-counts
+--report-zero-counts > /dev/null
+# It is important to redirect the large Kraken2 output to /dev/null
+# Otherwise, massive info is written in .command.log
+# and .command.out Nextflow files
 """
 }
 
@@ -974,12 +1004,15 @@ output:
 script:
 """
 kraken2 --use-names \
---threads 8 \
+--threads $task.cpus \
 --db $db \
 --report Kraken2_${datasetID}.mpa.report.txt \
 --use-mpa-style \
 --report-zero-counts \
---paired ${final_R1} ${final_R2}
+--paired ${final_R1} ${final_R2} > /dev/null
+# It is important to redirect the large Kraken2 output to /dev/null
+# Otherwise, massive info is written in .command.log
+# and .command.out Nextflow files
 """
 }
 
@@ -1040,7 +1073,7 @@ bracken -d $db \
  
 process BRACKEN_ALT {
 
-label 'cpus_large'
+label 'cpus_medium'
 publishDir "$projectDir/results/bracken_smart"
 
 input:
@@ -1065,6 +1098,8 @@ $baseDir/src/produce_bracken_nf.sh $params.kraken2 $baseDir/src
 
 
 process DRAM_ANNOTATION {
+label 'cpus_xxlarge'
+label 'mem_large'
 
 publishDir "$projectDir/results/dram/annotation"
 
@@ -1098,7 +1133,7 @@ DRAM.py annotate \
   -o DRAM_annotated_MAGs \
   --verbose \
   --config_loc $dram_config \
-  --threads 20 \
+  --threads $task.cpus \
   --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
 """
 }
