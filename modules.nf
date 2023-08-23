@@ -181,14 +181,15 @@ process KAIJU_TAX_TABLE {
   # Choose summary levels from: superkingdom,phylum,class,order,family,genus,species
   summary_levels=(phylum genus species)
   
-  for level in "${summary_levels[@]}"
+  for level in "\${summary_levels[@]}"
   do
-   kaiju2table -t ${db}/nodes.dmp \
-        -n ${db}/names.dmp \
-        -r \$level \
-        -u \
-        -o ${datasetID}.\$level.summary.tsv \
-        ${kaiju_out}
+  echo \$level
+  # kaiju2table -t ${db}/nodes.dmp \
+  #      -n ${db}/names.dmp \
+  #      -r \$level \
+  #      -u \
+  #      -o ${datasetID}.\$level.summary.tsv \
+  #      ${kaiju_out}
   done
   """
 }
