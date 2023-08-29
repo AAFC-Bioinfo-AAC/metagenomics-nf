@@ -112,17 +112,59 @@ for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f
 nextflow run main.nf -profile biocluster -resume -with-report my_report
 
 # With resume and specifying the location of the work folder
-nextflow run main.nf -profile biocluster -resume -with-report my_report -w /isilon/projects/J-002487_Immunstat/work
+nextflow run main.nf -profile biocluster -resume -with-report my_report_20230827 -w /isilon/projects/J-002888_GRDI-AMR2/work
 ```
+
+
+
+
 
 
 ### 6.2 - Waffles (NML cluster)
 
+Don't use screen!!
+
 ```shell
-# With resume
-nextflow run main.nf -profile waffles -resume -with-report my_report
+conda activate nextflow-jsb
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles -with-report my_report -resume"
+```
+
+nf-jobs are lauched as external_research
+
+### In resume mode
+
+```shell
+conda activate nextflow-jsb
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles r-resume SESSON-ID -with-report my_report"
+```
+
+
+### Resume
+
+First run nextflow log 
+
+You can use the resume command with the session ID to recover a specific execution. For example:
+
+```shell
+nextflow run main.nf -resume 2cfd1681-8935-450d-8de4-74b02be9e7d8
+
 ```
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+nextflow clean boring_euler -n

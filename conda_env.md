@@ -114,9 +114,9 @@ mamba create -n kaiju -c bioconda kaiju
 Intall Bracken alongside kraken2
 
 ```shell
-mamba create -n kraken2 -c bioconda kraken2=2.1.2
+conda create -n kraken2 -c bioconda kraken2=2.1.2
 conda activate kraken2
-mamba install -c bioconda bracken
+conda install -c bioconda bracken
 ```
 
 
