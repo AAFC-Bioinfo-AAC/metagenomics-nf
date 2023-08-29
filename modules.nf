@@ -81,19 +81,16 @@ process BOWTIE2 {
   
   script:
   """
-  bowtie2 -p $task.cpus -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} -S ${datasetID}.sam &&
+  bowtie2 -p $task.cpus -x "genome/${genome_basename}" -1 ${trimmed_R1} -2 ${trimmed_R2} | \
   
-  # step2 (old SAM2BAM process)
-  samtools view -@ 6 -bS -f 12 -F 256 ${datasetID}.sam > ${datasetID}_unmapped.bam &&
-  # remove temp files
-  rm -v ${datasetID}.sam &&
-  
-  
-  # step3 (old SORTBAM process)
-  samtools sort -@ 6 -n ${datasetID}_unmapped.bam > ${datasetID}_unmapped.sorted.bam &&
-  # remove temp files
-  rm -v ${datasetID}_unmapped.bam &&
+  samtools view -u -f 12 -F 256 --threads $task.cpus | \
 
+  samtools sort -n -m 4G --threads $task.cpus | \
+
+  # step3 (old SORTBAM process)
+  samtools sort -n -m 4G --threads $task.cpus > ${datasetID}_unmapped.sorted.bam &&
+  
+  
   # Remove intermediate files
   readlink -f ${trimmed_R1} | xargs rm &&
   readlink -f ${trimmed_R2} | xargs rm &&
@@ -101,10 +98,6 @@ process BOWTIE2 {
   readlink -f ${unpaired_R2} | xargs rm
   """
 }
-
-
-
-
 
 
 process OUTPUT_UNALIGNED_READS {
@@ -185,11 +178,19 @@ process KAIJU_TAX_TABLE {
   
   script:
   """
-  kaiju2table -t ${db}/nodes.dmp \
-        -n ${db}/names.dmp \
-        -r species \
-        -o ${datasetID}.species.summary.tsv \
-        ${kaiju_out}
+  # Choose summary levels from: superkingdom,phylum,class,order,family,genus,species
+  summary_levels=(phylum genus species)
+  
+  for level in "\${summary_levels[@]}"
+  do
+  echo \$level
+  # kaiju2table -t ${db}/nodes.dmp \
+  #      -n ${db}/names.dmp \
+  #      -r \$level \
+  #      -u \
+  #      -o ${datasetID}.\$level.summary.tsv \
+  #      ${kaiju_out}
+  done
   """
 }
 
