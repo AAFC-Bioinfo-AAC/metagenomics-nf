@@ -88,14 +88,7 @@ process BOWTIE2 {
   samtools sort -n -m 4G --threads $task.cpus | \
 
   # step3 (old SORTBAM process)
-  samtools sort -n -m 4G --threads $task.cpus > ${datasetID}_unmapped.sorted.bam &&
-  
-  
-  # Remove intermediate files
-  readlink -f ${trimmed_R1} | xargs rm &&
-  readlink -f ${trimmed_R2} | xargs rm &&
-  readlink -f ${unpaired_R1} | xargs rm &&
-  readlink -f ${unpaired_R2} | xargs rm
+  samtools sort -n -m 4G --threads $task.cpus > ${datasetID}_unmapped.sorted.bam
   """
 }
 
@@ -119,10 +112,7 @@ process OUTPUT_UNALIGNED_READS {
   """
   bedtools bamtofastq -i ${aln} -fq ${datasetID}_R1.fastq -fq2 ${datasetID}_R2.fastq &&
   gzip ${datasetID}_R1.fastq &&
-  gzip ${datasetID}_R2.fastq &&
-  
-  # remove temp files
-  rm -v ${aln}
+  gzip ${datasetID}_R2.fastq
   """
 }
 
@@ -178,19 +168,11 @@ process KAIJU_TAX_TABLE {
   
   script:
   """
-  # Choose summary levels from: superkingdom,phylum,class,order,family,genus,species
-  summary_levels=(phylum genus species)
-  
-  for level in "\${summary_levels[@]}"
-  do
-  echo \$level
-  # kaiju2table -t ${db}/nodes.dmp \
-  #      -n ${db}/names.dmp \
-  #      -r \$level \
-  #      -u \
-  #      -o ${datasetID}.\$level.summary.tsv \
-  #      ${kaiju_out}
-  done
+  kaiju2table -t ${db}/nodes.dmp \
+        -n ${db}/names.dmp \
+        -r species \
+        -o ${datasetID}.species.summary.tsv \
+        ${kaiju_out}
   """
 }
 
@@ -282,26 +264,12 @@ process HUMANN_RUN {
 
   script:
   """
-  # Sometimes humann3 is unable to write in the output
-  # e.g. :
-  # 40K drwxrwx---. 2 jsbrouard grp_jsbrouard   22 25 aoû 13:10 G2-E1-13_humann3_output
-  # Try to create the output folder before humann3 and change permissions
-  mkdir -p ${datasetID}_humann3_output &&
-  chmod a+rwx ${datasetID}_humann3_output &&
-
   humann -i $reads -o ${datasetID}_humann3_output \
          --threads $task.cpus \
          --remove-temp-output \
          --metaphlan-options "--bowtie2db ${metaphlan_db} --index mpa_vJan21_CHOCOPhlAnSGB_202103" \
          --nucleotide-database $chocophlan_db \
-         --protein-database $uniref_db &&
-
-  # Humann produces a lot of temporary files and under Nextflow
-  # The --remove-temp-output tag is not sufficient to remove all of them
-  rm -rf ${datasetID}_humann3_output/${datasetID}_cat_humann_temp* &&
-  
-  # Remove intermediate files
-  readlink -f $reads | xargs rm
+         --protein-database $uniref_db
   """
 }
 
@@ -365,13 +333,7 @@ process COASSEMBLY {
           -o Megahit_coassembly \
           --out-prefix Coassembly \
           -t $task.cpus \
-          --min-contig-len 1000 &&
-  
-  # Remove intermediate files (concatenated R1 and R2)
-  rm coassembly_R1.fastq.gz coassembly_R2.fastq.gz &&
-
-  # Remove intermediate files (intermediate contigs)
-  rm -rf Megahit_coassembly/intermediate_contigs
+          --min-contig-len 1000
   """
 }
 
@@ -436,10 +398,7 @@ process SORTSAM {
   
   script:
   """
-  samtools sort ${aln} > ${datasetID}_sorted.bam &&
-
-  # Remove intermediate files (SAM)
-  readlink -f ${aln} | xargs rm
+  samtools sort ${aln} > ${datasetID}_sorted.bam
   """
 }
 
@@ -524,7 +483,6 @@ process CHECKM {
     -x fa \
     --input Coassembled_bins \
     --output_directory ${datasetID}
-    
   """
 }
 
@@ -635,9 +593,7 @@ process SORTSAM_SINGLE {
   
   script:
   """
-  samtools sort ${aln} > ${datasetID}_sorted.bam &&
-  # Remove intermediate files (SAM)
-  readlink -f ${aln} | xargs rm
+  samtools sort ${aln} > ${datasetID}_sorted.bam
   """
 }
 
