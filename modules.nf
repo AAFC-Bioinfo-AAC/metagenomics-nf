@@ -264,6 +264,13 @@ process HUMANN_RUN {
 
   script:
   """
+  # Sometimes humann3 is unable to write in the output
+  # e.g. :
+  # 40K drwxrwx---. 2 jsbrouard grp_jsbrouard   22 25 aoû 13:10 G2-E1-13_humann3_output
+  # Try to create the output folder before humann3 and change permissions
+  mkdir -p ${datasetID}_humann3_output &&
+  chmod a+rwx ${datasetID}_humann3_output &&
+
   humann -i $reads -o ${datasetID}_humann3_output \
          --threads $task.cpus \
          --remove-temp-output \
@@ -339,7 +346,7 @@ process COASSEMBLY {
 
 
 process BOWTIE2_BUILD {
-  label 'bowtie2'
+  
 
   publishDir "$projectDir/results/coassembly/bwt2_index"
 
@@ -360,7 +367,7 @@ process BOWTIE2_BUILD {
 
 process BOWTIE2_MAP {
   label 'cpus_large'
-  label 'bowtie2'
+  
   publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
 
 input:
@@ -524,7 +531,7 @@ process MEGAHIT_SINGLE {
 
 process BOWTIE2_BUILD_SINGLE {
 
-  label 'bowtie2'
+  
   label 'cpus_xlarge'
   publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
 
@@ -552,7 +559,7 @@ process BOWTIE2_BUILD_SINGLE {
 
 process BOWTIE2_MAP_SINGLE {
 
-  label 'bowtie2'
+  
   label 'cpus_large'
 
   publishDir "$projectDir/results/indiv_assemblies/bwt2_output_for_metabat"
@@ -869,8 +876,15 @@ process PHYLOPHLAN {
   
   script:
   """
+  # To avoid errors like this :
+  # [e] database directory "phylophlan_databases/" is not writeable, please modify the permissions
+  # We create the 'phylophlan_databases' folder before Phylophlan and change the permissions
+
+  mkdir -p phylophlan_databases &&
+  chmod a+rwx phylophlan_databases &&
+
   # for generating the four default configuration files
-  phylophlan_write_default_configs.sh 
+  phylophlan_write_default_configs.sh &&
   
   phylophlan -d phylophlan \
              -i dRep_output/dereplicated_genomes \
@@ -918,7 +932,7 @@ process COVERM {
 process KRAKEN2 {
 
 label 'cpus_xlarge'
-label 'mem_xlarge'
+label 'mem_large'
 publishDir "$projectDir/results/kraken2"
 
 input:
@@ -940,6 +954,7 @@ kraken2 --use-names \
 --db $db \
 --paired ${final_R1} ${final_R2} \
 --report Kraken2_${datasetID}.report.txt \
+--memory-mapping \
 --report-zero-counts > /dev/null
 # It is important to redirect the large Kraken2 output to /dev/null
 # Otherwise, massive info is written in .command.log
@@ -950,7 +965,7 @@ kraken2 --use-names \
 process KRAKEN2_MPA {
 
 label 'cpus_xlarge'
-label 'mem_xlarge'
+label 'mem_large'
 publishDir "$projectDir/results/kraken2_mpa"
 
 input:
@@ -971,6 +986,7 @@ kraken2 --use-names \
 --threads $task.cpus \
 --db $db \
 --report Kraken2_${datasetID}.mpa.report.txt \
+--memory-mapping \
 --use-mpa-style \
 --report-zero-counts \
 --paired ${final_R1} ${final_R2} > /dev/null

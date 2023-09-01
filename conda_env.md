@@ -44,6 +44,10 @@ mamba create -n bowtie2 -c bioconda bowtie2 samtools
 This works for me :
 
 ```shell
+
+mamba create -n checkm2 -c bioconda -c conda-forge checkm2
+
+#  ou
 git clone --recursive https://github.com/chklovski/checkm2.git && cd checkm2
 mamba create -n checkm2 -f checkm2
 conda activate checkm2
@@ -60,11 +64,60 @@ mamba create -n coverm -c bioconda coverm
 ### DRAM
 
 ```shell
-conda create -n DRAM_2023 -c bioconda dram
+conda create -n DRAM_2023 -c bioconda dram mmseqs2
 conda activate DRAM_2023
 
 # Very important to have the latest version of mmseqs2!!
 conda install -c bioconda mmseqs2
+```
+
+Also you may need to be sure that all users can read the file TRNAinf.cm
+
+
+
+
+** On NML Waffles **
+
+I encontered permissions errors on waffles because some files are owned by root and belong to the wheel group. For example, in spite that the file exists, tRNASCAN-SE produced errors like this :
+
+FATAL: Unable to find /Drives/O/USERS/jsbrouard/.conda/envs/DRAM_2023/bin/covels-SE executable
+
+When examining these files, one can notice that they have no rwx permissions for the other group like this :
+
+```shell
+-rwxrwx---. 2 root      wheel   66552  2 aoû 01:38 TRNAinf-bact-SeC.cm
+-rwxrwxr--. 1 jsbrouard wheel   62945 31 aoû 12:48 TRNAinf.cm
+-rwxrwx---. 2 root      wheel   62677  2 aoû 01:38 TRNAinf-euk.cm
+```
+
+A workaround  is to copy the files in another location. After that, you become the owner of these files and you are able to change permissions.
+
+I have modified two repositories in the DRAM env :
+    - the tRNASCAN-SE folder
+    - the bin folder
+
+I have someting like this :
+
+
+```shell
+# 1 - For the tRNASCAN folder
+
+cd /Drives/O/USERS/jsbrouard/.conda/envs/DRAM_2023/lib
+# copy the whole folder to another place
+cp tRNAscan-SE /Drives/O/USERS/jsbrouard/AAFC-AAC/tRNAscan-SE
+rm -rf tRNAscan-SE
+ln -s /Drives/O/USERS/jsbrouard/AAFC-AAC/tRNAscan-SE tRNAscan-SE
+
+chmod -R a+rwx tRNAscan-SE/
+
+
+# 2 - For all DRAM bins!
+cd /Drives/O/USERS/jsbrouard/.conda/envs/DRAM_2023/bin
+mkdir new_bin
+cp * new_bin
+mv new_bin ..
+rm -rf *
+mv ../new_bin/* .
 ```
 
 Note that the wiki has a plenty of information.

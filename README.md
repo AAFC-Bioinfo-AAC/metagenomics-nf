@@ -133,38 +133,15 @@ nf-jobs are lauched as external_research
 
 ### In resume mode
 
-```shell
-conda activate nextflow-jsb
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles r-resume SESSON-ID -with-report my_report"
-```
-
-
-### Resume
-
-First run nextflow log 
-
 You can use the resume command with the session ID to recover a specific execution. For example:
 
 ```shell
-nextflow run main.nf -resume 2cfd1681-8935-450d-8de4-74b02be9e7d8
-
+conda activate nextflow-jsb
+# ceci a fonctionné avec la nouvelle branche orthodox!
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -profile waffles -resume 9025af6d-b3a6-4c63-bcf3-a98b6ee671d8 -with-report my_report"
 ```
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-nextflow clean boring_euler -n
