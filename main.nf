@@ -61,6 +61,7 @@ include {
   DRAM_ANNOTATION;
   DRAM_DISTILLATION} from './modules.nf'
 
+  include { clean_work_files } from './utilities.nf'
 /* 
  * sub workflows
  */
@@ -113,6 +114,14 @@ workflow get_reads_pairs {
  */
 workflow {
 
+  if( params.use_prepared_reads ) {
+
+    // Using the get_reads_pairs workflow
+    prepared_reads_ch = get_reads_pairs( Channel.fromPath( params.prepared_reads) )
+
+
+  } else {
+
     // using the rename workflow with 2 inputs
     rename( Channel.fromPath( params.reads), params.map_file )
 
@@ -123,8 +132,23 @@ workflow {
     QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
-    OUTPUT_UNALIGNED_READS(BOWTIE2.out)
-    KAIJU(params.kaiju_db, OUTPUT_UNALIGNED_READS.out)
+            
+    
+    prepared_reads_ch = OUTPUT_UNALIGNED_READS(BOWTIE2.out)
+    
+    // This signal will triggered the clean files process
+    QUALITY_FILTERING.out.join(OUTPUT_UNALIGNED_READS.out).join(BOWTIE2.out)
+      .collect()
+      .flatten()
+      //.filter{ it =~ /.*bam$/ }
+      .filter{ it =~ /.*_trimmed.*/ || it =~ /.*bam$/ || it =~ /.*_unpaired.*/ }
+      .view()
+      .set{ cleanable_bams_ch }
+    clean_sorted_bams(cleanable_bams_ch)
+  }
+
+
+    KAIJU(params.kaiju_db, prepared_reads_ch)
     ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)   
 
@@ -136,13 +160,13 @@ workflow {
       .set { ch_kaiju_tsv }    
 
     MERGE_TAX_FILES(ch_kaiju_tsv)
-    CAT_FASTQ(OUTPUT_UNALIGNED_READS.out)
+    CAT_FASTQ(prepared_reads_ch)
     HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
     HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
-    COASSEMBLY(OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
-               OUTPUT_UNALIGNED_READS.out.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
+    COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
+               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
     BOWTIE2_BUILD(COASSEMBLY.out)
-    BOWTIE2_MAP(BOWTIE2_BUILD.out,OUTPUT_UNALIGNED_READS.out)
+    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)
     SORTSAM(BOWTIE2_MAP.out)
     
     JGI_SUMMARIZE(SORTSAM.out)
@@ -150,9 +174,9 @@ workflow {
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
     
     // PART 2 : Individual assemblies
-    MEGAHIT_SINGLE(OUTPUT_UNALIGNED_READS.out)
+    MEGAHIT_SINGLE(prepared_reads_ch)
     BOWTIE2_BUILD_SINGLE(MEGAHIT_SINGLE.out)
-    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(OUTPUT_UNALIGNED_READS.out))
+    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     SORTSAM_SINGLE(BOWTIE2_MAP_SINGLE.out)
     JGI_SUMMARIZE_SINGLE(SORTSAM_SINGLE.out)
     ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(MEGAHIT_SINGLE.out))
@@ -169,10 +193,10 @@ workflow {
     QUAST(COASSEMBLY.out, DREP.out)
     GTDB_TK(params.gtdb_db, DREP.out)
     PHYLOPHLAN(DREP.out)
-    COVERM(OUTPUT_UNALIGNED_READS.out,DREP.out)
+    COVERM(prepared_reads_ch,DREP.out)
     
-    KRAKEN2(params.kraken2, OUTPUT_UNALIGNED_READS.out)
-    KRAKEN2_MPA(params.kraken2, OUTPUT_UNALIGNED_READS.out)
+    KRAKEN2(params.kraken2, prepared_reads_ch)
+    KRAKEN2_MPA(params.kraken2, prepared_reads_ch)
     COMBINE_KRAKEN2(KRAKEN2_MPA.out.flatten().filter ( Path ).collect())
     BRACKEN_ALT(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
 

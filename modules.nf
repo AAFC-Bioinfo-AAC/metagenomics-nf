@@ -954,7 +954,6 @@ kraken2 --use-names \
 --db $db \
 --paired ${final_R1} ${final_R2} \
 --report Kraken2_${datasetID}.report.txt \
---memory-mapping \
 --report-zero-counts > /dev/null
 # It is important to redirect the large Kraken2 output to /dev/null
 # Otherwise, massive info is written in .command.log
@@ -986,7 +985,6 @@ kraken2 --use-names \
 --threads $task.cpus \
 --db $db \
 --report Kraken2_${datasetID}.mpa.report.txt \
---memory-mapping \
 --use-mpa-style \
 --report-zero-counts \
 --paired ${final_R1} ${final_R2} > /dev/null
