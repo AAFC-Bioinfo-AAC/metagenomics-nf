@@ -124,12 +124,27 @@ nextflow run main.nf -profile biocluster -resume -with-report my_report_20230827
 
 Don't use screen!!
 
+
+export NXF_OPTS="-Xms500M -Xmx2G" 
+
+
 ```shell
 conda activate nextflow-jsb
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles -with-report my_report -resume"
+export NXF_OPTS="-Xms500M -Xmx2G" 
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles -with-report my_report"
 ```
 
-nf-jobs are lauched as external_research
+
+## 7 - Alternative paths
+
+
+when looking at the whole pipeline, one can see that there are 3 main branches : main, humann and taxonomic profiling.
+
+If you have your prepared_readsin hands, you can run easily run just one branch at a time by removing the undesired modules in the main.nf file. Here a screenshot of a sucessufully run of the kaiju branch!
+
+<p align="center"><img src="misc/just_kaiju.png" alt="The kaiju branch"></p>
+
+
 
 ### In resume mode
 

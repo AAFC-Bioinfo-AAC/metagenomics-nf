@@ -380,34 +380,22 @@ input:
 output:
   tuple \
     val(datasetID), \
-    path("${datasetID}.sam")
+    path("${datasetID}_sorted.bam")
 
 script:
 """
 bowtie2 -x coassembly/coassembly \
         -1 ${final_R1} \
         -2 ${final_R2} \
-        -S ${datasetID}.sam -p $task.cpus
+        -p $task.cpus | \
+        samtools sort \
+        --threads $task.cpus \
+        -O BAM -o ${datasetID}_sorted.bam
+
 """
 }
 
-process SORTSAM {
 
-  input: 
-    tuple \
-      val(datasetID), \
-      path(aln)
- 
-  output:   
-    tuple \
-      val(datasetID), \
-      path("${datasetID}_sorted.bam")
-  
-  script:
-  """
-  samtools sort ${aln} > ${datasetID}_sorted.bam
-  """
-}
 
 
 process JGI_SUMMARIZE {
@@ -574,33 +562,18 @@ process BOWTIE2_MAP_SINGLE {
   output:
     tuple \
       val(datasetID), \
-      path("${datasetID}.sam")
+      path("${datasetID}_sorted.bam")
 
   script:
   """
   bowtie2 -x index/${datasetID} \
           -1 ${final_R1} \
           -2 ${final_R2} \
-          -S ${datasetID}.sam -p $task.cpus
-  """
-}
-
-
-process SORTSAM_SINGLE {
-  
-  input: 
-    tuple \
-      val(datasetID), \
-      path(aln)
- 
-  output:   
-    tuple \
-      val(datasetID), \
-      path("${datasetID}_sorted.bam")
-  
-  script:
-  """
-  samtools sort ${aln} > ${datasetID}_sorted.bam
+          -p $task.cpus | \
+          samtools sort \
+          --threads $task.cpus \
+          -O BAM -o ${datasetID}_sorted.bam
+          
   """
 }
 

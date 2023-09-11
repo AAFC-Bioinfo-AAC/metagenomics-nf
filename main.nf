@@ -36,12 +36,10 @@ include {
   BOWTIE2_MAP;
   METABAT2_BIN_COASSEMBLY;
   JGI_SUMMARIZE;
-  SORTSAM;
   CHECKM;
   MEGAHIT_SINGLE;
   BOWTIE2_BUILD_SINGLE;
   BOWTIE2_MAP_SINGLE;
-  SORTSAM_SINGLE;
   JGI_SUMMARIZE_SINGLE;
   METABAT2_BIN_SINGLE;
   CHECKM_SINGLE;
@@ -166,10 +164,8 @@ workflow {
     COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
                prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
     BOWTIE2_BUILD(COASSEMBLY.out)
-    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)
-    SORTSAM(BOWTIE2_MAP.out)
-    
-    JGI_SUMMARIZE(SORTSAM.out)
+    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
+    JGI_SUMMARIZE(BOWTIE2_MAP.out)
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
     
@@ -177,8 +173,7 @@ workflow {
     MEGAHIT_SINGLE(prepared_reads_ch)
     BOWTIE2_BUILD_SINGLE(MEGAHIT_SINGLE.out)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
-    SORTSAM_SINGLE(BOWTIE2_MAP_SINGLE.out)
-    JGI_SUMMARIZE_SINGLE(SORTSAM_SINGLE.out)
+    JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(MEGAHIT_SINGLE.out))
     
     

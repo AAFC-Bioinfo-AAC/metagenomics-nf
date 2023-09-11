@@ -14,6 +14,13 @@ conda config --add channels conda-forge
 conda config --add channels biobakery
 ```
 
+### Abricate
+
+```shell
+conda create -n abricate -c conda-forge -c bioconda -c defaults abricate
+```
+
+
 
 ### Bedtools
 ```shell
