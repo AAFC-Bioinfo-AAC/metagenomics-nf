@@ -107,6 +107,30 @@ workflow get_reads_pairs {
 }
 
 
+/*
+ * sub workflow get_folder: This workflow creates a `folder_ch`
+ * channel that emits tuples containing 2 elements:
+ * the sample ID, and the path containing a folder with stuff.
+ */
+workflow get_folder {
+    
+    println "You are using the *get_folder* subworkflow."
+    take: data
+    
+    main:
+       data.flatten()
+       .map { dir ->
+          def key_part1 = dir.name.toString()
+          key = key_part1
+          return tuple(key, dir)
+       }
+       .view()       
+       .set { folder_ch }
+    emit:
+      folder_ch
+}
+
+
 /* 
  * main pipeline logic
  */
@@ -169,12 +193,23 @@ workflow {
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
     
+
+    if( params.use_megahit_individual_assemblies ) {
+
+    // Using the get_folders workflow
+    indiv_assemblies_ch = get_folder( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
+
+    } else {
     // PART 2 : Individual assemblies
-    MEGAHIT_SINGLE(prepared_reads_ch)
-    BOWTIE2_BUILD_SINGLE(MEGAHIT_SINGLE.out)
+    indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
+    
+    }
+
+    
+    BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(MEGAHIT_SINGLE.out))
+    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     
     
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)

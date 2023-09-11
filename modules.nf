@@ -340,7 +340,8 @@ process COASSEMBLY {
           -o Megahit_coassembly \
           --out-prefix Coassembly \
           -t $task.cpus \
-          --min-contig-len 1000
+          --min-contig-len 1000 \
+          --presets 'meta-large'
   """
 }
 
