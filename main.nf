@@ -1,7 +1,6 @@
 /* 
- * This workflow is adpated from  the work of Devin Holman and Arun Kommadath (AAFC Lacombe)
- * and the work of Sara Ricci a post-doc in Renee Petri team
- *
+ * This workflow was adpated by Jean-Simon Brouard
+ * from the work done by Devin Holman, Arun Kommadath (AAFC Lacombe) and Sara Ricci.
  * 
  */
 
@@ -11,7 +10,7 @@
 nextflow.enable.dsl = 2
 
 log.info """\
-M E T A G E N O M I C  -  Workflow - AAFC    v 0.1 
+M E T A G E N O M I C  -  Workflow - AAFC    v 1.1 
 ================================
 genome   : $params.genome
 genome basename : $params.genome_basename
@@ -124,7 +123,7 @@ workflow get_folder {
           key = key_part1
           return tuple(key, dir)
        }
-       .view()       
+       //.view()       
        .set { folder_ch }
     emit:
       folder_ch
@@ -144,21 +143,20 @@ workflow {
 
   } else {
 
-    // using the rename workflow with 2 inputs
+    // Using the rename workflow with 2 inputs
     rename( Channel.fromPath( params.reads), params.map_file )
 
-    // using the get_reads_pairs workflow
+    // Using the get_reads_pairs workflow
     get_reads_pairs(rename.out)
     
     // PART 1: Data preparation
     QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
-            
-    
+
     prepared_reads_ch = OUTPUT_UNALIGNED_READS(BOWTIE2.out)
     
-    // This signal will triggered the clean files process
+    // This signal will trigger the clean files process
     QUALITY_FILTERING.out.join(OUTPUT_UNALIGNED_READS.out).join(BOWTIE2.out)
       .collect()
       .flatten()
@@ -169,69 +167,74 @@ workflow {
     clean_sorted_bams(cleanable_bams_ch)
   }
 
-
+  if (!params.skip_kaiju ) {
+    println "*You do Kaiju*"
     KAIJU(params.kaiju_db, prepared_reads_ch)
     ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
     KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)   
-
     ch_kaiju
       .flatten()
       .filter ( Path ) // To get rid of datasetID values    
       .collect()     
-      //.view()
       .set { ch_kaiju_tsv }    
-
-    MERGE_TAX_FILES(ch_kaiju_tsv)
-    CAT_FASTQ(prepared_reads_ch)
-    HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
-    HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
-    COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
-               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
-    BOWTIE2_BUILD(COASSEMBLY.out)
-    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
-    JGI_SUMMARIZE(BOWTIE2_MAP.out)
-    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
-    CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
-    
-
-    if( params.use_megahit_individual_assemblies ) {
-
-    // Using the get_folders workflow
-    indiv_assemblies_ch = get_folder( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
-
+      MERGE_TAX_FILES(ch_kaiju_tsv)
     } else {
-    // PART 2 : Individual assemblies
-    indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
-    
-    }
+      println "*You skip Kaiju...*"
+  }
 
-    
-    BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
-    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
-    JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
-    
-    
-    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-    SORT_BINS(CHECKM.out)
-    SORT_BINS2(CHECKM_SINGLE.out)
-    GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
-             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
-             METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
-
-    DREP(GET_BINS.out)
-    QUAST(COASSEMBLY.out, DREP.out)
-    GTDB_TK(params.gtdb_db, DREP.out)
-    PHYLOPHLAN(DREP.out)
-    COVERM(prepared_reads_ch,DREP.out)
-    
+  if (!params.skip_kraken ) {
+    println "*You do Kraken2*"
     KRAKEN2(params.kraken2, prepared_reads_ch)
     KRAKEN2_MPA(params.kraken2, prepared_reads_ch)
     COMBINE_KRAKEN2(KRAKEN2_MPA.out.flatten().filter ( Path ).collect())
     BRACKEN_ALT(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
+  } else {
+    println "*You skip Kraken...*"
+  }  
 
-    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
+  CAT_FASTQ(prepared_reads_ch)
+
+  if (!params.skip_humann ) {
+    println "*You do Humann*"
+    HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
+    HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
+  } else {
+    println "*You skip Humann...*"
+  }   
+
+  
+  COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
+               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
+  BOWTIE2_BUILD(COASSEMBLY.out)
+  BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
+  JGI_SUMMARIZE(BOWTIE2_MAP.out)
+  METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
+  CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
+  
+  // Individual assemblies
+  if( params.use_megahit_individual_assemblies ) {
+    // Using the get_folders workflow
+    indiv_assemblies_ch = get_folder( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
+  } else {
+    indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
+  }
+  BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
+  BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
+  JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
+  ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
+  CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
+  SORT_BINS(CHECKM.out)
+  SORT_BINS2(CHECKM_SINGLE.out)
+  GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
+             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
+             METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
+  DREP(GET_BINS.out)
+  QUAST(COASSEMBLY.out, DREP.out)
+  GTDB_TK(params.gtdb_db, DREP.out)
+  PHYLOPHLAN(DREP.out)
+  COVERM(prepared_reads_ch,DREP.out)
+  DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+  DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
 }
 
 

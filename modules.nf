@@ -520,14 +520,14 @@ process MEGAHIT_SINGLE {
 
 process BOWTIE2_BUILD_SINGLE {
 
-  
   label 'cpus_xlarge'
   publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
 
   input:
     tuple \
       val(datasetID), \
-      path(megahit_individual_outfiles, stageAs: "megahit/*")
+      path(megahit_individual_outfiles)
+      //path(megahit_individual_outfiles, stageAs: "megahit/*")
 
   output:
     tuple \
@@ -538,7 +538,7 @@ process BOWTIE2_BUILD_SINGLE {
   """
   mkdir bwt2_index
   bowtie2-build \
-    megahit/${datasetID}.contigs.fa \
+  ${datasetID}/${datasetID}.contigs.fa \
     bwt2_index/${datasetID} \
     --quiet \
     --threads $task.cpus
@@ -578,7 +578,6 @@ process BOWTIE2_MAP_SINGLE {
   """
 }
 
-
 process JGI_SUMMARIZE_SINGLE {
 
   publishDir "$projectDir/results/indiv_assemblies/jgi"
@@ -601,8 +600,6 @@ process JGI_SUMMARIZE_SINGLE {
   """
 }
 
-
-
 process METABAT2_BIN_SINGLE {
 
   label 'cpus_xlarge'
@@ -614,7 +611,7 @@ process METABAT2_BIN_SINGLE {
       val(datasetID), \
       path("${datasetID}_depth.txt"), \
       path(megahit_individual_outfiles, stageAs: "megahit/*")
-
+      
   output:
     tuple \
       val(datasetID), \
@@ -624,7 +621,7 @@ process METABAT2_BIN_SINGLE {
   """
   mkdir ${datasetID}
   metabat2 \
-    -i megahit/${datasetID}.contigs.fa \
+    -i megahit/${datasetID}/${datasetID}.contigs.fa \
     -a ${datasetID}_depth.txt \
     -o ${datasetID}/${datasetID}.individ.bin \
     -t $task.cpus \
@@ -663,8 +660,6 @@ process CHECKM_SINGLE {
   """
 }
 
-
-
 process GET_BINS {
 
   label 'HQ_bins'
@@ -698,10 +693,6 @@ process GET_BINS {
   for i in `ls *.fa`; do l=\$(readlink \$i); ln -s \$l ../all_bins; done
   """
 }
-
-
-
-
 
 process SORT_BINS {
 
@@ -741,7 +732,6 @@ process SORT_BINS2 {
   """
 }
 
-
 process DREP {
 
   label 'cpus_xxlarge'
@@ -775,7 +765,6 @@ process DREP {
   """
 }
 
-
 process QUAST {
 
   label 'cpus_xlarge'
@@ -805,8 +794,6 @@ process QUAST {
 
 
 }
-
-
 
 process GTDB_TK {
 
@@ -905,34 +892,34 @@ process COVERM {
 
 process KRAKEN2 {
 
-label 'cpus_xlarge'
-label 'mem_large'
-publishDir "$projectDir/results/kraken2"
+  label 'cpus_xlarge'
+  label 'mem_large'
+  publishDir "$projectDir/results/kraken2"
 
-input:
-  path db
-  tuple \
-    val(datasetID), \
-    path(final_R1), \
-    path(final_R2)
+  input:
+    path db
+    tuple \
+      val(datasetID), \
+      path(final_R1), \
+      path(final_R2)
  
-output:   
-  tuple \
-    val(datasetID), \
-    path("Kraken2_${datasetID}.report.txt")
+  output:   
+    tuple \
+      val(datasetID), \
+      path("Kraken2_${datasetID}.report.txt")
 
-script:
-"""
-kraken2 --use-names \
---threads $task.cpus \
---db $db \
---paired ${final_R1} ${final_R2} \
---report Kraken2_${datasetID}.report.txt \
---report-zero-counts > /dev/null
-# It is important to redirect the large Kraken2 output to /dev/null
-# Otherwise, massive info is written in .command.log
-# and .command.out Nextflow files
-"""
+  script:
+  """
+  kraken2 --use-names \
+  --threads $task.cpus \
+  --db $db \
+  --paired ${final_R1} ${final_R2} \
+  --report Kraken2_${datasetID}.report.txt \
+  --report-zero-counts > /dev/null
+  # It is important to redirect the large Kraken2 output to /dev/null
+  # Otherwise, massive info is written in .command.log
+  # and .command.out Nextflow files
+  """
 }
 
 process KRAKEN2_MPA {
