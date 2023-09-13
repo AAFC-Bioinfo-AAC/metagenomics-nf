@@ -796,7 +796,7 @@ process QUAST {
 
   output:
     path "QUAST_replicated_MAGs/*"
-    
+    path "QUAST_coassembly/*"
     
     
   script:
@@ -809,8 +809,26 @@ process QUAST {
     -t $task.cpus \
     -o QUAST_coassembly
   """
+}
 
+process QUAST2 {
 
+  label 'cpus_xlarge'
+  
+  publishDir "$projectDir/results/quast"
+  
+  input:
+    path(dereplicated_genomes, stageAs: "dRep_output/*")
+
+  output:
+    path "QUAST_replicated_MAGs/*"
+  
+  script:
+  """
+  quast.py dRep_output/dereplicated_genomes/*.fa \
+    --threads $task.cpus \
+    -o QUAST_replicated_MAGs
+  """
 }
 
 process GTDB_TK {

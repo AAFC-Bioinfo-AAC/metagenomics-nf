@@ -45,11 +45,13 @@ include {
   SORT_BINS;
   SORT_BINS2;
   GET_BINS;
+  GET_BINS2;
   DREP;
   GTDB_TK;
   PHYLOPHLAN;
   COVERM;
   QUAST;
+  QUAST2;
   KRAKEN2;
   KRAKEN2_MPA;
   COMBINE_KRAKEN2;
@@ -252,7 +254,7 @@ workflow {
     GET_BINS2(SORT_BINS2.out.collect(),
              METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect())
     DREP(GET_BINS2.out)
-    QUAST(COASSEMBLY.out, DREP.out)
+    QUAST2(DREP.out)
     GTDB_TK(params.gtdb_db, DREP.out)
     PHYLOPHLAN(DREP.out)
     COVERM(prepared_reads_ch,DREP.out)
