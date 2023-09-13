@@ -309,7 +309,7 @@ process HUMANN_ABUNDANCE {
 process COASSEMBLY {
 
   label 'mem_xxlarge'
-  label 'cpus_xxlarge'
+  label 'cpus_xxxlarge'
   
   publishDir "$projectDir/results/coassembly/megahit"
 

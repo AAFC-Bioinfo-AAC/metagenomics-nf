@@ -194,10 +194,9 @@ workflow {
     println "*You skip Kraken...*"
   }  
 
-  CAT_FASTQ(prepared_reads_ch)
-
   if (!params.skip_humann ) {
     println "*You do Humann*"
+    CAT_FASTQ(prepared_reads_ch)
     HUMANN_RUN(params.chocophlan_db, params.metaphlan_db, params.uniref_db, CAT_FASTQ.out)
     HUMANN_ABUNDANCE(HUMANN_RUN.out.flatten().filter ( Path ).collect())   
   } else {
