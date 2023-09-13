@@ -202,15 +202,6 @@ workflow {
     println "*You skip Humann...*"
   }   
 
-  
-  COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
-               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
-  BOWTIE2_BUILD(COASSEMBLY.out)
-  BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
-  JGI_SUMMARIZE(BOWTIE2_MAP.out)
-  METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
-  CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
-  
   // Individual assemblies
   if( params.use_megahit_individual_assemblies ) {
     // Using the get_folders workflow
@@ -218,23 +209,57 @@ workflow {
   } else {
     indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
   }
-  BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
-  BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
-  JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-  ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
-  CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-  SORT_BINS(CHECKM.out)
-  SORT_BINS2(CHECKM_SINGLE.out)
-  GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
+  
+  if (!params.skip_coassembly ) {
+
+    println "*You do both individual and coassembly steps*"
+    COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
+               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
+    BOWTIE2_BUILD(COASSEMBLY.out)
+    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
+    JGI_SUMMARIZE(BOWTIE2_MAP.out)
+    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
+    CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
+  
+
+    BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
+    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
+    JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
+    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
+    SORT_BINS(CHECKM.out)
+    SORT_BINS2(CHECKM_SINGLE.out)
+    GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
              METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
              METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
-  DREP(GET_BINS.out)
-  QUAST(COASSEMBLY.out, DREP.out)
-  GTDB_TK(params.gtdb_db, DREP.out)
-  PHYLOPHLAN(DREP.out)
-  COVERM(prepared_reads_ch,DREP.out)
-  DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-  DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
+    DREP(GET_BINS.out)
+    QUAST(COASSEMBLY.out, DREP.out)
+    GTDB_TK(params.gtdb_db, DREP.out)
+    PHYLOPHLAN(DREP.out)
+    COVERM(prepared_reads_ch,DREP.out)
+    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+    DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
+
+    } else {
+
+    println "*You skip all coassembly steps...*"
+    BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
+    BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
+    JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
+    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
+    SORT_BINS2(CHECKM_SINGLE.out)
+    GET_BINS2(SORT_BINS2.out.collect(),
+             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect())
+    DREP(GET_BINS2.out)
+    QUAST(COASSEMBLY.out, DREP.out)
+    GTDB_TK(params.gtdb_db, DREP.out)
+    PHYLOPHLAN(DREP.out)
+    COVERM(prepared_reads_ch,DREP.out)
+    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+    DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
+
+  }   
 }
 
 

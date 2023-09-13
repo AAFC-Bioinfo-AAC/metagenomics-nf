@@ -212,6 +212,12 @@ mamba create -n quast-5.2.0 -c bioconda quast=5.2.0
 conda create -n R -c conda-forge r-base=4.2.3 r-tidyr=1.3.0
 ```
 
+### geNomad
+
+https://github.com/apcamargo/genomad
+
+# Create a conda environment for geNomad
+conda create -n genomad -c conda-forge -c bioconda genomad
 
 
 

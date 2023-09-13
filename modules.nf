@@ -55,8 +55,6 @@ process QUALITY_FILTERING {
   """
 }
 
-
-
 process BOWTIE2 {
 
   label 'mem_medium'
@@ -92,7 +90,6 @@ process BOWTIE2 {
   """
 }
 
-
 process OUTPUT_UNALIGNED_READS {
 
   publishDir "$projectDir/results/prepared_reads"
@@ -115,7 +112,6 @@ process OUTPUT_UNALIGNED_READS {
   gzip ${datasetID}_R2.fastq
   """
 }
-
 
 process KAIJU {
 
@@ -148,7 +144,6 @@ process KAIJU {
   """
 }
 
-
 process KAIJU_TAX_TABLE {
 
   label 'mem_medium'
@@ -175,7 +170,6 @@ process KAIJU_TAX_TABLE {
         ${kaiju_out}
   """
 }
-
 
 process KAIJU_FULL_TAX_TABLE {
 
@@ -204,8 +198,6 @@ process KAIJU_FULL_TAX_TABLE {
         ${kaiju_out}
   """
 }
-
-
 
 process MERGE_TAX_FILES {
 
@@ -241,7 +233,6 @@ process CAT_FASTQ {
   cat ${final_R1} ${final_R2} > ${datasetID}_cat.fastq.gz
   """
 }
-
 
 process HUMANN_RUN {
 
@@ -280,7 +271,6 @@ process HUMANN_RUN {
   """
 }
 
-
 process HUMANN_ABUNDANCE {
 
   publishDir "$projectDir/results/humann/humann_results"
@@ -314,7 +304,6 @@ process HUMANN_ABUNDANCE {
   """
 }
 
-
 // modules related to co-assemblies
 
 process COASSEMBLY {
@@ -345,7 +334,6 @@ process COASSEMBLY {
   """
 }
 
-
 process BOWTIE2_BUILD {
   
 
@@ -363,8 +351,6 @@ process BOWTIE2_BUILD {
   bowtie2-build megahit/Coassembly.contigs.fa coassembly/coassembly
   """
 }
-
-
 
 process BOWTIE2_MAP {
   label 'cpus_large'
@@ -486,7 +472,7 @@ process CHECKM {
 
 process MEGAHIT_SINGLE {
   
-  label 'mem_xxlarge'
+  label 'mem_xlarge'
   label 'cpus_xlarge'
   
   publishDir "$projectDir/results/indiv_assemblies/megahit"
@@ -500,7 +486,7 @@ process MEGAHIT_SINGLE {
   output:
     tuple \
       val(datasetID), \
-      path ("${datasetID}/*")
+      path ("${datasetID}")
 
   script:
   """
@@ -527,7 +513,6 @@ process BOWTIE2_BUILD_SINGLE {
     tuple \
       val(datasetID), \
       path(megahit_individual_outfiles)
-      //path(megahit_individual_outfiles, stageAs: "megahit/*")
 
   output:
     tuple \
@@ -688,7 +673,40 @@ process GET_BINS {
   
   cd ..
   
-  # a bit cray recopy the links in another folder..
+  # a bit crazy recopy the links in another folder..
+  cd bins
+  for i in `ls *.fa`; do l=\$(readlink \$i); ln -s \$l ../all_bins; done
+  """
+}
+
+process GET_BINS2 {
+
+  label 'HQ_bins'
+  publishDir "$projectDir/results/bins"
+  
+  input:
+      path (tsv_files, stageAs: "checkM2_hq/*")
+      path (individ_assembled_bins, stageAs: "bins/*")
+      
+  output:
+      path("High_quality_bins.txt")
+      path("hq_bins/*")
+      path("all_bins/*")
+      
+  script:
+  """
+  mkdir hq_bins
+  mkdir all_bins
+  
+  cat checkM2_hq/*.tsv > High_quality_bins.txt
+  
+  cd bins
+  
+  for i in `cut -f 1 ../High_quality_bins.txt` ; do l=\$(readlink \$i.fa); ln -s \$l ../hq_bins ; done
+  
+  cd ..
+  
+  # a bit crazy recopy the links in another folder..
   cd bins
   for i in `ls *.fa`; do l=\$(readlink \$i); ln -s \$l ../all_bins; done
   """

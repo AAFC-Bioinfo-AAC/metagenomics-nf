@@ -113,6 +113,13 @@ nextflow run main.nf -profile biocluster -with-report my_report 2>&1 | tee logfi
 
 # With resume and specifying the location of the work folder
 nextflow run main.nf -profile biocluster -resume -with-report my_report_20230827 -w /isilon/projects/J-002888_GRDI-AMR2/work
+
+
+# Without screen
+nextflow run main.nf -profile biocluster -bg -ansi-log false > my-file.log
+
+
+
 ```
 
 
@@ -131,8 +138,13 @@ export NXF_OPTS="-Xms500M -Xmx2G"
 ```shell
 conda activate nextflow-jsb
 export NXF_OPTS="-Xms500M -Xmx2G" 
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -c nextflow.config -profile waffles -with-report my_report"
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf  -profile waffles -ansi-log false"
 ```
+
+
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf  -profile waffles -ansi-log false -resume d370824e-10e5-464c-9628-4bb319978b55"
+
+
 
 
 ## 7 - Alternative paths
