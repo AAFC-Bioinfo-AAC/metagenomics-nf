@@ -900,6 +900,7 @@ process PHYLOPHLAN {
 process COVERM {
 
  label 'cpus_xlarge'
+ label 'mem_large'
  publishDir "$projectDir/results/coverM"
 
   input:
@@ -916,6 +917,10 @@ process COVERM {
   
   script:
   """
+  # Define TMPDIR env variable to avoid Samtools (used by coverm) to write in /tmp in local nodes!
+  mkdir -p $baseDir/tmp
+  export TMPDIR=$baseDir/tmp
+
   coverm genome -1 ${final_R1} \
                 -2 ${final_R2} \
                 --genome-fasta-directory dRep_output/dereplicated_genomes \

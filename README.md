@@ -111,7 +111,12 @@ for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f
 # No resume
 screen -S Run
 conda activate nextflow
-nextflow run main.nf -profile biocluster 2>&1 | tee logfile_nextflow.txt
+nextflow run main.nf -profile biocluster -resume ID 2>&1 | tee logfile_nextflow.txt
+
+nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow_b.txt
+
+
+
 
 # With resume and specifying the location of the work folder
 nextflow run main.nf -profile biocluster -resume -w /isilon/projects/J-002888_GRDI-AMR2/work
@@ -139,7 +144,7 @@ export NXF_OPTS="-Xms500M -Xmx2G"
 ```shell
 conda activate nextflow-jsb
 export NXF_OPTS="-Xms500M -Xmx2G" 
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf  -profile waffles -ansi-log false"
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles -resume d370824e-10e5-464c-9628-4bb319978b55"
 ```
 
 
