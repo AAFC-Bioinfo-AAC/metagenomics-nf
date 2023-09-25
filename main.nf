@@ -27,6 +27,7 @@ include {
   KAIJU_TAX_TABLE;
   KAIJU_FULL_TAX_TABLE;
   MERGE_TAX_FILES;
+  MERGE_FULL_TAX_FILES;
   CAT_FASTQ;
   HUMANN_RUN;
   HUMANN_ABUNDANCE;
@@ -172,14 +173,21 @@ workflow {
   if (!params.skip_kaiju ) {
     println "*You do Kaiju*"
     KAIJU(params.kaiju_db, prepared_reads_ch)
-    ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db,KAIJU.out)
-    KAIJU_FULL_TAX_TABLE(params.kaiju_db,KAIJU.out)   
+    ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db, KAIJU.out)
+    ch_kaiju_full = KAIJU_FULL_TAX_TABLE(params.kaiju_db, KAIJU.out)   
     ch_kaiju
       .flatten()
       .filter ( Path ) // To get rid of datasetID values    
       .collect()     
-      .set { ch_kaiju_tsv }    
+      .set { ch_kaiju_tsv }
+    ch_kaiju_full
+      .flatten()
+      .filter ( Path ) // To get rid of datasetID values    
+      .collect()     
+      .set { ch_kaiju_full_tsv }
       MERGE_TAX_FILES(ch_kaiju_tsv)
+      MERGE_FULL_TAX_FILES(ch_kaiju_full_tsv)
+
     } else {
       println "*You skip Kaiju...*"
   }
@@ -187,7 +195,7 @@ workflow {
   if (!params.skip_kraken ) {
     println "*You do Kraken2*"
     KRAKEN2(params.kraken2, prepared_reads_ch)
-    KRAKEN2_MPA(params.kraken2, prepared_reads_ch)
+    KRAKEN2_MPA(KRAKEN2.out)
     COMBINE_KRAKEN2(KRAKEN2_MPA.out.flatten().filter ( Path ).collect())
     BRACKEN_ALT(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
   } else {

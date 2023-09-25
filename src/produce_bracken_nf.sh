@@ -12,7 +12,8 @@
 KRAKEN_DB=$1
 # baseDir is a nextflow variable that we want to use 
 baseDir=$2
-echo baseDir>tester
+echo "$baseDir:" > tester
+echo "$KRAKEN_DB" >> tester
 # prerequisite: avoir créé le répertoire k2_assembly_reports contenant tous les fichiers kreport
 # (créés en ajoutant --report lors de l'appel à kraken)
 

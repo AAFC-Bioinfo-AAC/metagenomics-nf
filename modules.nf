@@ -215,6 +215,30 @@ process MERGE_TAX_FILES {
   """
 }
 
+process MERGE_FULL_TAX_FILES {
+
+  publishDir "$projectDir/results/kaiju/kaiju_merged"
+
+  input:
+    path (tsv_files, stageAs: "kaiju_full_tax_table/*")   // to put input files in a folder parsed by R script
+
+  output:
+    path("kaiju_merged_full_tax.csv")
+  
+  script:
+  """
+  $baseDir/src/merge_full_tax_files.R
+  """
+}
+
+
+
+
+
+
+
+
+
 process CAT_FASTQ {
 
   input:
@@ -441,7 +465,7 @@ process METABAT2_BIN_COASSEMBLY {
 
 process CHECKM {
 
-  label 'cpus_medium'
+  label 'cpus_xxlarge'
   
   publishDir "$projectDir/results/coassembly/checkM2_output"
   
@@ -834,7 +858,8 @@ process QUAST2 {
 process GTDB_TK {
 
   label 'cpus_xxlarge'
-  
+  label 'mem_xxlarge'
+
   publishDir "$projectDir/results/GTDB"
 
   input:
@@ -956,6 +981,7 @@ process KRAKEN2 {
   --db $db \
   --paired ${final_R1} ${final_R2} \
   --report Kraken2_${datasetID}.report.txt \
+  --confidence 0.5 \
   --report-zero-counts > /dev/null
   # It is important to redirect the large Kraken2 output to /dev/null
   # Otherwise, massive info is written in .command.log
@@ -965,16 +991,13 @@ process KRAKEN2 {
 
 process KRAKEN2_MPA {
 
-label 'cpus_xlarge'
-label 'mem_large'
+
 publishDir "$projectDir/results/kraken2_mpa"
 
 input:
-  path db
    tuple \
     val(datasetID), \
-    path(final_R1), \
-    path(final_R2)
+    path(report)
  
 output:   
   tuple \
@@ -983,16 +1006,9 @@ output:
 
 script:
 """
-kraken2 --use-names \
---threads $task.cpus \
---db $db \
---report Kraken2_${datasetID}.mpa.report.txt \
---use-mpa-style \
---report-zero-counts \
---paired ${final_R1} ${final_R2} > /dev/null
-# It is important to redirect the large Kraken2 output to /dev/null
-# Otherwise, massive info is written in .command.log
-# and .command.out Nextflow files
+$baseDir/src/kreport2mpa.py \
+  -r $report \
+  -o Kraken2_${datasetID}.mpa.report.txt
 """
 }
 
@@ -1058,7 +1074,7 @@ publishDir "$projectDir/results/bracken_smart"
 
 input:
   path db
-  path (dereplicated_genomes, stageAs: "k2_assembly_reports/*")
+  path (kraken2_reports, stageAs: "k2_assembly_reports/*")
 
 output:
   path ("braken/*")
