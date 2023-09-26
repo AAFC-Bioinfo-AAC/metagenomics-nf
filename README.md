@@ -111,6 +111,10 @@ for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f
 # No resume
 screen -S Run
 conda activate nextflow
+
+# NO RESUME
+nextflow run main.nf -profile biocluster 2>&1 | tee logfile_nextflow.txt
+
 nextflow run main.nf -profile biocluster -resume ID 2>&1 | tee logfile_nextflow.txt
 
 nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow_b.txt

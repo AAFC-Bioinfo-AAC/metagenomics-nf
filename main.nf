@@ -61,7 +61,9 @@ include {
   DRAM_ANNOTATION;
   DRAM_DISTILLATION} from './modules.nf'
 
-  include { clean_work_files } from './utilities.nf'
+
+include { clean_work_files as clean_sorted_bams } from './utilities.nf'
+
 /* 
  * sub workflows
  */
