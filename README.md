@@ -2,7 +2,29 @@
 
 
 ## 1 - Introduction
-Write an introduction here...
+
+This Nextflow workflow allows the realization of the most common metagenomics analyses from the quality filtering to the annotation of metagenomics assembled genomes (MAGs).
+
+The pipeline includes several state-of-the-art programs in the field of metagenomics such as dRep, CheckM2, quast, phylophlan, DRAM, etc!
+
+### Easy to set-up/adapt
+
+It is easy to dive into the code of this projects as it includes three main files :
+
+  * **nextflow.config** allows one to specify the profile and parameters of the analyses, the computational requirements of each task, etc.
+
+  * **main.nf** describes the workflow logic.
+
+  * **modules.nf** contains the Nextflow code for each bioinformatics programs.
+
+### Versatile
+
+It has proven to run seemlesly in a least to 2 computing environments : the AAFC/AAC Biocluster and the PHAC/NML waffles cluster.
+
+Boolean options allows the users to include or skip some components of the workflow : the Kaiju branch, the Kraken2/Bracken branch, the co-assembly branch.
+
+The pipeline offers alternative entry points : it offers the possibility to start from prepared reads (reads that have been trimmed and decontaminated) or to specify already obtainded individual assemblies (With Megahit).
+
 
 You can have a look at the [Workflow diagram](misc/flowchart.png).
 
@@ -17,13 +39,13 @@ This pipeline is build with the Nextflow language. If you are not familiar with 
 
 Nextflow and conda environments work well together. Almost all process of the workflow use specific conda environments.
 
-However, creating multiple conda environments is tedious task. If you are working on the AAFC Biocluster, you can use pre-build conda environments that lie at this location :
+However, creating multiple conda environments is a tedious task. If you are working on the AAFC Biocluster, you can use the pre-build conda environments that lie at this location :
 
 ```shell
 /isilon/common/conda/brouardjs
 ```
 
-Note that by default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
+By default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
 
 Details about the recipes used to create these conda envs are detailed in the [conda_env.md](./conda_env.md) file.
 
@@ -31,6 +53,8 @@ Details about the recipes used to create these conda envs are detailed in the [c
 ### 2.3 - Databases
 
 Several databases are required to perform all steps of the pipeline.
+
+***(todo: make a table with all databases and their versions)***
 
 If you are running this pipeline on the AAFC Biocluster, you can take advantage of the pre-build databases whom location are specified in the Nextflow.config file.
 
@@ -43,9 +67,12 @@ You can read more about how databases were set-up in our [databases documentatio
 ### 3.1 - Preparation of a reference genome for decontamination
 
 
-You will need to build an index of the host genome plus the phiX genome (Included in data/genome folder).
+You will need to build a Bowtie2 index of the host genome plus the phiX genome (Included in data/genome folder).
 
-(Write basic instructions to dowload pig or cow genomes and cat them with the PhiX...)
+If you are using cow or pig samples, you can throw me an email and I could share my pre-build indexes.
+
+
+***(to do: write basic instructions to dowload pig or cow genomes and cat them with the PhiX...)***
 
 
 ### 3.1.1 - Example with the pig genome
@@ -78,7 +105,7 @@ sbatch \
 ## 3.2 - Preparation of a map file
 
 
-When setting the rename parameters to 'yes', the rename workflow will rename the file id according to a map file that should be placed in the metadata folder.
+When setting the rename parameters to 'yes', the rename sub-workflow will rename the file id according to a map file that should be placed in the metadata folder.
 
 The map file is a simple tsv file build with the raw sequences names. **Note that there are no header in tsv file!**
 
@@ -94,7 +121,7 @@ The map file is a simple tsv file build with the raw sequences names. **Note tha
 
 
 
-The following snippet will produce the desired map_file (Please adjust accordingly)
+The following snippet will produce the desired map_file (Please adjust accordingly) using your raw input files!
 
 
 ```shell
@@ -103,82 +130,81 @@ for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f
 ```
 
 
-## 6 - Launch :rocket:
+## 4 - Launch :rocket:
 
-### 6.1 - AAFC Biocluster
+### 4.1 - Launch on the AAFC/AAC Biocluster
 
 ```shell
 # No resume
 screen -S Run
 conda activate nextflow
 
-# NO RESUME
+# No resume
 nextflow run main.nf -profile biocluster 2>&1 | tee logfile_nextflow.txt
 
-nextflow run main.nf -profile biocluster -resume ID 2>&1 | tee logfile_nextflow.txt
-
-nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow_b.txt
-
-
-
-
-# With resume and specifying the location of the work folder
-nextflow run main.nf -profile biocluster -resume -w /isilon/projects/J-002888_GRDI-AMR2/work
-
-
-
-
-
-
+# Specifying the location of the work folder
+nextflow run main.nf -profile biocluster -w /isilon/projects/J-002888_GRDI-AMR2/work
 ```
 
-
-
-
-
-
-### 6.2 - Waffles (NML cluster)
-
-Don't use screen!!
-
-
-export NXF_OPTS="-Xms500M -Xmx2G" 
-
-
-```shell
-conda activate nextflow-jsb
-export NXF_OPTS="-Xms500M -Xmx2G" 
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles -resume d370824e-10e5-464c-9628-4bb319978b55"
-```
-
-
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf  -profile waffles -ansi-log false -resume d370824e-10e5-464c-9628-4bb319978b55"
-
-
-
-
-## 7 - Alternative paths
-
-
-when looking at the whole pipeline, one can see that there are 3 main branches : main, humann and taxonomic profiling.
-
-If you have your prepared_readsin hands, you can run easily run just one branch at a time by removing the undesired modules in the main.nf file. Here a screenshot of a sucessufully run of the kaiju branch!
-
-<p align="center"><img src="misc/just_kaiju.png" alt="The kaiju branch"></p>
-
-
-
-### In resume mode
+### 4.2 - Resume a run on the AAFC Biocluster
 
 You can use the resume command with the session ID to recover a specific execution. For example:
 
 ```shell
-conda activate nextflow-jsb
-# ceci a fonctionné avec la nouvelle branche orthodox!
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch --wrap="nextflow run main.nf -profile waffles -resume 9025af6d-b3a6-4c63-bcf3-a98b6ee671d8 -with-report my_report"
+# Obtain the desired run id
+nextflow log
+
+# Specif a specific run to resume
+nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow.txt
 ```
 
 
+### 4.3 - Launch on Waffles (PHAC/NML cluster)
+
+Don't use screen!!
+
+```shell
+conda activate nextflow-jsb
+export NXF_OPTS="-Xms500M -Xmx2G" 
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles"
+```
 
 
+### 4.4 - Resume a run on Waffles (PHAC/NML cluster)
+
+```shell
+conda activate nextflow-jsb
+export NXF_OPTS="-Xms500M -Xmx2G" 
+
+# Obtain the desired run id
+nextflow log
+
+sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles -resume 94de4004-69dc-4a11-9cef-c936e89974a3"
+```
+
+## 5 - Future directions
+
+Our intention is to include others modules related to the detection of AMR genes, plasmidic sequences. Our list includes ABRIcate with MEGAres v3, AMRplusplus, PlasForest, Mob-Suite, geNomad, mobileOG-db and Sarand.
+
+
+## 6 - Issues
+
+Feel free to use the Issue section to report any problems you may encounter with this pipeline.
+
+
+### 6.1 - Storage burden issue
+
+When used with a large number of large samples, the work folder can growth up to several terabytes in spite that the workflows uses diverse strategies to mitigate the number and size of temporary files.
+
+A good strategy would be to not run all different branches of the workflow at the beginning. For example, you can begin by skipping the taxonomic and co-assembly branches, trying to get **all your prepared reads** and **all your individual assemblies**. Upon completion, copy them from the results foder (cp -L) to a secure place. Then remove the large work folder and rerun the workflow by specifying the location of your prepared reads and individual assemblies in the config file.
+
+### 6.2 - Co-assembly issue
+
+When run with a large number of metagenomic samples (50-100), the co-assembly can be very complex and can takes **weeks** to complete! The entire pipeline can be run by skipping this step. It's up to you to decide if it's worth it.
+
+
+
+##  7 - Credits
+
+Metagenomic_nf workflow was written in the Nextflow language by Jean-Simon Brouard (AAFC/AAC Sherbrooke RDC). The main components of this workflow comes from the work of Devin Holman (AAFC/AAC Lacombe RDC) whereas the original scripts were written in Bash by Arun Kommadath (AAFC/AAC Lacombe). Sara Ricci, from the team of Renee Petri (AAFC/AAC Sherbrooke RDC) has also contributed to adapt this workflow for being used with cow samples.
 
