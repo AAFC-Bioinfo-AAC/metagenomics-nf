@@ -21,7 +21,7 @@ process RENAME_SEQUENCES {
 process QUALITY_FILTERING {
   label 'cpus_medium'
 
-  publishDir "$projectDir/results/trimmed_reads"
+  publishDir "$params.results/trimmed_reads"
 
   input: 
     tuple val(datasetID), path(read1), path(read2)
@@ -60,7 +60,7 @@ process BOWTIE2 {
   label 'mem_medium'
   label 'cpus_large'
   
-  publishDir "$projectDir/results/decontamination/genome/bowtie2"
+  publishDir "$params.results/decontamination/genome/bowtie2"
   input:
     path genome, stageAs: "genome" //to rename the folder containing the bt2 files
     val(genome_basename)
@@ -92,7 +92,7 @@ process BOWTIE2 {
 
 process OUTPUT_UNALIGNED_READS {
 
-  publishDir "$projectDir/results/prepared_reads"
+  publishDir "$params.results/prepared_reads"
 
   input: 
     tuple \
@@ -118,7 +118,7 @@ process KAIJU {
   label 'mem_medium'
   label 'cpus_large'
   
-  publishDir "$projectDir/results/kaiju/kaiju_1"
+  publishDir "$params.results/kaiju/kaiju_1"
 
   input:
     path db
@@ -148,7 +148,7 @@ process KAIJU_TAX_TABLE {
 
   label 'mem_medium'
   
-  publishDir "$projectDir/results/kaiju/kaiju_tax_table"
+  publishDir "$params.results/kaiju/kaiju_tax_table"
 
   input:
     path db
@@ -175,7 +175,7 @@ process KAIJU_FULL_TAX_TABLE {
 
   label 'mem_medium'
   
-  publishDir "$projectDir/results/kaiju/kaiju_full_tax_table"
+  publishDir "$params.results/kaiju/kaiju_full_tax_table"
 
   input:
     path db
@@ -201,7 +201,7 @@ process KAIJU_FULL_TAX_TABLE {
 
 process MERGE_TAX_FILES {
 
-  publishDir "$projectDir/results/kaiju/kaiju_merged"
+  publishDir "$params.results/kaiju/kaiju_merged"
 
   input:
     path (tsv_files, stageAs: "Species/*")   // to put input files in a folder parsed by R script
@@ -217,7 +217,7 @@ process MERGE_TAX_FILES {
 
 process MERGE_FULL_TAX_FILES {
 
-  publishDir "$projectDir/results/kaiju/kaiju_merged"
+  publishDir "$params.results/kaiju/kaiju_merged"
 
   input:
     path (tsv_files, stageAs: "kaiju_full_tax_table/*")   // to put input files in a folder parsed by R script
@@ -263,7 +263,7 @@ process HUMANN_RUN {
   label 'mem_medium'
   label 'cpus_xxlarge'
 
-  publishDir "$projectDir/results/humann/humann_run"
+  publishDir "$params.results/humann/humann_run"
   input:
     path chocophlan_db
     path metaphlan_db
@@ -297,7 +297,7 @@ process HUMANN_RUN {
 
 process HUMANN_ABUNDANCE {
 
-  publishDir "$projectDir/results/humann/humann_results"
+  publishDir "$params.results/humann/humann_results"
 
   input:
     path (humann3_output, stageAs: "pathway_abundance_files/*")
@@ -335,7 +335,7 @@ process COASSEMBLY {
   label 'mem_xxlarge'
   label 'cpus_xxxlarge'
   
-  publishDir "$projectDir/results/coassembly/megahit"
+  publishDir "$params.results/coassembly/megahit"
 
   input:
     path (readsR1, stageAs: "readsR1/*")
@@ -361,7 +361,7 @@ process COASSEMBLY {
 process BOWTIE2_BUILD {
   
 
-  publishDir "$projectDir/results/coassembly/bwt2_index"
+  publishDir "$params.results/coassembly/bwt2_index"
 
   input:
     path (megahit_coassembly_outfiles, stageAs: "megahit/*")
@@ -379,7 +379,7 @@ process BOWTIE2_BUILD {
 process BOWTIE2_MAP {
   label 'cpus_large'
   
-  publishDir "$projectDir/results/coassembly/bwt2_output_for_metabat"
+  publishDir "$params.results/coassembly/bwt2_output_for_metabat"
 
 input:
   path bwt2_index, stageAs: "coassembly/*" //to rename the folder containing the bt2 files
@@ -411,7 +411,7 @@ bowtie2 -x coassembly/coassembly \
 
 process JGI_SUMMARIZE {
   
-  publishDir "$projectDir/results/coassembly/jgi"
+  publishDir "$params.results/coassembly/jgi"
 
   input: 
     tuple \
@@ -436,7 +436,7 @@ process METABAT2_BIN_COASSEMBLY {
 
   label 'cpus_xlarge'
   
-  publishDir "$projectDir/results/coassembly/metabat2_bins"
+  publishDir "$params.results/coassembly/metabat2_bins"
   
   input:
     path (megahit_coassembly_outfiles, stageAs: "megahit/*")
@@ -467,7 +467,7 @@ process CHECKM {
 
   label 'cpus_xxlarge'
   
-  publishDir "$projectDir/results/coassembly/checkM2_output"
+  publishDir "$params.results/coassembly/checkM2_output"
   
   input:
     path db
@@ -499,7 +499,7 @@ process MEGAHIT_SINGLE {
   label 'mem_xlarge'
   label 'cpus_xlarge'
   
-  publishDir "$projectDir/results/indiv_assemblies/megahit"
+  publishDir "$params.results/indiv_assemblies/megahit"
 
   input:
     tuple \
@@ -531,7 +531,7 @@ process MEGAHIT_SINGLE {
 process BOWTIE2_BUILD_SINGLE {
 
   label 'cpus_xlarge'
-  publishDir "$projectDir/results/indiv_assemblies/bwt2_index"
+  publishDir "$params.results/indiv_assemblies/bwt2_index"
 
   input:
     tuple \
@@ -560,7 +560,7 @@ process BOWTIE2_MAP_SINGLE {
   
   label 'cpus_large'
 
-  publishDir "$projectDir/results/indiv_assemblies/bwt2_output_for_metabat"
+  publishDir "$params.results/indiv_assemblies/bwt2_output_for_metabat"
 
   input:
     tuple \
@@ -589,7 +589,7 @@ process BOWTIE2_MAP_SINGLE {
 
 process JGI_SUMMARIZE_SINGLE {
 
-  publishDir "$projectDir/results/indiv_assemblies/jgi"
+  publishDir "$params.results/indiv_assemblies/jgi"
 
   input: 
     tuple \
@@ -613,7 +613,7 @@ process METABAT2_BIN_SINGLE {
 
   label 'cpus_xlarge'
 
-  publishDir "$projectDir/results/indiv_assemblies/metabat2_bins"
+  publishDir "$params.results/indiv_assemblies/metabat2_bins"
   
   input:
     tuple \
@@ -643,7 +643,7 @@ process CHECKM_SINGLE {
 
   label 'cpus_medium'
   
-  publishDir "$projectDir/results/indiv_assemblies/checkM2_output"
+  publishDir "$params.results/indiv_assemblies/checkM2_output"
   
   input:
     path db
@@ -672,7 +672,7 @@ process CHECKM_SINGLE {
 process GET_BINS {
 
   label 'HQ_bins'
-  publishDir "$projectDir/results/bins"
+  publishDir "$params.results/bins"
   
   input:
       path (tsv_files, stageAs: "checkM2_hq/*")
@@ -706,7 +706,7 @@ process GET_BINS {
 process GET_BINS2 {
 
   label 'HQ_bins'
-  publishDir "$projectDir/results/bins"
+  publishDir "$params.results/bins"
   
   input:
       path (tsv_files, stageAs: "checkM2_hq/*")
@@ -739,7 +739,7 @@ process GET_BINS2 {
 process SORT_BINS {
 
   label 'bins'
-  publishDir "$projectDir/results/sorted_bins"
+  publishDir "$params.results/sorted_bins"
   
   input:
     tuple \
@@ -758,7 +758,7 @@ process SORT_BINS {
 process SORT_BINS2 {
 
   label 'bins'
-  publishDir "$projectDir/results/sorted_bins"
+  publishDir "$params.results/sorted_bins"
   
   input:
     tuple \
@@ -777,7 +777,7 @@ process SORT_BINS2 {
 process DREP {
 
   label 'cpus_xxlarge'
-  publishDir "$projectDir/results/drep"
+  publishDir "$params.results/drep"
 
   input:
     path hq_bins_file
@@ -819,7 +819,7 @@ process QUAST {
 
   label 'cpus_xlarge'
   
-  publishDir "$projectDir/results/quast"
+  publishDir "$params.results/quast"
   
   input:
     path(coassembly, stageAs: "Megahit_coassembly/*")
@@ -847,7 +847,7 @@ process QUAST2 {
 
   label 'cpus_xlarge'
   
-  publishDir "$projectDir/results/quast"
+  publishDir "$params.results/quast"
   
   input:
     path(dereplicated_genomes, stageAs: "dRep_output/*")
@@ -868,7 +868,7 @@ process GTDB_TK {
   label 'cpus_xxlarge'
   label 'mem_xxlarge'
 
-  publishDir "$projectDir/results/GTDB"
+  publishDir "$params.results/GTDB"
 
   input:
     path(db)
@@ -896,7 +896,7 @@ process PHYLOPHLAN {
 
  label 'cpus_xxlarge'
  
- publishDir "$projectDir/results/phylophlan"
+ publishDir "$params.results/phylophlan"
 
   input:
       path(dereplicated_genomes, stageAs: "dRep_output/*")
@@ -934,7 +934,7 @@ process COVERM {
 
  label 'cpus_xlarge'
  label 'mem_large'
- publishDir "$projectDir/results/coverM"
+ publishDir "$params.results/coverM"
 
   input:
     tuple \
@@ -963,14 +963,14 @@ process COVERM {
                 --output-file ${datasetID}_coverM_output.txt
   """
 }
-
 process KRAKEN2 {
 
   label 'cpus_xlarge'
-  label 'mem_large'
-  publishDir "$projectDir/results/kraken2"
+  label 'mem_xlarge'
+  publishDir "$params.results/kraken2"
 
   input:
+    val confidence_threshold
     path db
     tuple \
       val(datasetID), \
@@ -989,7 +989,7 @@ process KRAKEN2 {
   --db $db \
   --paired ${final_R1} ${final_R2} \
   --report Kraken2_${datasetID}.report.txt \
-  --confidence 0.5 \
+  --confidence ${confidence_threshold} \
   --report-zero-counts > /dev/null
   # It is important to redirect the large Kraken2 output to /dev/null
   # Otherwise, massive info is written in .command.log
@@ -997,10 +997,12 @@ process KRAKEN2 {
   """
 }
 
+
+
 process KRAKEN2_MPA {
 
 
-publishDir "$projectDir/results/kraken2_mpa"
+publishDir "$params.results/kraken2_mpa"
 
 input:
    tuple \
@@ -1025,7 +1027,7 @@ $baseDir/src/kreport2mpa.py \
 process COMBINE_KRAKEN2 {
 
 label 'cpus_large'
-publishDir "$projectDir/results/kraken2_summary"
+publishDir "$params.results/kraken2_summary"
 
 input:
   path (reports, stageAs: "reports/*")
@@ -1045,7 +1047,7 @@ $baseDir/src/combine_mpa.py \
 process BRACKEN {
 
 label 'cpus_large'
-publishDir "$projectDir/results/bracken"
+publishDir "$params.results/bracken"
 
 input:
   path db
@@ -1078,7 +1080,7 @@ bracken -d $db \
 process BRACKEN_ALT {
 
 label 'cpus_medium'
-publishDir "$projectDir/results/bracken_smart"
+publishDir "$params.results/bracken_smart"
 
 input:
   path db
@@ -1105,7 +1107,7 @@ process DRAM_ANNOTATION {
 label 'cpus_xxlarge'
 label 'mem_large'
 
-publishDir "$projectDir/results/dram/annotation"
+publishDir "$params.results/dram/annotation"
 
 input:
   path dram_config
@@ -1146,7 +1148,7 @@ DRAM.py annotate \
 
 process DRAM_DISTILLATION {
 
-publishDir "$projectDir/results/dram/distillation"
+publishDir "$params.results/dram/distillation"
 
 input:
   path (annots, stageAs: "DRAM_annotated_MAGs/*")
