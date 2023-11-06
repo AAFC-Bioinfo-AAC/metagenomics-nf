@@ -57,7 +57,6 @@ include {
   KRAKEN2_MPA;
   COMBINE_KRAKEN2;
   BRACKEN;
-  BRACKEN_ALT;
   DRAM_ANNOTATION;
   DRAM_DISTILLATION} from './modules.nf'
 
@@ -196,10 +195,10 @@ workflow {
 
   if (!params.skip_kraken ) {
     println "*You do Kraken2*"
-    KRAKEN2(params.kraken2, prepared_reads_ch)
+    KRAKEN2(params.kraken2_confidence_threshold, params.kraken2, prepared_reads_ch)
     KRAKEN2_MPA(KRAKEN2.out)
     COMBINE_KRAKEN2(KRAKEN2_MPA.out.flatten().filter ( Path ).collect())
-    BRACKEN_ALT(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
+    BRACKEN(params.kraken2, KRAKEN2.out.flatten().filter ( Path ).collect())
   } else {
     println "*You skip Kraken...*"
   }  

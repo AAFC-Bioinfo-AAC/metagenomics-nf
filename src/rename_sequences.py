@@ -45,7 +45,11 @@ if not os.path.exists(cwd + sys.argv[3]):
 D = {}
 with open(sys.argv[1]) as f:
     rd = csv.reader(f, delimiter = "\t")
+    next(rd, None)  # skip the headers
+    
     for row in rd:
+        if ".fastq.gz" in row[1]:
+            row[1] = row[1].replace(".fastq.gz", "")
         D[row[1]] = row[0]
 
 # Get a list of large assemblies fasta files

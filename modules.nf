@@ -1044,40 +1044,12 @@ $baseDir/src/combine_mpa.py \
 }
 
 
-process BRACKEN {
-
-label 'cpus_large'
-publishDir "$params.results/bracken"
-
-input:
-  path db
-  tuple \
-    val(datasetID), \
-    path(kraken_files), \
-    path(report_files)
-
-output:
-  tuple \
-    val(datasetID), \
-    path ("${datasetID}_bracken_report_species.txt")
-  
-script:
-"""
-bracken -d $db \
-        -i ${report_files} \
-        -r 150 -t 10 -l S \
-        -o ${datasetID}_bracken_report_species.txt
-"""
-} 
-
-
-
 /*
  * This process uses a custom script for producing Bracken files at various taxonomy levels
  * Author: Xavier Monger (Anthony Vicent's lab), adapted by Jean-Simon Brouard
  */
  
-process BRACKEN_ALT {
+process BRACKEN {
 
 label 'cpus_medium'
 publishDir "$params.results/bracken_smart"
