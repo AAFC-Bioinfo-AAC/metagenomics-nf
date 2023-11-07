@@ -231,14 +231,6 @@ process MERGE_FULL_TAX_FILES {
   """
 }
 
-
-
-
-
-
-
-
-
 process CAT_FASTQ {
 
   input:
@@ -330,19 +322,25 @@ process HUMANN_ABUNDANCE {
 
 // modules related to co-assemblies
 
+//edited : many co-assemblies!
 process COASSEMBLY {
 
   label 'mem_xxlarge'
   label 'cpus_xxxlarge'
   
-  publishDir "$params.results/coassembly/megahit"
+  publishDir "$params.results/coassemblies"
 
   input:
-    path (readsR1, stageAs: "readsR1/*")
-    path (readsR2, stageAs: "readsR2/*")
+    tuple \
+      val(type), \
+      path (readsR1, stageAs: "readsR1/*"), \
+      path (readsR2, stageAs: "readsR2/*"), \
+      val(datasetID)
 
   output:
-    path ("Megahit_coassembly/*")
+    tuple \
+    val (type), \
+    path ("${type}_Megahit_coassembly/*")
 
   script: 
   """
@@ -350,11 +348,12 @@ process COASSEMBLY {
   cat $readsR2 > coassembly_R2.fastq.gz
   megahit -1 coassembly_R1.fastq.gz \
           -2 coassembly_R2.fastq.gz \
-          -o Megahit_coassembly \
-          --out-prefix Coassembly \
+          -o "${type}_Megahit_coassembly" \
+          --out-prefix "${type}_Coassembly" \
           -t $task.cpus \
           --min-contig-len 1000 \
-          --presets 'meta-large'
+          --k-list 57
+          #--presets 'meta-large'
   """
 }
 

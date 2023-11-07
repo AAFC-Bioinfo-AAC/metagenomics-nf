@@ -151,10 +151,10 @@ workflow {
     rename( Channel.fromPath( params.reads), params.map_file )
 
     // Using the get_reads_pairs workflow
-    get_reads_pairs(rename.out)
-    
+    reads_ch = get_reads_pairs(rename.out)
+
     // PART 1: Data preparation
-    QUALITY_FILTERING(get_reads_pairs.out)
+    QUALITY_FILTERING(reads_ch)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
 
@@ -221,10 +221,49 @@ workflow {
   }
   
   if (!params.skip_coassembly ) {
-
     println "*You do both individual and coassembly steps*"
-    COASSEMBLY(prepared_reads_ch.flatten().filter ( ~/^.*R1.fastq.gz/ ).collect(),
-               prepared_reads_ch.flatten().filter ( ~/^.*R2.fastq.gz/ ).collect())
+
+    /*
+    * Create the `type_ch` channel using the 'type' column from the metadata
+    * Example :
+    *[66b, rumen]
+    *[67b, milk]
+    *[68b, milk]
+    */
+    Channel
+      .fromPath(params.map_file)
+      .splitCsv(header: true, sep: "\t")
+      .map{ row-> 
+            def key_part1 = row.sample.toString().tokenize('_').get(0)
+            return tuple(key_part1, "${row.type}")
+          }
+      .distinct()
+      .set { type_ch }
+
+    /*
+    * Create the `reads_plus_ch` channel
+    * First we join the information of the sample type to the reads_ch
+    * Both channels have the sampleID as primary key
+    * Then we move this information at the beginning of the tuple so it can be
+    * used as a new key
+    * After a groupTuple allows to regroup all reads belonging to the same type
+    * Example :
+    * [rumen, [.../renamed/66b_R1.fastq.gz], [.../renamed/66b_R2.fastq.gz], [66b]]
+    * [milk, [.../renamed/67b_R1.fastq.gz, .../68b_R1.fastq.gz], [.../renamed/67b_R2.fastq.gz, .../renamed/68b_R2.fastq.gz], [67b, 68b]]
+    */
+    prepared_reads_ch.join(type_ch)
+                     .map { row-> 
+                              def a = row[0]
+                              def b = row[1]
+                              def c = row[2]
+                              def d = row[3]
+                            return tuple(d,b,c,a)
+                          }
+                     .groupTuple()
+                     .set {reads_plus_ch}
+    
+
+    COASSEMBLY(reads_plus_ch)
     BOWTIE2_BUILD(COASSEMBLY.out)
     BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
     JGI_SUMMARIZE(BOWTIE2_MAP.out)
