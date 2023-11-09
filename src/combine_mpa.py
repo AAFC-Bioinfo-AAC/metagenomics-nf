@@ -73,7 +73,12 @@ def main():
     for in_file in args.in_files:
         i_file = open(in_file,'r')
         sample_count += 1
-        sample_name = "Sample #" + str(sample_count) 
+        # sample_name = "Sample #" + str(sample_count)
+        # JSB small edit to have the sampleID in the output file
+        # rather than Sample#1 Sample#2 etc
+        new_name = os.path.basename(in_file)
+        new_name2 = new_name.replace('Kraken2_', '')
+        sample_name = new_name2.replace('.mpa.report.txt', '')
         for line in i_file:
             #Check for header line 
             if line[0] == "#":

@@ -328,7 +328,7 @@ process COASSEMBLY {
   label 'mem_xxlarge'
   label 'cpus_xxxlarge'
   
-  publishDir "$params.results/coassemblies"
+  publishDir "$params.results/coassemblies/coassemblies"
 
   input:
     tuple \
@@ -348,8 +348,8 @@ process COASSEMBLY {
   cat $readsR2 > coassembly_R2.fastq.gz
   megahit -1 coassembly_R1.fastq.gz \
           -2 coassembly_R2.fastq.gz \
-          -o "${type}_Megahit_coassembly" \
-          --out-prefix "${type}_Coassembly" \
+          -o ${type}_Megahit_coassembly \
+          --out-prefix Coassembly \
           -t $task.cpus \
           --min-contig-len 1000 \
           --k-list 57
@@ -360,36 +360,43 @@ process COASSEMBLY {
 process BOWTIE2_BUILD {
   
 
-  publishDir "$params.results/coassembly/bwt2_index"
+  publishDir "$params.results/coassemblies/bwt2_index/"
 
   input:
-    path (megahit_coassembly_outfiles, stageAs: "megahit/*")
+    tuple \
+      val(type), \
+      path (megahit_coassembly_outfiles, stageAs: "megahit/*")
 
   output:
-    path ("coassembly/*")
+    tuple \
+      val(type), \
+      path ("${type}/*")
   
   script:
   """
-  mkdir coassembly
-  bowtie2-build megahit/Coassembly.contigs.fa coassembly/coassembly
+  mkdir ${type}
+  bowtie2-build megahit/Coassembly.contigs.fa ${type}/coassembly
   """
 }
 
 process BOWTIE2_MAP {
   label 'cpus_large'
   
-  publishDir "$params.results/coassembly/bwt2_output_for_metabat"
+  publishDir "$params.results/coassemblies/bwt2_output_for_metabat"
 
 input:
-  path bwt2_index, stageAs: "coassembly/*" //to rename the folder containing the bt2 files
   tuple \
-    val(datasetID), \
-    path(final_R1), \
-    path(final_R2)
+  val(type), \
+  path(final_R1), \
+  path(final_R2), \
+  val(datasetID), \
+  path(bwt2_index, stageAs: "coassembly/*") //to rename the folder containing the bt2 files
+
 
 output:
   tuple \
     val(datasetID), \
+    val(type), \
     path("${datasetID}_sorted.bam")
 
 script:
@@ -405,20 +412,19 @@ bowtie2 -x coassembly/coassembly \
 """
 }
 
-
-
-
 process JGI_SUMMARIZE {
   
-  publishDir "$params.results/coassembly/jgi"
+  publishDir "$params.results/coassemblies/jgi"
 
   input: 
     tuple \
       val(datasetID), \
+      val(type), \
       path(aln)
  
   output:
     tuple \
+      val(type), \
       val(datasetID), \
       path("${datasetID}_depth.txt")
   
@@ -435,11 +441,12 @@ process METABAT2_BIN_COASSEMBLY {
 
   label 'cpus_xlarge'
   
-  publishDir "$params.results/coassembly/metabat2_bins"
+  publishDir "$params.results/coassemblies/metabat2_bins"
   
   input:
-    path (megahit_coassembly_outfiles, stageAs: "megahit/*")
     tuple \
+      val(type), \
+      path (megahit_coassembly_outfiles, stageAs: "megahit/*"), \
       val(datasetID), \
       path("${datasetID}_depth.txt")
  
@@ -466,7 +473,7 @@ process CHECKM {
 
   label 'cpus_xxlarge'
   
-  publishDir "$params.results/coassembly/checkM2_output"
+  publishDir "$params.results/coassemblies/checkM2_output"
   
   input:
     path db
@@ -680,7 +687,7 @@ process GET_BINS {
       
   output:
       path("High_quality_bins.txt")
-      path("hq_bins/*")
+      path("hq_bins/*"), optional: true
       path("all_bins/*")
       
   script:
@@ -821,46 +828,48 @@ process QUAST {
   publishDir "$params.results/quast"
   
   input:
-    path(coassembly, stageAs: "Megahit_coassembly/*")
     path(dereplicated_genomes, stageAs: "dRep_output/*")
-
 
   output:
     path "QUAST_replicated_MAGs/*"
-    path "QUAST_coassembly/*"
-    
-    
+  
   script:
   """
   quast.py dRep_output/dereplicated_genomes/*.fa \
     --threads $task.cpus \
     -o QUAST_replicated_MAGs
-  
-  metaquast.py Megahit_coassembly/Coassembly.contigs.fa \
-    -t $task.cpus \
-    -o QUAST_coassembly
   """
 }
 
-process QUAST2 {
+process METAQUAST {
 
   label 'cpus_xlarge'
   
   publishDir "$params.results/quast"
   
   input:
-    path(dereplicated_genomes, stageAs: "dRep_output/*")
+    tuple \
+      val(type), \
+      path(coassembly, stageAs: "Megahit_coassembly/*")
 
   output:
-    path "QUAST_replicated_MAGs/*"
-  
+    path ("${type}_QUAST_coassembly/*")
+    
+    
   script:
   """
-  quast.py dRep_output/dereplicated_genomes/*.fa \
-    --threads $task.cpus \
-    -o QUAST_replicated_MAGs
+  metaquast.py Megahit_coassembly/Coassembly.contigs.fa \
+     --max-ref-number 0 \
+    -t $task.cpus \
+    -o ${type}_QUAST_coassembly
   """
 }
+
+
+
+
+
+
 
 process GTDB_TK {
 

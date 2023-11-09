@@ -140,7 +140,7 @@ screen -S Run
 conda activate nextflow
 
 # No resume
-nextflow run main.nf -profile biocluster 2>&1 | tee logfile_nextflow.txt
+nextflow run main.nf -profile biocluster -with-dag flowchart.png 2>&1 | tee logfile_nextflow.txt
 
 # Specifying the location of the work folder
 nextflow run main.nf -profile biocluster -w /isilon/projects/J-002888_GRDI-AMR2/work
@@ -154,8 +154,7 @@ You can use the resume command with the session ID to recover a specific executi
 # Obtain the desired run id
 nextflow log
 
-# Specif a specific run to resume
-nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow.txt
+nextflow run main.nf -profile biocluster -with-dag flowchart.png -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow.txt
 ```
 
 

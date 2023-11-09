@@ -48,16 +48,11 @@ mamba create -n bowtie2 -c bioconda bowtie2 samtools
 
 ### CheckM2
 
-This works for me :
+Do not forget the pip install step!
 
 ```shell
-
-mamba create -n checkm2 -c bioconda -c conda-forge checkm2
-
-#  ou
-git clone --recursive https://github.com/chklovski/checkm2.git && cd checkm2
-mamba create -n checkm2 -f checkm2
-conda activate checkm2
+mamba create --prefix /isilon/common/conda/brouardjs/checkm2 -c bioconda -c conda-forge checkm2
+conda activate /isilon/common/conda/brouardjs/checkm2
 pip install CheckM2
 ```
 

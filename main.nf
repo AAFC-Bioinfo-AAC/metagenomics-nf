@@ -1,6 +1,7 @@
 /* 
  * This workflow was adpated by Jean-Simon Brouard
  * from the work done by Devin Holman, Arun Kommadath (AAFC Lacombe) and Sara Ricci.
+ * Last update : 2023/11/08
  * 
  */
 
@@ -52,7 +53,7 @@ include {
   PHYLOPHLAN;
   COVERM;
   QUAST;
-  QUAST2;
+  METAQUAST;
   KRAKEN2;
   KRAKEN2_MPA;
   COMBINE_KRAKEN2;
@@ -151,10 +152,10 @@ workflow {
     rename( Channel.fromPath( params.reads), params.map_file )
 
     // Using the get_reads_pairs workflow
-    reads_ch = get_reads_pairs(rename.out)
+    get_reads_pairs(rename.out)
 
     // PART 1: Data preparation
-    QUALITY_FILTERING(reads_ch)
+    QUALITY_FILTERING(get_reads_pairs.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
 
@@ -166,7 +167,7 @@ workflow {
       .flatten()
       //.filter{ it =~ /.*bam$/ }
       .filter{ it =~ /.*_trimmed.*/ || it =~ /.*bam$/ || it =~ /.*_unpaired.*/ }
-      .view()
+      //.view()
       .set{ cleanable_bams_ch }
     clean_sorted_bams(cleanable_bams_ch)
   }
@@ -262,27 +263,56 @@ workflow {
                      .groupTuple()
                      .set {reads_plus_ch}
     
+    /*
+    * Create the `prepared_reads_like_ch` channel
+    * First we join the information of the sample type to the reads_ch
+    * Both channels have the sampleID as primary key
+    * Then we move this information at the beginning of the tuple so it can be
+    * used as a new key for joining with BOWTIE2_BUILD
+    */
+    prepared_reads_ch.join(type_ch)
+                     .map { row-> 
+                              def a = row[0]
+                              def b = row[1]
+                              def c = row[2]
+                              def d = row[3]
+                            return tuple(d,b,c,a)
+                          }
+                     .set {prepared_reads_like_ch}
+
+    //prepared_reads_like_ch.view()
 
     COASSEMBLY(reads_plus_ch)
     BOWTIE2_BUILD(COASSEMBLY.out)
-    BOWTIE2_MAP(BOWTIE2_BUILD.out,prepared_reads_ch)    
+
+    /* Prepare the prepared_reads_and_index_ch channel containg the prepared reads
+    *  and their associated co-assembly genome index. We need to use the combine operator (not join!) e.g. :
+    * [rumen_7, .../C618-d7-WRC_R1.fastq.gz, .../C618-d7-WRC_R2.fastq.gz, C618-d7-WRC, [.../rumen_7/coassembly.1.bt2, ...  .../rumen_7/coassembly.rev.2.bt2]]
+    * [rumen_2, .../C830-d2-WRC_R1.fastq.gz, .../C830-d2-WRC_R2.fastq.gz, C830-d2-WRC, [.../rumen_2/coassembly.1.bt2, ...  .../rumen_2/coassembly.rev.2.bt2]]
+    * [milk_2,  .../C844-d2-M_R1.fastq.gz,   .../C844-d2-M_R2.fastq.gz,   C844-d2-M,   [.../milk_2/coassembly.1.bt2,  ...  .../milk_2/coassembly.rev.2.bt2]]
+    * [milk_2,  .../C255-d2-M_R1.fastq.gz,   .../C255-d2-M_R2.fastq.gz,   C255-d2-M,   [.../milk_2/coassembly.1.bt2,  ...  .../milk_2/coassembly.rev.2.bt2]]
+    * etc
+    */
+    prepared_reads_and_index_ch = prepared_reads_like_ch.combine(BOWTIE2_BUILD.out, by: 0)
+
+    BOWTIE2_MAP(prepared_reads_and_index_ch)        
     JGI_SUMMARIZE(BOWTIE2_MAP.out)
-    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out,JGI_SUMMARIZE.out)
+    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out.combine(JGI_SUMMARIZE.out, by: 0))
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
   
-
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-    SORT_BINS(CHECKM.out)
+    SORT_BINS(CHECKM.out)  
     SORT_BINS2(CHECKM_SINGLE.out)
     GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
              METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
              METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
     DREP(GET_BINS.out)
-    QUAST(COASSEMBLY.out, DREP.out)
+    QUAST(DREP.out)
+    METAQUAST(COASSEMBLY.out)
     GTDB_TK(params.gtdb_db, DREP.out)
     PHYLOPHLAN(DREP.out)
     COVERM(prepared_reads_ch,DREP.out)
@@ -301,7 +331,7 @@ workflow {
     GET_BINS2(SORT_BINS2.out.collect(),
              METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect())
     DREP(GET_BINS2.out)
-    QUAST2(DREP.out)
+    QUAST(DREP.out)
     GTDB_TK(params.gtdb_db, DREP.out)
     PHYLOPHLAN(DREP.out)
     COVERM(prepared_reads_ch,DREP.out)
