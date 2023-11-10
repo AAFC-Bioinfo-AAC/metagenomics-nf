@@ -322,7 +322,15 @@ process HUMANN_ABUNDANCE {
 
 // modules related to co-assemblies
 
-//edited : many co-assemblies!
+/*
+According to the Megahit documentation, options --min-count 2 and
+--k-list 21,41,61,81,99 are the default (generic metagenomes)
+Here we used a list of 4 kmers as in a this paper :
+Vosloo S, Huo L, Anderson CL, Dai Z,
+Sevillano M, Pinto A. 2021. Evaluating de novo assembly and binning
+strategies for time series drinking water metagenomes. Microbiol Spectr9:e01434-21.
+https://doi.org/10.1128/Spectrum.01434-21
+*/
 process COASSEMBLY {
 
   label 'mem_xxlarge'
@@ -352,8 +360,8 @@ process COASSEMBLY {
           --out-prefix Coassembly \
           -t $task.cpus \
           --min-contig-len 1000 \
-          --k-list 57
-          #--presets 'meta-large'
+          --min-count 2 \
+          --k-list 21,33,55,77
   """
 }
 
