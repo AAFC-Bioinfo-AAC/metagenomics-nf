@@ -59,14 +59,14 @@ pip install CheckM2
 
 ### Coverm
 ```shell
-mamba create -n coverm -c bioconda coverm
+mamba create -n coverm_0.6.1 -c bioconda coverm=0.6.1
 ```
 
 
 ### DRAM
 
 ```shell
-conda create -n DRAM_2023 -c bioconda dram mmseqs2
+conda create -n DRAM_2023 -c bioconda dram=1.4.6 mmseqs2
 conda activate DRAM_2023
 
 # Very important to have the latest version of mmseqs2!!
@@ -222,5 +222,82 @@ conda create -n genomad -c conda-forge -c bioconda genomad
 
 
 
+## Novel instructions : build on share folder (NML Waffles)
+
+
+
+mamba create --prefix $share/phylophlan -c bioconda phylophlan=3.0.3
+
+```shell
+share='/Drives/O/GRDI-AMR2/share/conda/envs'
+
+#phylophlan
+sbatch -J phylophlan_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/phylophlan_3.0.3 -c bioconda phylophlan=3.0.3 -y"
+
+#R
+sbatch -J R_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/R -c conda-forge r-base=4.2.3 r-tidyr=1.3.0 -y"
+
+
+# quast
+sbatch -J quast_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/quast-5.2.0 -c bioconda quast=5.2.0 -y"
+
+#metabat2
+
+sbatch -J quast_metabat2 -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/metabat2_2.15 -c bioconda metabat2=2.15 -y"
+
+#megahit
+
+sbatch -J megahit_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/megahit_1.2 -c bioconda megahit=1.2 -y"
+
+
+#kaiju
+sbatch -J kaiju_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/kaiju_1.9.2 -c bioconda kaiju=1.9.2 -y"
+
+
+#gtdb
+sbatch -J gtdb_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/gtdbtk-2.1.1 -c conda-forge -c bioconda gtdbtk=2.1.1 -y"
+conda activate $share/gtdbtk-2.1.1
+# downgrade numpy 1.24
+python -m pip uninstall numpy
+# Reinstall numpy
+python -m pip install numpy==1.23.1
+
+
+#fastp
+sbatch -J fastp_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/fastp_0.23.4 -c bioconda fastp=0.23.4 -y"
+
+#drep
+sbatch -J drep_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/drep_3.4.5 -c bioconda checkm-genome=1.2.2 drep=3.4.5 -y"
+
+
+#DRAM
+sbatch -J dram_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/DRAM_2023 -c bioconda dram=1.4.6 mmseqs2 -y"
+
+
+#coverM
+sbatch -J coverm_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/coverm_0.6.1 -c bioconda coverm=0.6.1 -y"
+
+#checkm2
+sbatch -J checkm2_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/checkm2_1.0.1 -c bioconda -c conda-forge checkm2=1.0.1 -y"
+
+#Do not forget the pip install step!
+conda activate $share/checkm2_1.0.1
+pip install --user CheckM2
+
+#bowtie2
+sbatch -J bowtie2_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/bowtie2_2.5.2 -c bioconda bowtie2=2.5.2 samtools=1.18 -y"
+
+
+#biobakery
+sbatch -J biobakery3_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/biobakery3 -c conda-forge -c bioconda -c biobakery python=3.7 humann=3.6 metaphlan=4.0.3 -y"
+
+#bedtools
+
+sbatch -J bedtools_conda -c 4 --mem 32G -p NMLResearch --wrap="mamba create --prefix $share/bedtools_2.31.1 -c bioconda bedtools=2.31.1 -y"
+
+
+
+
+```
 
 

@@ -361,7 +361,7 @@ process COASSEMBLY {
           -t $task.cpus \
           --min-contig-len 1000 \
           --min-count 2 \
-          --k-list 21,33,55,77
+          --k-list 21,41,61,81,99
   """
 }
 
