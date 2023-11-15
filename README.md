@@ -3,7 +3,7 @@
 
 ## 1 - Introduction
 
-This Nextflow workflow allows the realization of the most common metagenomics analyses from the quality filtering to the annotation of metagenomics assembled genomes (MAGs).
+This Nextflow workflow automates many metagenomics analyses from the quality filtering to the annotation of metagenomics assembled genomes (MAGs).
 
 The pipeline includes several state-of-the-art programs in the field of metagenomics such as dRep, CheckM2, quast, phylophlan, DRAM, etc!
 
@@ -23,7 +23,7 @@ It has proven to run seemlesly in a least to 2 computing environments : the AAFC
 
 Boolean options allows the users to include or skip some components of the workflow : the Kaiju branch, the Kraken2/Bracken branch, the co-assembly branch.
 
-The pipeline offers alternative entry points : it offers the possibility to start from prepared reads (reads that have been trimmed and decontaminated) or to specify already obtainded individual assemblies (With Megahit).
+The pipeline offers alternative entry points : it offers the possibility to start from prepared reads (reads that have been trimmed and decontaminated) or to specify already obtainded individual assemblies (with Megahit).
 
 
 You can have a look at the [Workflow diagram](misc/flowchart.png).
@@ -39,11 +39,21 @@ This pipeline is build with the Nextflow language. If you are not familiar with 
 
 Nextflow and conda environments work well together. Almost all process of the workflow use specific conda environments.
 
-However, creating multiple conda environments is a tedious task. If you are working on the AAFC Biocluster, you can use the pre-build conda environments that lie at this location :
+However, creating multiple conda environments is a tedious task.
+
+If you are working on the AAFC Biocluster, you can use the pre-build conda environments that lie at this location :
 
 ```shell
 /isilon/common/conda/brouardjs
 ```
+
+If you are working on the PHAC/NML waffles cluster, you can use the pre-build conda environments that lie at this location :
+
+```shell
+/Drives/O/GRDI-AMR2/share/conda
+```
+
+
 
 By default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
 
@@ -56,7 +66,7 @@ Several databases are required to perform all steps of the pipeline.
 
 ***(todo: make a table with all databases and their versions)***
 
-If you are running this pipeline on the AAFC Biocluster, you can take advantage of the pre-build databases whom location are specified in the Nextflow.config file.
+If you are running this pipeline on the AAFC Biocluster or on the PHAC/NML waffles cluster, you can take advantage of the pre-build databases whom location are specified in the Nextflow.config file.
 
 You can read more about how databases were set-up in our [databases documentation](./databases.md).
 
@@ -69,20 +79,39 @@ You can read more about how databases were set-up in our [databases documentatio
 
 You will need to build a Bowtie2 index of the host genome plus the phiX genome (Included in data/genome folder).
 
-If you are using cow or pig samples, you can throw me an email and I could share my pre-build indexes.
-
-
-***(to do: write basic instructions to dowload pig or cow genomes and cat them with the PhiX...)***
-
-
-### 3.1.1 - Example with the pig genome
-
-
-
-**Waffles cluster (NML) (slurm)**
+Note that if you are working on the PHAC/NML waffles cluster, pre-build indexes are available at this location :
 
 ```shell
-conda activate bowtie2
+/Drives/O/GRDI-AMR2/share/genomes
+```
+
+
+#### 3.1.1 - Example with the pig genome
+
+
+You can download the latest pig reference genome here:
+```shell
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/003/025/GCF_000003025.6_Sscrofa11.1/GCF_000003025.6_Sscrofa11.1_genomic.fna.gz
+```
+
+Then unzip the file:
+
+```shell
+gunzip GCF_000003025.6_Sscrofa11.1_genomic.fna.gz
+```
+
+Combine the pig and PhiX genomes:
+
+```shell
+cat data/genomes/phiX.fa GCF_000003025.6_Sscrofa11.1_genomic.fna > Pig_PhiX_genomes.fna
+```
+
+Finally, build the Bowtie2 index:
+
+```shell
+prefix='/Drives/O/GRDI-AMR2/share/conda/envs'
+conda activate $prefix/bowtie2_2.5.2
+mkdir pig
 sbatch \
  -D $PWD \
  --output $PWD/bowtie2-$j.out \
@@ -95,39 +124,65 @@ sbatch \
 ```
 
 
-### 3.1.2 - Example with the cow genome
-
-
-...
-
 
 
 ## 3.2 - Preparation of a map file
 
 
-When setting the rename parameters to 'yes', the rename sub-workflow will rename the file id according to a map file that should be placed in the metadata folder.
-
-The map file is a simple tsv file build with the raw sequences names. **Note that there are no header in tsv file!**
-
-
-| id            |       Basenname of fastq file                    |
-|---------------|--------------------------------------------------|
-|C284-d21_R1	| NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R1|
-|C284-d21_R2	| NS.2055.003.IDT_i7_53---IDT_i5_53.C284-d21-WRC_R2|
-|C9009-d7_R1	| NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R1|
-|C9009-d7_R2	| NS.2055.003.IDT_i7_55---IDT_i5_55.C9009-d7-WRC_R2|
-|C283-d28_R1	| NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R1|
-|C283-d28_R2	| NS.2055.003.IDT_i7_56---IDT_i5_56.C283-d28-WRC_R2|
-
-
-
-The following snippet will produce the desired map_file (Please adjust accordingly) using your raw input files!
-
+A good starting point to produce a compliant map_file for that workflow is to use the following snippet with your raw input files!
 
 ```shell
 cd data/reads
-for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f 5 -d '.'); printf "$id\t$n\n"; done > ../../metadata/map_file.tsv
+printf "sample_read\tfile_name\n" >  ../../metadata/map_file.tsv
+for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f 5 -d '.'); printf "$id\t$n\n"; done >> ../../metadata/map_file.tsv
 ```
+
+The idea is to have an expression that correspond to the sampleID plus _R1 or 
+_R2 in the first column and the basename of the corresponding fastq files in the second column :
+
+
+
+| sample_read	| file_name	|
+|-------------|-----------|
+|G2-E1-13_R1	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R1|
+|G2-E1-13_R2	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R2|	
+|G2-E1-38_R1	|NS.2066.001.IDT_i7_14---IDT_i5_14.G2-E1-38_R1|
+|G2-E1-38_R2	|NS.2066.001.IDT_i7_14---IDT_i5_14.G2-E1-38_R2|	
+|G2-E1-63_R1	|NS.2066.001.IDT_i7_15---IDT_i5_15.G2-E1-63_R1|	
+|G2-E1-63_R2	|NS.2066.001.IDT_i7_15---IDT_i5_15.G2-E1-63_R2|
+|G2-E1-28_R1	|NS.2066.001.IDT_i7_51---IDT_i5_51.G2-E1-28_R1|	
+|G2-E1-28_R2	|NS.2066.001.IDT_i7_51---IDT_i5_51.G2-E1-28_R2|	
+|G2-E1-16_R1	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R1|	
+|G2-E1-16_R2	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R2|
+
+
+
+The second step is to add a header and at least a third column containing the desired groups for co-assemblies, e.g. :
+
+
+
+| sample_read	| file_name	| project	| sample_type	| co-assembly_group |
+|-------------|-----------|---------|-------------|-------------------|
+|G2-E1-13_R1	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R1	|StressCuZnII	|feces	  |stress_feces|
+|G2-E1-13_R2	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R2	|StressCuZnII	|feces	  |stress_feces|
+|G2-E1-38_R1	|NS.2066.001.IDT_i7_14---IDT_i5_14.G2-E1-38_R1	|LLQ	        |feces	  |llq_feces_herd5|
+|G2-E1-38_R2	|NS.2066.001.IDT_i7_14---IDT_i5_14.G2-E1-38_R2	|LLQ	        |feces	  |llq_feces_herd5|
+|G2-E1-63_R1	|NS.2066.001.IDT_i7_15---IDT_i5_15.G2-E1-63_R1	|PH	          |sediment	|ph_sediment|
+|G2-E1-63_R2	|NS.2066.001.IDT_i7_15---IDT_i5_15.G2-E1-63_R2	|PH	          |sediment	|ph_sediment|
+|G2-E1-28_R1	|NS.2066.001.IDT_i7_51---IDT_i5_51.G2-E1-28_R1	|LLQ	        |feces	  |llq_feces_herd5|
+|G2-E1-28_R2	|NS.2066.001.IDT_i7_51---IDT_i5_51.G2-E1-28_R2	|LLQ	        |feces	  |llq_feces_herd5|
+|G2-E1-16_R1	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R1	|StressCuZnII	|feces	  |stress_feces|
+|G2-E1-16_R2	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R2	|StressCuZnII	|feces	  |stress_feces|
+
+
+Therefore, the map file have the following mandatory columns :
+
+  * sample_read
+  * file_name
+  * co-assembly_group
+
+
+When setting the rename parameters to 'yes', the rename sub-workflow will rename the reads according to the values present in the sample_read column of the map file.
 
 
 ## 4 - Launch :rocket:
@@ -183,7 +238,7 @@ sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $
 
 ## 5 - Future directions
 
-Our intention is to include others modules related to the detection of AMR genes, plasmidic sequences. Our list includes ABRIcate with MEGAres v3, AMRplusplus, PlasForest, Mob-Suite, geNomad, mobileOG-db and Sarand.
+Our intention is to include others modules related to the detection of AMR genes, plasmidic sequences. Our list includes ABRIcate with MEGAres v3, PlasForest, Mob-Suite, geNomad, mobileOG-db and Sarand.
 
 
 ## 6 - Issues
@@ -195,12 +250,11 @@ Feel free to use the Issue section to report any problems you may encounter with
 
 When used with a large number of large samples, the work folder can growth up to several terabytes in spite that the workflows uses diverse strategies to mitigate the number and size of temporary files.
 
-A good strategy would be to not run all different branches of the workflow at the beginning. For example, you can begin by skipping the taxonomic and co-assembly branches, trying to get **all your prepared reads** and **all your individual assemblies**. Upon completion, copy them from the results foder (cp -L) to a secure place. Then remove the large work folder and rerun the workflow by specifying the location of your prepared reads and individual assemblies in the config file.
+A good strategy would be to not run all different branches of the workflow at the beginning. For example, you can begin by skipping the taxonomic and co-assembly branches, trying to get **all your prepared reads** and **all your individual assemblies**. Upon completion, copy them from the results folder (cp -L) to a secure place. Then remove the large work folder and rerun the workflow by specifying the location of your prepared reads and individual assemblies in the config file.
 
 ### 6.2 - Co-assembly issue
 
-When run with a large number of metagenomic samples (50-100), the co-assembly can be very complex and can takes **weeks** to complete! The entire pipeline can be run by skipping this step. It's up to you to decide if it's worth it.
-
+When run with a large number of metagenomic samples (50-100), the co-assembly can be very complex and can takes **weeks** to complete! To overcome this issue you have the option to perform several co-assemblies each containing a reduced number of samples (~2-10 samples).
 
 
 ##  7 - Credits

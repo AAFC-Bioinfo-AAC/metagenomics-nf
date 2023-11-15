@@ -235,8 +235,8 @@ workflow {
       .fromPath(params.map_file)
       .splitCsv(header: true, sep: "\t")
       .map{ row-> 
-            def key_part1 = row.sample.toString().tokenize('_').get(0)
-            return tuple(key_part1, "${row.type}")
+            def key_part1 = row.sample_read.toString().tokenize('_').get(0)
+            return tuple(key_part1, "${row.co-assembly_group}")
           }
       .distinct()
       .set { type_ch }

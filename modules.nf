@@ -480,7 +480,8 @@ process METABAT2_BIN_COASSEMBLY {
 process CHECKM {
 
   label 'cpus_xxlarge'
-  
+  errorStrategy 'ignore' //sometimes DIAMOND produces no annotation and Checkm2 Exit
+
   publishDir "$params.results/coassemblies/checkM2_output"
   
   input:
@@ -658,6 +659,7 @@ process CHECKM_SINGLE {
   label 'cpus_medium'
   
   publishDir "$params.results/indiv_assemblies/checkM2_output"
+  errorStrategy 'ignore' //sometimes DIAMOND produces no annotation and Checkm2 Exit
   
   input:
     path db
