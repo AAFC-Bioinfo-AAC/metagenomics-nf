@@ -53,9 +53,7 @@ If you are working on the PHAC/NML waffles cluster, you can use the pre-build co
 /Drives/O/GRDI-AMR2/share/conda
 ```
 
-
-
-By default, these conda env will be used when running the pipeline with the **-profile biocluster** option.
+By default, these conda envs will be used when running the pipeline with the **-profile biocluster** or **-profile waffles** options.
 
 Details about the recipes used to create these conda envs are detailed in the [conda_env.md](./conda_env.md) file.
 
