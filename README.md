@@ -126,7 +126,7 @@ sbatch \
 
 
 
-## 3.2 - Preparation of a map file
+### 3.2 - Preparation of a map file
 
 
 A good starting point to produce a compliant map_file for that workflow is to use the following snippet with your raw input files!
@@ -161,7 +161,7 @@ The second step is to add a header and at least a third column containing the de
 
 
 
-| sample_read	| file_name	| project	| sample_type	| co-assembly_group |
+| sample_read	| file_name	| project	| sample_type	| coassembly_group |
 |-------------|-----------|---------|-------------|-------------------|
 |G2-E1-13_R1	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R1	|StressCuZnII	|feces	  |stress_feces|
 |G2-E1-13_R2	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R2	|StressCuZnII	|feces	  |stress_feces|
@@ -179,7 +179,7 @@ Therefore, the map file have the following mandatory columns :
 
   * sample_read
   * file_name
-  * co-assembly_group
+  * coassembly_group
 
 
 When setting the rename parameters to 'yes', the rename sub-workflow will rename the reads according to the values present in the sample_read column of the map file.
@@ -187,53 +187,73 @@ When setting the rename parameters to 'yes', the rename sub-workflow will rename
 
 ## 4 - Launch :rocket:
 
-### 4.1 - Launch on the AAFC/AAC Biocluster
+### 4.1 - First launch
+
+#### 4.1.1  On AAFC/AAC Biocluster
+
+You simply use the biocluster profile:
 
 ```shell
-# No resume
+# Warning!  No resume!
 screen -S Run
 conda activate nextflow
-
-# No resume
-nextflow run main.nf -profile biocluster -with-dag flowchart.png 2>&1 | tee logfile_nextflow.txt
-
-# Specifying the location of the work folder
-nextflow run main.nf -profile biocluster -w /isilon/projects/J-002888_GRDI-AMR2/work
+nextflow run main.nf -profile biocluster | tee logfile_nextflow.txt
 ```
 
-### 4.2 - Resume a run on the AAFC Biocluster
+You can detach of your screen using ctlr + a + d.
+
+#### 4.1.2  On Waffles (PHAC/NML cluster)
+
+You simply use the waffles profile:
+
+Don't use screen!
+
+```shell
+conda activate your-nextflow-env
+export NXF_OPTS="-Xms500M -Xmx2G" 
+sbatch -D $PWD \
+       --export=ALL \
+       -J metagenomics_nf \
+       -c 2 \
+       --mem 4G \
+       -p NMLResearch \
+       -o $PWD/nextflow_log-%j.out \
+       --wrap="nextflow run main.nf -profile waffles"
+```
+
+
+
+
+### 4.2 - Resume a run
+
+#### 4.2.1  On AAFC/AAC Biocluster
 
 You can use the resume command with the session ID to recover a specific execution. For example:
 
 ```shell
 # Obtain the desired run id
 nextflow log
-
-nextflow run main.nf -profile biocluster -with-dag flowchart.png -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow.txt
+nextflow run main.nf -profile biocluster -resume d3bda63b-ed9d-4728-9b68-8171422cac65  2>&1 | tee logfile_nextflow.txt
 ```
 
 
-### 4.3 - Launch on Waffles (PHAC/NML cluster)
-
-Don't use screen!!
+#### 4.2.2 On Waffles (PHAC/NML cluster)
 
 ```shell
-conda activate nextflow-jsb
-export NXF_OPTS="-Xms500M -Xmx2G" 
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles"
-```
-
-
-### 4.4 - Resume a run on Waffles (PHAC/NML cluster)
-
-```shell
-conda activate nextflow-jsb
+conda activate your-nextflow-env
 export NXF_OPTS="-Xms500M -Xmx2G" 
 
 # Obtain the desired run id
 nextflow log
 
-sbatch -D $PWD --export=ALL -J metagenomics_nf -c 2 --mem 4G -p NMLResearch -o $PWD/nextflow_log-%j.out --wrap="nextflow run main.nf -profile waffles -resume 94de4004-69dc-4a11-9cef-c936e89974a3"
+sbatch -D $PWD \
+       --export=ALL \
+      -J metagenomics_nf \
+      -c 2 \
+      --mem 4G \
+      -p NMLResearch \
+      -o $PWD/nextflow_log-%j.out \
+      --wrap="nextflow run main.nf -profile waffles -resume 94de4004-69dc-4a11-9cef-c936e89974a3"
 ```
 
 ## 5 - Future directions
