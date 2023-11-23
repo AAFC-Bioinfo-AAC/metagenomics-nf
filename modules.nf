@@ -115,7 +115,7 @@ process OUTPUT_UNALIGNED_READS {
 
 process KAIJU {
 
-  label 'mem_medium'
+  label 'mem_large'
   label 'cpus_large'
   
   publishDir "$params.results/kaiju/kaiju_1"
@@ -361,7 +361,10 @@ process COASSEMBLY {
           -t $task.cpus \
           --min-contig-len 1000 \
           --min-count 2 \
-          --k-list 21,41,61,81,99
+          --k-list 21,41,61,81,99 &&
+  
+  # Remove intermediate files (intermediate contigs)
+  rm -rf ${type}_Megahit_coassembly/intermediate_contigs
   """
 }
 
