@@ -175,19 +175,19 @@ workflow {
   if (!params.skip_kaiju ) {
     println "*You do Kaiju*"
     KAIJU(params.kaiju_db, prepared_reads_ch)
-    ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db, KAIJU.out)
+    //ch_kaiju = KAIJU_TAX_TABLE(params.kaiju_db, KAIJU.out)
     ch_kaiju_full = KAIJU_FULL_TAX_TABLE(params.kaiju_db, KAIJU.out)   
-    ch_kaiju
-      .flatten()
-      .filter ( Path ) // To get rid of datasetID values    
-      .collect()     
-      .set { ch_kaiju_tsv }
+    //ch_kaiju
+    //  .flatten()
+    //  .filter ( Path ) // To get rid of datasetID values    
+    //  .collect()     
+    //  .set { ch_kaiju_tsv }
     ch_kaiju_full
       .flatten()
       .filter ( Path ) // To get rid of datasetID values    
       .collect()     
       .set { ch_kaiju_full_tsv }
-      MERGE_TAX_FILES(ch_kaiju_tsv)
+      //MERGE_TAX_FILES(ch_kaiju_tsv)
       MERGE_FULL_TAX_FILES(ch_kaiju_full_tsv)
 
     } else {
@@ -232,7 +232,7 @@ workflow {
     *[68b, milk]
     */
     Channel
-      .fromPath(params.map_file)
+      .fromPath(params.coassembly_file)
       .splitCsv(header: true, sep: "\t")
       .map{ row-> 
             def key_part1 = row.sample_read.toString().tokenize('_').get(0)
