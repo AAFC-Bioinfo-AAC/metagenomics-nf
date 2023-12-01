@@ -109,7 +109,7 @@ We investigate this issue and found that this occur because metphlan will try to
   * https://forum.biobakery.org/t/humann3-compatibility-problem-with-metaphlan4/4894/5
 
 
-The take home message is that the latest db that can be used by Metaphlan 3.6 is *mpa_vJan21_CHOCOPhlAnSGB_202103* (not mpa_vOct22_CHOCOPhlAnSGB_202212).
+The take home message is that the latest db that can be used by Metaphlan 4.0.3 is *mpa_vJan21_CHOCOPhlAnSGB_202103* (not mpa_vOct22_CHOCOPhlAnSGB_202212).
 
 
 ### 4.2 - Solution: install the **latest compatible db** with Metaphlan3.6
