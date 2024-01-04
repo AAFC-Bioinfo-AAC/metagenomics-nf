@@ -64,9 +64,12 @@ include { OUTPUT_UNALIGNED_READS          } from 'modules/local/output_unaligned
 include { PHYLOPHLAN                      } from 'modules/local/phylophlan'
 include { QUALITY_FILTERING               } from 'modules/local/quality_filtering'
 include { QUAST                           } from 'modules/local/quast'
-include { RENAME_SEQUENCES                } from 'modules/local/rename_sequences'
 include { SORT_BINS                       } from 'modules/local/sort_bins'
 include { SORT_BINS2                      } from 'modules/local/sort_bins2'
+// TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
+include { GET_FOLDER                      } from 'subworkflows/local/get_folder'
+include { GET_READS_PAIRS                 } from 'subworkflows/local/get_reads_pairs'
+include { RENAME                          } from 'subworkflows/local/rename'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,80 +82,10 @@ include { clean_work_files as clean_sorted_bams } from 'utilities'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    SUBWORKFLOWS
+    MAIN PIPELINE LOGIC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-/*
- * sub workflow rename: This workflow rename sequences by sample id given a map_file is given.
- */
-workflow rename {
-    
-    println "You are using the *rename* subworkflow."
-    take: data
-          map_file
-    main:
-      RENAME_SEQUENCES(data.collect(), map_file)
-      
-    emit:
-      RENAME_SEQUENCES.out
-}
-
-/*
- * sub workflow get_reads_pairs: This workflow creates the `read_pairs_ch`
- * channel that emits tuples containing three elements:
- * the pair ID, the first read-pair file and the second read-pair file.
- */
-workflow get_reads_pairs {
-    
-    println "You are using the *get_reads_pairs* subworkflow."
-    take: data
-    
-    main:
-       data.flatten()
-       .filter( ~/^.*fastq.gz/ )
-       .map { file ->
-          def key_part1 = file.name.toString().tokenize('_').get(0)
-          key = key_part1
-          return tuple(key, file)
-       }
-       .groupTuple(size:2)
-       .flatten()
-       .collate ( 3 )
-       .set { read_pairs_ch }
-      
-    emit:
-      read_pairs_ch
-}
-
-
-/*
- * sub workflow get_folder: This workflow creates a `folder_ch`
- * channel that emits tuples containing 2 elements:
- * the sample ID, and the path containing a folder with stuff.
- */
-workflow get_folder {
-    
-    println "You are using the *get_folder* subworkflow."
-    take: data
-    
-    main:
-       data.flatten()
-       .map { dir ->
-          def key_part1 = dir.name.toString()
-          key = key_part1
-          return tuple(key, dir)
-       }
-       //.view()       
-       .set { folder_ch }
-    emit:
-      folder_ch
-}
-
-
-/* 
- * main pipeline logic
- */
 workflow {
 
   if( params.use_prepared_reads ) {
@@ -163,11 +96,11 @@ workflow {
 
   } else {
 
-    // Using the rename workflow with 2 inputs
-    rename( Channel.fromPath( params.reads), params.map_file )
+    // Using the RENAME subworkflow with 2 inputs
+    RENAME( Channel.fromPath( params.reads), params.map_file )
 
-    // Using the get_reads_pairs workflow
-    get_reads_pairs(rename.out)
+    // Using the GET_READS_PAIRS workflow
+    GET_READS_PAIRS(rename.out)
 
     // PART 1: Data preparation
     QUALITY_FILTERING(get_reads_pairs.out)
@@ -230,8 +163,8 @@ workflow {
 
   // Individual assemblies
   if( params.use_megahit_individual_assemblies ) {
-    // Using the get_folders workflow
-    indiv_assemblies_ch = get_folder( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
+    // Using the GET_FOLDER subworkflow
+    indiv_assemblies_ch = GET_FOLDER( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
   } else {
     indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
   }
