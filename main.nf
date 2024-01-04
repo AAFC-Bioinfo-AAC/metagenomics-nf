@@ -3,11 +3,11 @@
  * from the work done by Devin Holman, Arun Kommadath (AAFC Lacombe) and Sara Ricci.
  * Last update : 2023/11/08
  * 
- */
+*/
 
 /* 
  * Enable DSL 2 syntax
- */
+*/
 nextflow.enable.dsl = 2
 
 log.info """\
@@ -19,54 +19,69 @@ reads    : $params.reads
 results  : $params.results
 """
 
-include {
-  RENAME_SEQUENCES;
-  QUALITY_FILTERING;
-  BOWTIE2;
-  OUTPUT_UNALIGNED_READS;
-  KAIJU;
-  KAIJU_TAX_TABLE;
-  KAIJU_FULL_TAX_TABLE;
-  MERGE_TAX_FILES;
-  MERGE_FULL_TAX_FILES;
-  CAT_FASTQ;
-  HUMANN_RUN;
-  HUMANN_ABUNDANCE;
-  COASSEMBLY;
-  BOWTIE2_BUILD;
-  BOWTIE2_MAP;
-  METABAT2_BIN_COASSEMBLY;
-  JGI_SUMMARIZE;
-  CHECKM;
-  MEGAHIT_SINGLE;
-  BOWTIE2_BUILD_SINGLE;
-  BOWTIE2_MAP_SINGLE;
-  JGI_SUMMARIZE_SINGLE;
-  METABAT2_BIN_SINGLE;
-  CHECKM_SINGLE;
-  SORT_BINS;
-  SORT_BINS2;
-  GET_BINS;
-  GET_BINS2;
-  DREP;
-  GTDB_TK;
-  PHYLOPHLAN;
-  COVERM;
-  QUAST;
-  METAQUAST;
-  KRAKEN2;
-  KRAKEN2_MPA;
-  COMBINE_KRAKEN2;
-  BRACKEN;
-  DRAM_ANNOTATION;
-  DRAM_DISTILLATION} from './modules.nf'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT LOCAL MODULES/SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
+// TODO: Use nf-core modules where possible for easier updating
+// TODO: Consolidate modules where possible (e.g. Bowtie2)
+include { BOWTIE2_BUILD_SINGLE            } from 'modules/local/bowtie2_build_single'
+include { BOWTIE2_BUILD                   } from 'modules/local/bowtie2_build'
+include { BOWTIE2_MAP_SINGLE              } from 'modules/local/bowtie2_map_single'
+include { BOWTIE2_MAP                     } from 'modules/local/bowtie2_map'
+include { BOWTIE2                         } from 'modules/local/bowtie2'
+include { BRACKEN                         } from 'modules/local/bracken'
+include { CAT_FASTQ                       } from 'modules/local/cat_fastq'
+include { CHECKM_SINGLE                   } from 'modules/local/checkm_single'
+include { CHECKM                          } from 'modules/local/checkm'
+include { COASSEMBLY                      } from 'modules/local/coassembly'
+include { COMBINE_KRAKEN2                 } from 'modules/local/combine_kraken2'
+include { COVERM                          } from 'modules/local/coverm'
+include { DRAM_ANNOTATION                 } from 'modules/local/dram_annotation'
+include { DRAM_DISTILLATION               } from 'modules/local/dram_distillation'
+include { DREP                            } from 'modules/local/drep'
+include { GET_BINS                        } from 'modules/local/get_bins'
+include { GET_BINS2                       } from 'modules/local/get_bins2'
+include { GTDB_TK                         } from 'modules/local/gtdb_tk'
+include { HUMANN_ABUNDANCE                } from 'modules/local/humann_abundance'
+include { HUMANN_RUN                      } from 'modules/local/humann_run'
+include { JGI_SUMMARIZE_SINGLE            } from 'modules/local/jgi_summarize_single'
+include { JGI_SUMMARIZE                   } from 'modules/local/jgi_summarize'
+include { KAIJU_FULL_TAX_TABLE            } from 'modules/local/kaiju_full_tax_table'
+include { KAIJU_TAX_TABLE                 } from 'modules/local/kaiju_tax_table'
+include { KAIJU                           } from 'modules/local/kaiju'
+include { KRAKEN2_MPA                     } from 'modules/local/kraken2_mpa'
+include { KRAKEN2                         } from 'modules/local/kraken2'
+include { MEGAHIT_SINGLE                  } from 'modules/local/megahit_single'
+include { MERGE_FULL_TAX_FILES            } from 'modules/local/merge_full_tax_files'
+include { MERGE_TAX_FILES                 } from 'modules/local/merge_tax_files'
+include { METABAT2_BIN_COASSEMBLY         } from 'modules/local/metabat2_bin_coassembly'
+include { METABAT2_BIN_SINGLE             } from 'modules/local/metabat2_bin_single'
+include { METAQUAST                       } from 'modules/local/metaquast'
+include { OUTPUT_UNALIGNED_READS          } from 'modules/local/output_unaligned_reads'
+include { PHYLOPHLAN                      } from 'modules/local/phylophlan'
+include { QUALITY_FILTERING               } from 'modules/local/quality_filtering'
+include { QUAST                           } from 'modules/local/quast'
+include { RENAME_SEQUENCES                } from 'modules/local/rename_sequences'
+include { SORT_BINS                       } from 'modules/local/sort_bins'
+include { SORT_BINS2                      } from 'modules/local/sort_bins2'
 
-include { clean_work_files as clean_sorted_bams } from './utilities.nf'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT UTILITIES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
-/* 
- * sub workflows
- */
+// TODO: Make this a normal module?
+include { clean_work_files as clean_sorted_bams } from 'utilities'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
 /*
  * sub workflow rename: This workflow rename sequences by sample id given a map_file is given.
