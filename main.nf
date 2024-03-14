@@ -3,11 +3,11 @@
  * from the work done by Devin Holman, Arun Kommadath (AAFC Lacombe) and Sara Ricci.
  * Last update : 2023/11/08
  * 
- */
+*/
 
 /* 
  * Enable DSL 2 syntax
- */
+*/
 nextflow.enable.dsl = 2
 
 log.info """\
@@ -19,143 +19,91 @@ reads    : $params.reads
 results  : $params.results
 """
 
-include {
-  RENAME_SEQUENCES;
-  QUALITY_FILTERING;
-  BOWTIE2;
-  OUTPUT_UNALIGNED_READS;
-  KAIJU;
-  KAIJU_TAX_TABLE;
-  KAIJU_FULL_TAX_TABLE;
-  MERGE_TAX_FILES;
-  MERGE_FULL_TAX_FILES;
-  CAT_FASTQ;
-  HUMANN_RUN;
-  HUMANN_ABUNDANCE;
-  COASSEMBLY;
-  BOWTIE2_BUILD;
-  BOWTIE2_MAP;
-  METABAT2_BIN_COASSEMBLY;
-  JGI_SUMMARIZE;
-  CHECKM;
-  MEGAHIT_SINGLE;
-  BOWTIE2_BUILD_SINGLE;
-  BOWTIE2_MAP_SINGLE;
-  JGI_SUMMARIZE_SINGLE;
-  METABAT2_BIN_SINGLE;
-  CHECKM_SINGLE;
-  SORT_BINS;
-  SORT_BINS2;
-  GET_BINS;
-  GET_BINS2;
-  DREP;
-  GTDB_TK;
-  PHYLOPHLAN;
-  COVERM;
-  QUAST;
-  METAQUAST;
-  KRAKEN2;
-  KRAKEN2_MPA;
-  COMBINE_KRAKEN2;
-  BRACKEN;
-  DRAM_ANNOTATION;
-  DRAM_DISTILLATION} from './modules.nf'
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT LOCAL MODULES/SUBWORKFLOWS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
-
-include { clean_work_files as clean_sorted_bams } from './utilities.nf'
-
-/* 
- * sub workflows
- */
+// TODO: Use nf-core modules where possible for easier updating
+// TODO: Consolidate modules where possible (e.g. Bowtie2)
+include { BOWTIE2_BUILD_SINGLE            } from './modules/local/bowtie2_build_single'
+include { BOWTIE2_BUILD                   } from './modules/local/bowtie2_build'
+include { BOWTIE2_MAP_SINGLE              } from './modules/local/bowtie2_map_single'
+include { BOWTIE2_MAP                     } from './modules/local/bowtie2_map'
+include { BOWTIE2                         } from './modules/local/bowtie2'
+include { BRACKEN                         } from './modules/local/bracken'
+include { CAT_FASTQ                       } from './modules/local/cat_fastq'
+include { CHECKM_SINGLE                   } from './modules/local/checkm_single'
+include { CHECKM                          } from './modules/local/checkm'
+include { COASSEMBLY                      } from './modules/local/coassembly'
+include { COMBINE_KRAKEN2                 } from './modules/local/combine_kraken2'
+include { COVERM                          } from './modules/local/coverm'
+include { DRAM_ANNOTATION                 } from './modules/local/dram_annotation'
+include { DRAM_DISTILLATION               } from './modules/local/dram_distillation'
+include { DREP                            } from './modules/local/drep'
+include { GET_BINS                        } from './modules/local/get_bins'
+include { GET_BINS2                       } from './modules/local/get_bins2'
+include { GTDB_TK                         } from './modules/local/gtdb_tk'
+include { HUMANN_ABUNDANCE                } from './modules/local/humann_abundance'
+include { HUMANN_RUN                      } from './modules/local/humann_run'
+include { JGI_SUMMARIZE_SINGLE            } from './modules/local/jgi_summarize_single'
+include { JGI_SUMMARIZE                   } from './modules/local/jgi_summarize'
+include { KAIJU_FULL_TAX_TABLE            } from './modules/local/kaiju_full_tax_table'
+include { KAIJU_TAX_TABLE                 } from './modules/local/kaiju_tax_table'
+include { KAIJU                           } from './modules/local/kaiju'
+include { KRAKEN2_MPA                     } from './modules/local/kraken2_mpa'
+include { KRAKEN2                         } from './modules/local/kraken2'
+include { MEGAHIT_SINGLE                  } from './modules/local/megahit_single'
+include { MERGE_FULL_TAX_FILES            } from './modules/local/merge_full_tax_files'
+include { MERGE_TAX_FILES                 } from './modules/local/merge_tax_files'
+include { METABAT2_BIN_COASSEMBLY         } from './modules/local/metabat2_bin_coassembly'
+include { METABAT2_BIN_SINGLE             } from './modules/local/metabat2_bin_single'
+include { METAQUAST                       } from './modules/local/metaquast'
+include { OUTPUT_UNALIGNED_READS          } from './modules/local/output_unaligned_reads'
+include { PHYLOPHLAN                      } from './modules/local/phylophlan'
+include { QUALITY_FILTERING               } from './modules/local/quality_filtering'
+include { QUAST                           } from './modules/local/quast'
+include { SORT_BINS                       } from './modules/local/sort_bins'
+include { SORT_BINS2                      } from './modules/local/sort_bins2'
+// TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
+include { GET_FOLDER                      } from './subworkflows/local/get_folder'
+include { GET_READS_PAIRS                 } from './subworkflows/local/get_reads_pairs'
+include { RENAME                          } from './subworkflows/local/rename'
 
 /*
- * sub workflow rename: This workflow rename sequences by sample id given a map_file is given.
- */
-workflow rename {
-    
-    println "You are using the *rename* subworkflow."
-    take: data
-          map_file
-    main:
-      RENAME_SEQUENCES(data.collect(), map_file)
-      
-    emit:
-      RENAME_SEQUENCES.out
-}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    IMPORT UTILITIES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// TODO: Make this a normal module?
+include { clean_work_files as clean_sorted_bams } from './utilities'
 
 /*
- * sub workflow get_reads_pairs: This workflow creates the `read_pairs_ch`
- * channel that emits tuples containing three elements:
- * the pair ID, the first read-pair file and the second read-pair file.
- */
-workflow get_reads_pairs {
-    
-    println "You are using the *get_reads_pairs* subworkflow."
-    take: data
-    
-    main:
-       data.flatten()
-       .filter( ~/^.*fastq.gz/ )
-       .map { file ->
-          def key_part1 = file.name.toString().tokenize('_').get(0)
-          key = key_part1
-          return tuple(key, file)
-       }
-       .groupTuple(size:2)
-       .flatten()
-       .collate ( 3 )
-       .set { read_pairs_ch }
-      
-    emit:
-      read_pairs_ch
-}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MAIN PIPELINE LOGIC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
 
-
-/*
- * sub workflow get_folder: This workflow creates a `folder_ch`
- * channel that emits tuples containing 2 elements:
- * the sample ID, and the path containing a folder with stuff.
- */
-workflow get_folder {
-    
-    println "You are using the *get_folder* subworkflow."
-    take: data
-    
-    main:
-       data.flatten()
-       .map { dir ->
-          def key_part1 = dir.name.toString()
-          key = key_part1
-          return tuple(key, dir)
-       }
-       //.view()       
-       .set { folder_ch }
-    emit:
-      folder_ch
-}
-
-
-/* 
- * main pipeline logic
- */
 workflow {
 
   if( params.use_prepared_reads ) {
 
-    // Using the get_reads_pairs workflow
-    prepared_reads_ch = get_reads_pairs( Channel.fromPath( params.prepared_reads) )
+    // Using the GET_READS_PAIRS workflow
+    prepared_reads_ch = GET_READS_PAIRS( Channel.fromPath( params.prepared_reads) )
 
 
   } else {
 
-    // Using the rename workflow with 2 inputs
-    rename( Channel.fromPath( params.reads), params.map_file )
+    // Using the RENAME subworkflow with 2 inputs
+    RENAME( Channel.fromPath( params.reads), params.map_file )
 
-    // Using the get_reads_pairs workflow
-    get_reads_pairs(rename.out)
+    // Using the GET_READS_PAIRS workflow
+    GET_READS_PAIRS(RENAME.out)
 
     // PART 1: Data preparation
-    QUALITY_FILTERING(get_reads_pairs.out)
+    QUALITY_FILTERING(GET_READS_PAIRS.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
 
@@ -215,8 +163,8 @@ workflow {
 
   // Individual assemblies
   if( params.use_megahit_individual_assemblies ) {
-    // Using the get_folders workflow
-    indiv_assemblies_ch = get_folder( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
+    // Using the GET_FOLDER subworkflow
+    indiv_assemblies_ch = GET_FOLDER( Channel.fromPath( params.indiv_assemblies, type: 'dir') )
   } else {
     indiv_assemblies_ch = MEGAHIT_SINGLE(prepared_reads_ch)
   }
@@ -340,6 +288,7 @@ workflow {
 
   }   
 }
+
 
 
 
