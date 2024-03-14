@@ -126,22 +126,14 @@ sbatch \
 
 ### 3.2 - Preparation of a map file
 
+The map file allows to give a relevant sample name to the corresponding metagenomics reads.
 
-A good starting point to produce a compliant map_file for that workflow is to use the following snippet with your raw input files!
-
-```shell
-cd data/reads
-printf "sample_read\tfile_name\n" >  ../../metadata/map_file.tsv
-for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f 5 -d '.'); printf "$id\t$n\n"; done >> ../../metadata/map_file.tsv
-```
-
-The idea is to have an expression that correspond to the sampleID plus _R1 or 
-_R2 in the first column and the basename of the corresponding fastq files in the second column :
+The map file is a .tsv file with at least 2 mandatory columns : sample_read and file_name. The idea is to have an expression corresponding to the desired sampleID plus _R1 or 
+_R2 in the first column and the basename of the corresponding fastq files in the second column. Here an example :
 
 
-
-| sample_read	| file_name	|
-|-------------|-----------|
+| sample_read | file_name	|
+|-------------|-----------------------------------------------|
 |G2-E1-13_R1	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R1|
 |G2-E1-13_R2	|NS.2066.001.IDT_i7_13---IDT_i5_13.G2-E1-13_R2|	
 |G2-E1-38_R1	|NS.2066.001.IDT_i7_14---IDT_i5_14.G2-E1-38_R1|
@@ -154,8 +146,23 @@ _R2 in the first column and the basename of the corresponding fastq files in the
 |G2-E1-16_R2	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R2|
 
 
+When setting the rename parameters to 'yes', the rename sub-workflow will rename the reads according to the values present in the sample_read column of the map file.
 
-The second step is to add a header and at least a third column containing the desired groups for co-assemblies, e.g. :
+A good starting point to produce a compliant map_file for this workflow is to use the following snippet with your raw input files!
+Depending on how your raw reads are named, you may have to adjust the cut command however.
+
+
+```shell
+cd data/reads
+printf "sample_read\tfile_name\n" >  ../../metadata/map_file.tsv
+for i in `ls *.fastq.gz`; do n=$(basename $i ".fastq.gz"); id=$(echo $i | cut -f 5 -d '.'); printf "$id\t$n\n"; done >> ../../metadata/map_file.tsv
+```
+
+
+
+### 3.3 - Preparation of a co-assembly map file
+
+If you want to perform co-assemblies, you will have also to prepare **a distinct file** specifying the desired groups for co-assemblies, e.g. :
 
 
 
@@ -173,14 +180,7 @@ The second step is to add a header and at least a third column containing the de
 |G2-E1-16_R2	|NS.2066.001.IDT_i7_39---IDT_i5_39.G2-E1-16_R2	|StressCuZnII	|feces	  |stress_feces|
 
 
-Therefore, the map file have the following mandatory columns :
-
-  * sample_read
-  * file_name
-  * coassembly_group
-
-
-When setting the rename parameters to 'yes', the rename sub-workflow will rename the reads according to the values present in the sample_read column of the map file.
+The co-assembly map file have 3 mandatory columns : sample_read, file_name and coassembly_group.
 
 
 ## 4 - Launch :rocket:
@@ -218,9 +218,6 @@ sbatch -D $PWD \
        -o $PWD/nextflow_log-%j.out \
        --wrap="nextflow run main.nf -profile waffles"
 ```
-
-
-
 
 ### 4.2 - Resume a run
 
