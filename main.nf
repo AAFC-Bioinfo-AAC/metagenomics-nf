@@ -20,78 +20,78 @@ results  : $params.results
 """
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT LOCAL MODULES/SUBWORKFLOWS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 // TODO: Use nf-core modules where possible for easier updating
 // TODO: Consolidate modules where possible (e.g. Bowtie2)
-include { BOWTIE2_BUILD_SINGLE            } from 'modules/local/bowtie2_build_single'
-include { BOWTIE2_BUILD                   } from 'modules/local/bowtie2_build'
-include { BOWTIE2_MAP_SINGLE              } from 'modules/local/bowtie2_map_single'
-include { BOWTIE2_MAP                     } from 'modules/local/bowtie2_map'
-include { BOWTIE2                         } from 'modules/local/bowtie2'
-include { BRACKEN                         } from 'modules/local/bracken'
-include { CAT_FASTQ                       } from 'modules/local/cat_fastq'
-include { CHECKM_SINGLE                   } from 'modules/local/checkm_single'
-include { CHECKM                          } from 'modules/local/checkm'
-include { COASSEMBLY                      } from 'modules/local/coassembly'
-include { COMBINE_KRAKEN2                 } from 'modules/local/combine_kraken2'
-include { COVERM                          } from 'modules/local/coverm'
-include { DRAM_ANNOTATION                 } from 'modules/local/dram_annotation'
-include { DRAM_DISTILLATION               } from 'modules/local/dram_distillation'
-include { DREP                            } from 'modules/local/drep'
-include { GET_BINS                        } from 'modules/local/get_bins'
-include { GET_BINS2                       } from 'modules/local/get_bins2'
-include { GTDB_TK                         } from 'modules/local/gtdb_tk'
-include { HUMANN_ABUNDANCE                } from 'modules/local/humann_abundance'
-include { HUMANN_RUN                      } from 'modules/local/humann_run'
-include { JGI_SUMMARIZE_SINGLE            } from 'modules/local/jgi_summarize_single'
-include { JGI_SUMMARIZE                   } from 'modules/local/jgi_summarize'
-include { KAIJU_FULL_TAX_TABLE            } from 'modules/local/kaiju_full_tax_table'
-include { KAIJU_TAX_TABLE                 } from 'modules/local/kaiju_tax_table'
-include { KAIJU                           } from 'modules/local/kaiju'
-include { KRAKEN2_MPA                     } from 'modules/local/kraken2_mpa'
-include { KRAKEN2                         } from 'modules/local/kraken2'
-include { MEGAHIT_SINGLE                  } from 'modules/local/megahit_single'
-include { MERGE_FULL_TAX_FILES            } from 'modules/local/merge_full_tax_files'
-include { MERGE_TAX_FILES                 } from 'modules/local/merge_tax_files'
-include { METABAT2_BIN_COASSEMBLY         } from 'modules/local/metabat2_bin_coassembly'
-include { METABAT2_BIN_SINGLE             } from 'modules/local/metabat2_bin_single'
-include { METAQUAST                       } from 'modules/local/metaquast'
-include { OUTPUT_UNALIGNED_READS          } from 'modules/local/output_unaligned_reads'
-include { PHYLOPHLAN                      } from 'modules/local/phylophlan'
-include { QUALITY_FILTERING               } from 'modules/local/quality_filtering'
-include { QUAST                           } from 'modules/local/quast'
-include { SORT_BINS                       } from 'modules/local/sort_bins'
-include { SORT_BINS2                      } from 'modules/local/sort_bins2'
+include { BOWTIE2_BUILD_SINGLE            } from './modules/local/bowtie2_build_single'
+include { BOWTIE2_BUILD                   } from './modules/local/bowtie2_build'
+include { BOWTIE2_MAP_SINGLE              } from './modules/local/bowtie2_map_single'
+include { BOWTIE2_MAP                     } from './modules/local/bowtie2_map'
+include { BOWTIE2                         } from './modules/local/bowtie2'
+include { BRACKEN                         } from './modules/local/bracken'
+include { CAT_FASTQ                       } from './modules/local/cat_fastq'
+include { CHECKM_SINGLE                   } from './modules/local/checkm_single'
+include { CHECKM                          } from './modules/local/checkm'
+include { COASSEMBLY                      } from './modules/local/coassembly'
+include { COMBINE_KRAKEN2                 } from './modules/local/combine_kraken2'
+include { COVERM                          } from './modules/local/coverm'
+include { DRAM_ANNOTATION                 } from './modules/local/dram_annotation'
+include { DRAM_DISTILLATION               } from './modules/local/dram_distillation'
+include { DREP                            } from './modules/local/drep'
+include { GET_BINS                        } from './modules/local/get_bins'
+include { GET_BINS2                       } from './modules/local/get_bins2'
+include { GTDB_TK                         } from './modules/local/gtdb_tk'
+include { HUMANN_ABUNDANCE                } from './modules/local/humann_abundance'
+include { HUMANN_RUN                      } from './modules/local/humann_run'
+include { JGI_SUMMARIZE_SINGLE            } from './modules/local/jgi_summarize_single'
+include { JGI_SUMMARIZE                   } from './modules/local/jgi_summarize'
+include { KAIJU_FULL_TAX_TABLE            } from './modules/local/kaiju_full_tax_table'
+include { KAIJU_TAX_TABLE                 } from './modules/local/kaiju_tax_table'
+include { KAIJU                           } from './modules/local/kaiju'
+include { KRAKEN2_MPA                     } from './modules/local/kraken2_mpa'
+include { KRAKEN2                         } from './modules/local/kraken2'
+include { MEGAHIT_SINGLE                  } from './modules/local/megahit_single'
+include { MERGE_FULL_TAX_FILES            } from './modules/local/merge_full_tax_files'
+include { MERGE_TAX_FILES                 } from './modules/local/merge_tax_files'
+include { METABAT2_BIN_COASSEMBLY         } from './modules/local/metabat2_bin_coassembly'
+include { METABAT2_BIN_SINGLE             } from './modules/local/metabat2_bin_single'
+include { METAQUAST                       } from './modules/local/metaquast'
+include { OUTPUT_UNALIGNED_READS          } from './modules/local/output_unaligned_reads'
+include { PHYLOPHLAN                      } from './modules/local/phylophlan'
+include { QUALITY_FILTERING               } from './modules/local/quality_filtering'
+include { QUAST                           } from './modules/local/quast'
+include { SORT_BINS                       } from './modules/local/sort_bins'
+include { SORT_BINS2                      } from './modules/local/sort_bins2'
 // TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
-include { GET_FOLDER                      } from 'subworkflows/local/get_folder'
-include { GET_READS_PAIRS                 } from 'subworkflows/local/get_reads_pairs'
-include { RENAME                          } from 'subworkflows/local/rename'
+include { GET_FOLDER                      } from './subworkflows/local/get_folder'
+include { GET_READS_PAIRS                 } from './subworkflows/local/get_reads_pairs'
+include { RENAME                          } from './subworkflows/local/rename'
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     IMPORT UTILITIES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 // TODO: Make this a normal module?
-include { clean_work_files as clean_sorted_bams } from 'utilities'
+include { clean_work_files as clean_sorted_bams } from './utilities'
 
 /*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     MAIN PIPELINE LOGIC
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 workflow {
 
   if( params.use_prepared_reads ) {
 
-    // Using the get_reads_pairs workflow
-    prepared_reads_ch = get_reads_pairs( Channel.fromPath( params.prepared_reads) )
+    // Using the GET_READS_PAIRS workflow
+    prepared_reads_ch = GET_READS_PAIRS( Channel.fromPath( params.prepared_reads) )
 
 
   } else {
@@ -100,10 +100,10 @@ workflow {
     RENAME( Channel.fromPath( params.reads), params.map_file )
 
     // Using the GET_READS_PAIRS workflow
-    GET_READS_PAIRS(rename.out)
+    GET_READS_PAIRS(RENAME.out)
 
     // PART 1: Data preparation
-    QUALITY_FILTERING(get_reads_pairs.out)
+    QUALITY_FILTERING(GET_READS_PAIRS.out)
     BOWTIE2(params.genome, params.genome_basename,
             QUALITY_FILTERING.out)
 
@@ -288,6 +288,7 @@ workflow {
 
   }   
 }
+
 
 
 
