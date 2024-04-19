@@ -131,4 +131,12 @@ sbatch -D $PWD --output $PWD/metaphlan_db_build-$j.out --export=ALL -J metaphlan
 
 And you are all set; we have added the right command lines options to specify which database should be used by Metaphlan when Humann3 is invoked!
 
+## 5 - Phylophlan
 
+  ```shell 
+  mkdir phylophlan_db
+  cd phylophlan_db
+  wget http://cmprod1.cibio.unitn.it/databases/PhyloPhlAn/phylophlan_databases.txt
+  wget $(grep -o 'http://[^[:space:]]*\.tar\b' phylophlan_databases.txt)
+  wget $(grep -o 'http://[^[:space:]]*\.md5\b' phylophlan_databases.txt)
+  ```

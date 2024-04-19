@@ -281,7 +281,7 @@ workflow {
     DREP(GET_BINS2.out)
     QUAST(DREP.out)
     GTDB_TK(params.gtdb_db, DREP.out)
-    PHYLOPHLAN(DREP.out)
+    PHYLOPHLAN(params.phylophlan_db, DREP.out)
     COVERM(prepared_reads_ch,DREP.out)
     DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
     DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)

@@ -53,7 +53,13 @@ If you are working on the PHAC/NML waffles cluster, you can use the pre-build co
 /Drives/O/GRDI-AMR2/share/conda
 ```
 
-By default, these conda envs will be used when running the pipeline with the **-profile biocluster** or **-profile waffles** options.
+If you are working on the GPSC cluster, you can use the pre-build conda environments that lie at this location :
+
+```shell
+/gpfs/fs7/aafc/pilot/aafc_sjsr/abcc/resources/env/metagenomics_nf
+```
+
+By default, these conda envs will be used when running the pipeline with the **-profile biocluster**, **-profile waffles**, or **--profile gpsc** options.
 
 Details about the recipes used to create these conda envs are detailed in the [conda_env.md](./conda_env.md) file.
 
@@ -64,7 +70,7 @@ Several databases are required to perform all steps of the pipeline.
 
 ***(todo: make a table with all databases and their versions)***
 
-If you are running this pipeline on the AAFC Biocluster or on the PHAC/NML waffles cluster, you can take advantage of the pre-build databases whom location are specified in the Nextflow.config file.
+If you are running this pipeline on the AAFC Biocluster, the PHAC/NML waffles cluster, or the GPSC cluster, you can take advantage of the pre-build databases whose location are specified in the Nextflow.config file.
 
 You can read more about how databases were set-up in our [databases documentation](./databases.md).
 
@@ -104,8 +110,8 @@ Combine the pig and PhiX genomes:
 cat data/genomes/phiX.fa GCF_000003025.6_Sscrofa11.1_genomic.fna > Pig_PhiX_genomes.fna
 ```
 
-Finally, build the Bowtie2 index:
-
+Finally, build the Bowtie2 index:  
+- On the Waffle cluster:
 ```shell
 prefix='/Drives/O/GRDI-AMR2/share/conda/envs'
 conda activate $prefix/bowtie2_2.5.2
@@ -120,8 +126,22 @@ sbatch \
  --mem 64G \
  --wrap="bowtie2-build Pig_PhiX_genomes.fna pig/pig"
 ```
-
-
+- On the GPSC:  
+```shell
+prefix='/gpfs/fs7/aafc/pilot/aafc_sjsr/abcc/resources/env/metagenomics_nf'
+conda activate $prefix/bowtie2
+mkdir pig
+sbatch \
+ -D $PWD \
+ --output $PWD/bowtie2-$j.out \
+ --export=ALL \
+ -J bowtie2-build \
+ -c 8 \
+ -p standard \
+ --account=aafc_pilot \
+ -t 300 \ 
+ --wrap="bowtie2-build Pig_PhiX_genomes.fna pig/pig"
+ ```
 
 
 ### 3.2 - Preparation of a map file
@@ -218,6 +238,23 @@ sbatch -D $PWD \
        -o $PWD/nextflow_log-%j.out \
        --wrap="nextflow run main.nf -profile waffles"
 ```
+#### 4.1.3 On GPSC
+You simply use the GPSC profile:
+
+```shell
+conda activate nextflow
+export NXF_OPTS="-Xms500M -Xmx2G" 
+sbatch -D $PWD \
+       --export=ALL \
+       -J metagenomics_nf \
+       -c 2 \
+       --mem 4G \
+       -p standard \
+       --account=aafc_pilot \
+       -t 300 \
+       -o $PWD/nextflow_log-%j.out \
+       --wrap="nextflow run main.nf -profile gpsc"
+```
 
 ### 4.2 - Resume a run
 
@@ -250,6 +287,8 @@ sbatch -D $PWD \
       -o $PWD/nextflow_log-%j.out \
       --wrap="nextflow run main.nf -profile waffles -resume 94de4004-69dc-4a11-9cef-c936e89974a3"
 ```
+#### 4.2.2 On GPSC
+#Insert info here
 
 ## 5 - Future directions
 
