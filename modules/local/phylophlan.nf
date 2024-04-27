@@ -5,16 +5,17 @@ process PHYLOPHLAN {
  publishDir "$params.results/phylophlan"
 
   input:
+      path db
       path(dereplicated_genomes, stageAs: "dRep_output/*")
+      
  
   output:   
       path("Phylophlan_output/*")
   
   script:
   """
-  # To avoid errors like this :
-  # [e] database directory "phylophlan_databases/" is not writeable, please modify the permissions
-  # We create the 'phylophlan_databases' folder before Phylophlan and change the permissions
+
+  # We create the 'phylophlan_databases' folder before Phylophlan and change the permissions to avoid errors
 
   mkdir -p phylophlan_databases &&
   chmod a+rwx phylophlan_databases &&
@@ -31,7 +32,7 @@ process PHYLOPHLAN {
              --diversity low \
              --fast \
              --verbose \
-             --genome_extension fa
+             --genome_extension fa \
+             --databases_folder $db
   """
-  
 }
