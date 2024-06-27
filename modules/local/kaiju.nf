@@ -1,6 +1,6 @@
 process KAIJU {
 
-  label 'mem_large'
+  label 'mem_xlarge'
   label 'cpus_large'
   
   publishDir "$params.results/kaiju/kaiju_1"

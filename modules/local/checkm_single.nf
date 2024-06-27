@@ -1,6 +1,6 @@
 process CHECKM_SINGLE {
 
-  label 'cpus_medium'
+  label 'cpus_xxlarge'
   
   publishDir "$params.results/indiv_assemblies/checkM2_output"
   errorStrategy 'ignore' //sometimes DIAMOND produces no annotation and Checkm2 Exit

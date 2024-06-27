@@ -139,4 +139,19 @@ And you are all set; we have added the right command lines options to specify wh
   wget http://cmprod1.cibio.unitn.it/databases/PhyloPhlAn/phylophlan_databases.txt
   wget $(grep -o 'http://[^[:space:]]*\.tar\b' phylophlan_databases.txt)
   wget $(grep -o 'http://[^[:space:]]*\.md5\b' phylophlan_databases.txt)
+
+
+  # Stop there
+
+  (nextflow) [jsbrouard@waffles phylophlan_db]$ ls
+amphora2.md5  amphora2.tar  phylophlan_databases.txt  phylophlan.md5  phylophlan.tar
+
+
+
+
+
+  tar -xvpf phylophlan.tar
+  cd pylophlan
+
+  bzip2 -dk phylophlan.faa.bz2
   ```
