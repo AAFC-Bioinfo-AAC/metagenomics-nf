@@ -284,7 +284,7 @@ workflow {
     PHYLOPHLAN(params.phylophlan_db, DREP.out)
     COVERM(prepared_reads_ch,DREP.out)
     DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    DRAM_DISTILLATION(DRAM_ANNOTATION.out.DRAM_MAGs)
+    DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
 
   }   
 }

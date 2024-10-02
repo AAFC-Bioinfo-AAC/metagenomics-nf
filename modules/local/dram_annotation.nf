@@ -6,14 +6,13 @@ process DRAM_ANNOTATION {
     publishDir "$params.results/dram/annotation"
 
     input:
-    path dram_config
+    path config
     path (dereplicated_genomes, stageAs: "dRep_output/*")
     path (GTDB, stageAs: "GTDB_TK_output/*")
     
 
     output:
     path ("DRAM_annotated_MAGs/*"), emit: DRAM_MAGs
-    path 'config_infos.txt'
 
     script:
     """
@@ -26,17 +25,16 @@ process DRAM_ANNOTATION {
         mv GTDB_TK_output/gtdbtk.bac120.summary.tsv gtdbtk.bac120.ar53.summary.tsv
     fi
 
-    DRAM-setup.py import_config --config_loc $dram_config
+    export DRAM_CONFIG_LOCATION=$config
 
     DRAM-setup.py print_config > config_infos.txt
-
+    
     DRAM.py annotate \
     -i 'dRep_output/dereplicated_genomes/*.fa' \
     -o DRAM_annotated_MAGs \
     --verbose \
-    --config_loc $dram_config \
+    --config_loc $config \
     --threads $task.cpus \
     --gtdb_taxonomy gtdbtk.bac120.ar53.summary.tsv
     """
-    
 }

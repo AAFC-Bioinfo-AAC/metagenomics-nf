@@ -1,7 +1,7 @@
 process MEGAHIT_SINGLE {
   
-  label 'mem_xlarge'
-  label 'cpus_xlarge'
+  label 'mem_xxlarge'
+  label 'cpus_xxxlarge'
   
   publishDir "$params.results/indiv_assemblies/megahit"
 
