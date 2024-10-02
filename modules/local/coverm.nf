@@ -19,8 +19,8 @@ process COVERM {
   script:
   """
   # Define TMPDIR env variable to avoid Samtools (used by coverm) to write in /tmp in local nodes!
-  mkdir -p $baseDir/tmp
-  export TMPDIR=$baseDir/tmp
+  mkdir -p ./tmp
+  export TMPDIR=$PWD/tmp
 
   coverm genome -1 ${final_R1} \
                 -2 ${final_R2} \
@@ -30,5 +30,4 @@ process COVERM {
                 --threads $task.cpus -v \
                 --output-file ${datasetID}_coverM_output.txt
   """
-  
 }

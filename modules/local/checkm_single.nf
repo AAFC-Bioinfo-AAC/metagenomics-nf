@@ -20,12 +20,13 @@ process CHECKM_SINGLE {
   """
   export HDF5_USE_FILE_LOCKING='FALSE'
   mkdir ${datasetID}
+  mkdir -p ./tmp
   checkm2 predict \
     --database_path $db \
     --threads 20 \
     -x fa \
     --input indiv_assembled_bins \
+    --tmpdir ./tmp \
     --output-directory ${datasetID}
   """
-  
 }

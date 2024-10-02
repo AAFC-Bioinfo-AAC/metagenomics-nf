@@ -3,6 +3,7 @@ process DRAM_DISTILLATION {
     publishDir "$params.results/dram/distillation"
 
     input:
+    path config
     path (annots, stageAs: "DRAM_annotated_MAGs/*")
     
     output:
@@ -10,6 +11,8 @@ process DRAM_DISTILLATION {
 
     script:
     """
+    export DRAM_CONFIG_LOCATION=$config
+    
     DRAM.py distill \
     -i DRAM_annotated_MAGs/annotations.tsv \
     -o MAG_DRAM_distilled_summaries \

@@ -21,8 +21,8 @@ process DREP {
   # Define MPLCONFIGDIR env variable to speed up the import
   # of Matplotlib and to better support multiprocessing.
   # Otherwise, Matplotlib may create a temporary cache directory at /tmp/matplotlib-xxx
-  mkdir -p $baseDir/tmp
-  export MPLCONFIGDIR=$baseDir/tmp
+  mkdir tmp
+  export MPLCONFIGDIR=$PWD/tmp
 
   # JSB add -centW 0 option to resolve a bug
   # https://github.com/MrOlm/drep/issues/120
