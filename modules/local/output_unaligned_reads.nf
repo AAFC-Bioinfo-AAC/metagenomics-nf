@@ -5,7 +5,8 @@ process OUTPUT_UNALIGNED_READS {
   input: 
     tuple \
       val(datasetID), \
-      path(aln)
+      path(aln), \
+      path(txt)
  
   output:   
     tuple \

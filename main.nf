@@ -114,7 +114,7 @@ workflow {
       .collect()
       .flatten()
       //.filter{ it =~ /.*bam$/ }
-      .filter{ it =~ /.*_trimmed.*/ || it =~ /.*bam$/ || it =~ /.*_unpaired.*/ }
+      .filter{ it =~ /.*_trimmed.*/ || it =~ /.*bam$/ || it =~ /.*_unpaired.*/ || it =~ /.*txt$/ }
       //.view()
       .set{ cleanable_bams_ch }
     clean_sorted_bams(cleanable_bams_ch)
