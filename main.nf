@@ -269,22 +269,36 @@ workflow {
 
     } else {
 
+    //mettons que je commence à changer le code dans cette section
+
     println "*You skip all coassembly steps...*"
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-    SORT_BINS2(CHECKM_SINGLE.out)
-    GET_BINS2(SORT_BINS2.out.collect(),
-             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect())
-    DREP(GET_BINS2.out)
-    QUAST(DREP.out)
-    GTDB_TK(params.gtdb_db, DREP.out)
-    PHYLOPHLAN(params.phylophlan_db, DREP.out)
-    COVERM(prepared_reads_ch,DREP.out)
-    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
+
+    // J'Ai verifie et le contenu de METABAT2_BIN_SINGLE.out ET  CHECKM_SINGLE.out est approprié
+
+
+    // ch_meta ne sert a rien!
+
+
+    // KEEP_HQ_BINS_2 remplace SORT_BINS2
+
+    KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out, CHECKM_SINGLE.out)
+
+    // le processus DREP est completement nouveau et 
+    DREP(KEEP_HQ_BINS_2.out)
+
+
+
+    //QUAST(DREP.out)
+    //GTDB_TK(params.gtdb_db, DREP.out)
+    //PHYLOPHLAN(params.phylophlan_db, DREP.out)
+    //COVERM(prepared_reads_ch,DREP.out)
+    //DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+    //DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
 
   }   
 }

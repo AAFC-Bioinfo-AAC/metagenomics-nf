@@ -1,21 +1,25 @@
 process DREP {
 
   label 'cpus_xxlarge'
-  publishDir "$params.results/drep"
+  publishDir "$params.results/drep_nouveau"
 
   input:
-    path hq_bins_file
-    path (hq_bins, stageAs: "hq_bins/*")
-    path (all_bins, stageAs: "all_bins/*")
-    
+     tuple \
+      val(datasetID), \
+      path("hq_bins"), \
+      path(checkm2)
+ 
+
   output:
-    path("dRep_output/*")
+     tuple \
+      val(datasetID), \
+      path("dRep_output")
 
   script:
   """
   # Tweak the High quality bins file to be used by drep
   echo "genome,completeness,contamination,strain_heterogeneity" > header
-  awk {'print \$1".fa,"\$2","\$3","0'} $hq_bins_file > corpus
+  awk {'print \$1".fa,"\$2","\$3","0'} $checkm2 > corpus
   cat header corpus > checkM_results.csv
   
   # Define MPLCONFIGDIR env variable to speed up the import
