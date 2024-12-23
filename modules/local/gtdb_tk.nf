@@ -19,7 +19,7 @@ process GTDB_TK {
   
   gtdbtk classify_wf \
          --genome_dir \
-         dRep_output/dereplicated_genomes \
+         dRep_output \
          -x fa \
          --out_dir GTDBtk_output \
          --cpus $task.cpus

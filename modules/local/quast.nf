@@ -5,16 +5,16 @@ process QUAST {
   publishDir "$params.results/quast"
   
   input:
-    path(dereplicated_genomes, stageAs: "dRep_output/*")
+      path (dRep, stageAs: "dRep_output/*")
 
   output:
-    path "QUAST_replicated_MAGs/*"
+    path ("QUAST/*")
   
   script:
   """
-  quast.py dRep_output/dereplicated_genomes/*.fa \
+  quast.py dRep_output/*.fa \
     --threads $task.cpus \
-    -o QUAST_replicated_MAGs
+    -o QUAST
   """
   
 }

@@ -30,7 +30,7 @@ process DRAM_ANNOTATION {
     DRAM-setup.py print_config > config_infos.txt
     
     DRAM.py annotate \
-    -i 'dRep_output/dereplicated_genomes/*.fa' \
+    -i 'dRep_output/*.fa' \
     -o DRAM_annotated_MAGs \
     --verbose \
     --config_loc $config \

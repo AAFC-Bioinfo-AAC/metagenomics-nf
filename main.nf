@@ -66,6 +66,10 @@ include { QUALITY_FILTERING               } from './modules/local/quality_filter
 include { QUAST                           } from './modules/local/quast'
 include { SORT_BINS                       } from './modules/local/sort_bins'
 include { SORT_BINS2                      } from './modules/local/sort_bins2'
+
+include { KEEP_HQ_BINS_2                  } from './modules/local/KEEP_HQ_BINS_2.nf'
+
+
 // TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
 include { GET_FOLDER                      } from './subworkflows/local/get_folder'
 include { GET_READS_PAIRS                 } from './subworkflows/local/get_reads_pairs'
@@ -251,23 +255,39 @@ workflow {
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
-    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-    SORT_BINS(CHECKM.out)  
-    SORT_BINS2(CHECKM_SINGLE.out)
-    GET_BINS(SORT_BINS.out.concat(SORT_BINS2.out).collect(),
-             METABAT2_BIN_SINGLE.out.flatten().filter ( Path ).collect(),
-             METABAT2_BIN_COASSEMBLY.out.flatten().filter ( Path ).collect())
-    DREP(GET_BINS.out)
-    QUAST(DREP.out)
-    METAQUAST(COASSEMBLY.out)
-    GTDB_TK(params.gtdb_db, DREP.out)
-    PHYLOPHLAN(params.phylophlan_db, DREP.out)
-    COVERM(prepared_reads_ch,DREP.out)
-    DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
 
-    } else {
+
+
+    METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
+
+
+    // KEEP_HQ_BINS_2 remplace SORT_BINS2
+    // MAGs from the Individual assemblies branch
+    KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
+
+    // MAGs from the Coassembly branch
+    KEEP_HQ_BINS(METABAT2_BIN_COASSEMBLY.out.join(CHECKM.out))
+
+
+
+
+    // le processus DREP est completement nouveau et 
+    DREP(KEEP_HQ_BINS_2.out)
+
+    CAT_MAGs(KEEP_HQ_BINS_2, KEEP_HQ_BINS)
+
+
+    //DREP(GET_BINS.out)
+    //QUAST(DREP.out)
+    //METAQUAST(COASSEMBLY.out)
+    //GTDB_TK(params.gtdb_db, DREP.out)
+    //PHYLOPHLAN(params.phylophlan_db, DREP.out)
+    //COVERM(prepared_reads_ch,DREP.out)
+    //DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
+    //DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
+
+  } else {
 
     //mettons que je commence à changer le code dans cette section
 
@@ -275,30 +295,36 @@ workflow {
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-    ch_meta = METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
+    METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
 
     // J'Ai verifie et le contenu de METABAT2_BIN_SINGLE.out ET  CHECKM_SINGLE.out est approprié
 
 
-    // ch_meta ne sert a rien!
-
 
     // KEEP_HQ_BINS_2 remplace SORT_BINS2
-
-    KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out, CHECKM_SINGLE.out)
+    KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
 
     // le processus DREP est completement nouveau et 
     DREP(KEEP_HQ_BINS_2.out)
 
+    // This a good collection of final hd and dereplicated-by-sample genomes
+                      DREP.out
+                      .flatten()
+                      .filter( ~/^.*fa/ )
+                      .collect()
+                      .set {hq_drep_MAGs_ch}
+
+    hq_drep_MAGs_ch.view()
+
+    QUAST(hq_drep_MAGs_ch)
+    GTDB_TK(params.gtdb_db, hq_drep_MAGs_ch)
 
 
-    //QUAST(DREP.out)
-    //GTDB_TK(params.gtdb_db, DREP.out)
-    //PHYLOPHLAN(params.phylophlan_db, DREP.out)
-    //COVERM(prepared_reads_ch,DREP.out)
-    //DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    //DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
+    PHYLOPHLAN(params.phylophlan_db, hq_drep_MAGs_ch)
+    COVERM(prepared_reads_ch, hq_drep_MAGs_ch)
+    DRAM_ANNOTATION(params.dram_config, hq_drep_MAGs_ch, GTDB_TK.out)
+    DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
 
   }   
 }

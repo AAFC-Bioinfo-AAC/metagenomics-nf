@@ -7,13 +7,15 @@ process DREP {
      tuple \
       val(datasetID), \
       path("hq_bins"), \
+      path("all_bins"), \
       path(checkm2)
  
 
   output:
      tuple \
       val(datasetID), \
-      path("dRep_output")
+      path("${datasetID}/*"), \
+      path("*.fa", optional: true)
 
   script:
   """
@@ -38,7 +40,9 @@ process DREP {
     --multiround_primary_clustering \
     --greedy_secondary_clustering \
     --run_tertiary_clustering \
-    --genomeInfo checkM_results.csv dRep_output
+    --genomeInfo checkM_results.csv ${datasetID}
+
+  cp ${datasetID}/dereplicated_genomes/*.fa .
 
   """
   

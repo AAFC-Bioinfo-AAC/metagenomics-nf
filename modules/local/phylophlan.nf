@@ -21,7 +21,7 @@ process PHYLOPHLAN {
     phylophlan_write_default_configs.sh &&
   
     phylophlan -d phylophlan \
-                 -i dRep_output/dereplicated_genomes \
+                 -i dRep_output \
                  -o Phylophlan_output \
                  --db_type a \
                 -f supermatrix_aa.cfg \

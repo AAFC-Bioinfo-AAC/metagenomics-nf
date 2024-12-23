@@ -20,11 +20,11 @@ process COVERM {
   """
   # Define TMPDIR env variable to avoid Samtools (used by coverm) to write in /tmp in local nodes!
   mkdir -p ./tmp
-  export TMPDIR=$PWD/tmp
-
+  export TMPDIR=\$PWD/tmp
+    
   coverm genome -1 ${final_R1} \
                 -2 ${final_R2} \
-                --genome-fasta-directory dRep_output/dereplicated_genomes \
+                --genome-fasta-directory dRep_output \
                 --genome-fasta-extension fa \
                 --min-covered-fraction 1 \
                 --threads $task.cpus -v \
