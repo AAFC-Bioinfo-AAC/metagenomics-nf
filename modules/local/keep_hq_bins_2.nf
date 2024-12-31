@@ -1,7 +1,7 @@
 process KEEP_HQ_BINS_2 {
 
   label 'bins'
-  publishDir "$params.results/sorted_bins"
+  publishDir "$params.results/sorted_bins_from_individual_assemblies"
   
   input:
     tuple \
@@ -12,16 +12,17 @@ process KEEP_HQ_BINS_2 {
   output:
      tuple \
       val(datasetID), \
-      path("hq_bins"), \
-      path("all_bins"), \
+      path("hq_bins/*"), \
       path("checkM2_i_hq.tsv")
  
   script:
   """
-
   mkdir hq_bins
   mkdir all_bins
-  
+
+  # Trick to avoid a missing output file error
+  touch hq_bins/${datasetID}.void  
+
   awk '{if (\$2 > 90 && \$3 < 5) {print}}' checkm2_out/quality_report.tsv >  checkM2_i_hq.tsv
 
   cd bins

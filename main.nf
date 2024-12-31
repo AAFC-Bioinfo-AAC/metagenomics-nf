@@ -42,6 +42,7 @@ include { COVERM                          } from './modules/local/coverm'
 include { DRAM_ANNOTATION                 } from './modules/local/dram_annotation'
 include { DRAM_DISTILLATION               } from './modules/local/dram_distillation'
 include { DREP                            } from './modules/local/drep'
+include { DREP2                           } from './modules/local/drep2'
 include { GET_BINS                        } from './modules/local/get_bins'
 include { GET_BINS2                       } from './modules/local/get_bins2'
 include { GTDB_TK                         } from './modules/local/gtdb_tk'
@@ -67,13 +68,16 @@ include { QUAST                           } from './modules/local/quast'
 include { SORT_BINS                       } from './modules/local/sort_bins'
 include { SORT_BINS2                      } from './modules/local/sort_bins2'
 
-include { KEEP_HQ_BINS_2                  } from './modules/local/KEEP_HQ_BINS_2.nf'
+include { KEEP_HQ_BINS_2                  } from './modules/local/keep_hq_bins_2.nf'
+include { KEEP_HQ_BINS                    } from './modules/local/keep_hq_bins.nf'
+include { CAT_MAGs                        } from './modules/local/cat_MAGs.nf'
 
 
 // TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
 include { GET_FOLDER                      } from './subworkflows/local/get_folder'
 include { GET_READS_PAIRS                 } from './subworkflows/local/get_reads_pairs'
 include { RENAME                          } from './subworkflows/local/rename'
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -270,22 +274,37 @@ workflow {
     KEEP_HQ_BINS(METABAT2_BIN_COASSEMBLY.out.join(CHECKM.out))
 
 
+    // On veut melanger regrouper les bins par datasetID
 
+    KEEP_HQ_BINS.out
+    .join(KEEP_HQ_BINS_2.out)
+    .view()
+    .set {hq_MAGs_by_datasetID_ch}
 
     // le processus DREP est completement nouveau et 
-    DREP(KEEP_HQ_BINS_2.out)
+    DREP2(hq_MAGs_by_datasetID_ch)
 
-    CAT_MAGs(KEEP_HQ_BINS_2, KEEP_HQ_BINS)
+    // This a good collection of final hd and dereplicated-by-sample genomes
+    DREP2.out
+     .flatten()
+     .filter( ~/^.*fa/ )
+     .collect()
+     .set {hq_drep_MAGs_ch}
 
 
-    //DREP(GET_BINS.out)
-    //QUAST(DREP.out)
-    //METAQUAST(COASSEMBLY.out)
-    //GTDB_TK(params.gtdb_db, DREP.out)
-    //PHYLOPHLAN(params.phylophlan_db, DREP.out)
-    //COVERM(prepared_reads_ch,DREP.out)
-    //DRAM_ANNOTATION(params.dram_config, DREP.out, GTDB_TK.out)
-    //DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
+    METAQUAST(COASSEMBLY.out)
+
+
+    GTDB_TK(params.gtdb_db, hq_drep_MAGs_ch)
+
+    PHYLOPHLAN(params.phylophlan_db, hq_drep_MAGs_ch)
+
+    COVERM(prepared_reads_ch, hq_drep_MAGs_ch)
+
+    DRAM_ANNOTATION(params.dram_config, hq_drep_MAGs_ch, GTDB_TK.out)
+
+    DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
+
 
   } else {
 

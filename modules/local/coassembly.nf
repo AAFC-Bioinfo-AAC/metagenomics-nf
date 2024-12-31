@@ -11,7 +11,7 @@ https://doi.org/10.1128/Spectrum.01434-21
 process COASSEMBLY {
 
   label 'mem_xxxlarge'
-  label 'cpus_xxxxlarge'
+  label 'cpus_xxxlarge'
   
   publishDir "$params.results/coassemblies/coassemblies"
 

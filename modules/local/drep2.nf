@@ -1,4 +1,4 @@
-process DREP {
+process DREP2 {
 
   label 'cpus_xxlarge'
   publishDir "$params.results/drep_nouveau"
@@ -6,8 +6,10 @@ process DREP {
   input:
      tuple \
       val(datasetID), \
-      path("hq_bins"), \
-      path(checkm2)
+      path(hq_bins, stageAs: "hq_bins/*"), \
+      path(checkm2), \
+      path(hq_bins_from_i_assemblies, stageAs: "hq_bins/*"), \
+      path(checkm2_i)
  
 
   output:
@@ -18,10 +20,11 @@ process DREP {
 
   script:
   """
-  pet oit
+  
   # Tweak the High quality bins file to be used by drep
   echo "genome,completeness,contamination,strain_heterogeneity" > header
   awk {'print \$1".fa,"\$2","\$3","0'} $checkm2 > corpus
+  awk {'print \$1".fa,"\$2","\$3","0'} ${checkm2_i} >> corpus
   cat header corpus > checkM_results.csv
   
   # Define MPLCONFIGDIR env variable to speed up the import
@@ -43,7 +46,5 @@ process DREP {
     --genomeInfo checkM_results.csv ${datasetID}
 
   cp ${datasetID}/dereplicated_genomes/*.fa .
-
   """
-  
 }
