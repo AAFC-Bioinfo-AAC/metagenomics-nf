@@ -13,12 +13,26 @@ process DREP {
   output:
      tuple \
       val(datasetID), \
-      path("${datasetID}/*"), \
-      path("*.fa", optional: true)
+      path("*.fa")
 
   script:
   """
-  pet oit
+  # Skip dRep if there is only 1 MAG...
+
+  count=\$(find "hq_bins" -name "*.fa" | wc -l)
+  
+
+  if [ "\$count" -eq 1 ]; then
+
+    cp hq_bins/*.fa .
+
+  elif [  "\$count" -eq 0 ]; then
+
+    echo "There is no .fa in hq_bins..." > tester
+
+  # Proceed with dRep...
+  else
+
   # Tweak the High quality bins file to be used by drep
   echo "genome,completeness,contamination,strain_heterogeneity" > header
   awk {'print \$1".fa,"\$2","\$3","0'} $checkm2 > corpus
@@ -44,6 +58,7 @@ process DREP {
 
   cp ${datasetID}/dereplicated_genomes/*.fa .
 
+  fi
   """
   
 }

@@ -15,18 +15,32 @@ process DREP2 {
   output:
      tuple \
       val(datasetID), \
-      path("${datasetID}/*"), \
-      path("*.fa", optional: true)
+      path("*.fa"), optional: true
 
   script:
   """
-  
+  # Skip dRep if there is only 1 MAG...
+
+  count=\$(find "hq_bins" -name "*.fa" | wc -l)
+ 
+
+  if [ "\$count" -eq 1 ]; then
+
+    cp hq_bins/*.fa .
+
+  elif [  "\$count" -eq 0 ]; then
+
+    echo "There is no .fa in hq_bins..." > tester
+
+  # Proceed with dRep...
+  else
+
   # Tweak the High quality bins file to be used by drep
   echo "genome,completeness,contamination,strain_heterogeneity" > header
   awk {'print \$1".fa,"\$2","\$3","0'} $checkm2 > corpus
   awk {'print \$1".fa,"\$2","\$3","0'} ${checkm2_i} >> corpus
   cat header corpus > checkM_results.csv
-  
+
   # Define MPLCONFIGDIR env variable to speed up the import
   # of Matplotlib and to better support multiprocessing.
   # Otherwise, Matplotlib may create a temporary cache directory at /tmp/matplotlib-xxx
@@ -46,5 +60,7 @@ process DREP2 {
     --genomeInfo checkM_results.csv ${datasetID}
 
   cp ${datasetID}/dereplicated_genomes/*.fa .
+
+  fi
   """
 }
