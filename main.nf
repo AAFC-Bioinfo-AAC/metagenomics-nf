@@ -1,7 +1,7 @@
 /* 
  * This workflow was adpated by Jean-Simon Brouard
  * from the work done by Devin Holman, Arun Kommadath (AAFC Lacombe) and Sara Ricci.
- * Last update : 2023/11/08
+ * Last update : 2025/01/15
  * 
 */
 
@@ -11,7 +11,7 @@
 nextflow.enable.dsl = 2
 
 log.info """\
-M E T A G E N O M I C  -  Workflow - AAFC    v 1.1 
+M E T A G E N O M I C  -  Workflow - AAFC    v 2.0 
 ================================
 genome   : $params.genome
 genome basename : $params.genome_basename
@@ -25,8 +25,6 @@ results  : $params.results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-// TODO: Use nf-core modules where possible for easier updating
-// TODO: Consolidate modules where possible (e.g. Bowtie2)
 include { BOWTIE2_BUILD_SINGLE            } from './modules/local/bowtie2_build_single'
 include { BOWTIE2_BUILD                   } from './modules/local/bowtie2_build'
 include { BOWTIE2_MAP_SINGLE              } from './modules/local/bowtie2_map_single'
@@ -67,11 +65,8 @@ include { QUALITY_FILTERING               } from './modules/local/quality_filter
 include { QUAST                           } from './modules/local/quast'
 include { SORT_BINS                       } from './modules/local/sort_bins'
 include { SORT_BINS2                      } from './modules/local/sort_bins2'
-
 include { KEEP_HQ_BINS_2                  } from './modules/local/keep_hq_bins_2.nf'
 include { KEEP_HQ_BINS                    } from './modules/local/keep_hq_bins.nf'
-include { CAT_MAGs                        } from './modules/local/cat_MAGs.nf'
-
 
 // TODO: Make the GET_FOLDER, GET_READS_PAIRS, and RENAME subworkflows normal modules?
 include { GET_FOLDER                      } from './subworkflows/local/get_folder'
@@ -259,56 +254,38 @@ workflow {
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
-
-
-
     METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
 
-
-    // KEEP_HQ_BINS_2 remplace SORT_BINS2
     // MAGs from the Individual assemblies branch
     KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
 
     // MAGs from the Coassembly branch
     KEEP_HQ_BINS(METABAT2_BIN_COASSEMBLY.out.join(CHECKM.out))
 
-
-    // On veut melanger regrouper les bins par datasetID
-
+    // Bins are gathered by datasetID
     KEEP_HQ_BINS.out
     .join(KEEP_HQ_BINS_2.out)
-    .view()
     .set {hq_MAGs_by_datasetID_ch}
 
-    // le processus DREP est completement nouveau et 
     DREP2(hq_MAGs_by_datasetID_ch)
 
-    // This a good collection of final hd and dereplicated-by-sample genomes
+    // hq_drep_MAGs_ch is a good collection of final high-quality-dereplicated-by-sample genomes
     DREP2.out
      .flatten()
      .filter( ~/^.*fa/ )
      .collect()
      .set {hq_drep_MAGs_ch}
 
-
     METAQUAST(COASSEMBLY.out)
-
-
     GTDB_TK(params.gtdb_db, hq_drep_MAGs_ch)
-
     PHYLOPHLAN(params.phylophlan_db, hq_drep_MAGs_ch)
-
     COVERM(prepared_reads_ch, hq_drep_MAGs_ch)
-
     DRAM_ANNOTATION(params.dram_config, hq_drep_MAGs_ch, GTDB_TK.out)
-
     DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
 
 
   } else {
-
-    //mettons que je commence à changer le code dans cette section
 
     println "*You skip all coassembly steps...*"
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
@@ -316,35 +293,22 @@ workflow {
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
     CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
-
-    // J'Ai verifie et le contenu de METABAT2_BIN_SINGLE.out ET  CHECKM_SINGLE.out est approprié
-
-
-
-    // KEEP_HQ_BINS_2 remplace SORT_BINS2
     KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
-
-    // le processus DREP est completement nouveau et 
     DREP(KEEP_HQ_BINS_2.out)
 
-    // This a good collection of final hd and dereplicated-by-sample genomes
-                      DREP.out
-                      .flatten()
-                      .filter( ~/^.*fa/ )
-                      .collect()
-                      .set {hq_drep_MAGs_ch}
-
-    hq_drep_MAGs_ch.view()
+    // hq_drep_MAGs_ch is a good collection of final high-quality-dereplicated-by-sample genomes
+    DREP.out
+    .flatten()
+    .filter( ~/^.*fa/ )
+    .collect()
+    .set {hq_drep_MAGs_ch}
 
     QUAST(hq_drep_MAGs_ch)
     GTDB_TK(params.gtdb_db, hq_drep_MAGs_ch)
-
-
     PHYLOPHLAN(params.phylophlan_db, hq_drep_MAGs_ch)
     COVERM(prepared_reads_ch, hq_drep_MAGs_ch)
     DRAM_ANNOTATION(params.dram_config, hq_drep_MAGs_ch, GTDB_TK.out)
     DRAM_DISTILLATION(params.dram_config,DRAM_ANNOTATION.out.DRAM_MAGs)
-
   }   
 }
 

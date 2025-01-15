@@ -1,7 +1,7 @@
 process DREP2 {
 
   label 'cpus_xxlarge'
-  publishDir "$params.results/drep_nouveau"
+  publishDir "$params.results/dRep"
 
   input:
      tuple \
@@ -19,19 +19,16 @@ process DREP2 {
 
   script:
   """
-  # Skip dRep if there is only 1 MAG...
-
   count=\$(find "hq_bins" -name "*.fa" | wc -l)
- 
 
+  # Skip dRep if there is only 1 MAG, but retain the single MAG
   if [ "\$count" -eq 1 ]; then
-
     cp hq_bins/*.fa .
-
+  
+  # Skip dRep if there is no MAG...
   elif [  "\$count" -eq 0 ]; then
-
     echo "There is no .fa in hq_bins..." > tester
-
+    
   # Proceed with dRep...
   else
 
