@@ -6,14 +6,14 @@ process DREP {
   input:
      tuple \
       val(datasetID), \
-      path("hq_bins"), \
+      path("hq_bins", stageAs: "hq_bins/*"), \
       path(checkm2)
  
 
   output:
      tuple \
       val(datasetID), \
-      path("*.fa")
+      path("*.fa"), optional: true
 
   script:
   """
