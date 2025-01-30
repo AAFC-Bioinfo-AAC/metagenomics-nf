@@ -18,9 +18,9 @@ process GTDB_TK {
   export GTDBTK_DATA_PATH=$db
   
   gtdbtk classify_wf \
-         --genome_dir \
-         dRep_output \
-         -x fa \
+         --genome_dir dRep_output \
+				 --skip_ani_screen \
+				 -x fa \
          --out_dir GTDBtk_output \
          --cpus $task.cpus
   """
