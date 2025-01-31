@@ -236,7 +236,7 @@ sbatch -D $PWD \
        --mem 4G \
        -p NMLResearch \
        -o $PWD/nextflow_log-%j.out \
-       --wrap="nextflow run main.nf -profile waffles"
+       --wrap="nextflow run main.nf -profile waffles -resume"
 ```
 #### 4.1.3 On GPSC
 You simply use the GPSC profile:
