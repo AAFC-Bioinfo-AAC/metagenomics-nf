@@ -1,0 +1,28 @@
+{
+  "search_databases": {
+    "kegg": "/Drives/O/GRDI-AMR2/share/databases/DRAM_db_patch/kegg.2023-06-07.mmsdb",
+    "kofam_hmm": "/Drives/O/GRDI-AMR2/share/databases/DRAM/kofam_profiles.hmm",
+    "kofam_ko_list": "/Drives/O/GRDI-AMR2/share/databases/DRAM/kegg.2022-03-07.mmsdb",
+    "uniref": null,
+    "pfam": "/Drives/O/GRDI-AMR2/share/databases/DRAM_db_patch/pfam.mmspro",
+    "dbcan": null,
+    "viral": "/Drives/O/GRDI-AMR2/share/databases/DRAM/refseq_viral.20220416.mmsdb",
+    "peptidase": "/Drives/O/GRDI-AMR2/share/databases/DRAM/peptidases.20220416.mmsdb",
+    "vogdb": "/Drives/O/GRDI-AMR2/share/databases/DRAM/vog_latest_hmms.txt"
+  },
+  "custom_dbs": null,
+  "database_descriptions": {
+    "pfam_hmm_dat": "/Drives/O/GRDI-AMR2/share/databases/DRAM/Pfam-A.hmm.dat.gz",
+    "dbcan_fam_activities": "/Drives/O/GRDI-AMR2/share/databases/DRAM/CAZyDB.07292021.fam-activities.txt",
+    "vog_annotations": "/Drives/O/GRDI-AMR2/share/databases/DRAM/vog_annotations_latest.tsv.gz"
+  },
+  "dram_sheets": {
+    "genome_summary_form": "/Drives/O/GRDI-AMR2/share/databases/DRAM/genome_summary_form.20220415.tsv",
+    "module_step_form": "/Drives/O/GRDI-AMR2/share/databases/DRAM/module_step_form.20220415.tsv",
+    "etc_module_database": "/Drives/O/GRDI-AMR2/share/databases/DRAM/etc_mdoule_database.20220415.tsv",
+    "function_heatmap_form": "/Drives/O/GRDI-AMR2/share/databases/DRAM/function_heatmap_form.20220415.tsv",
+    "amg_database": "/Drives/O/GRDI-AMR2/share/databases/DRAM/amg_database.20220415.tsv"
+  },
+  "description_db": "/Drives/O/GRDI-AMR2/share/databases/DRAM/DRAM_db_20220415_without_uniref.sqlite",
+  "dram_version": "1.4.6"
+}

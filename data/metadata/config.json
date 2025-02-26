@@ -1,0 +1,28 @@
+{
+  "search_databases": {
+    "kegg": "/isilon/common/reference/databases/DRAM_db/DRAM_db_patch/kegg.2023-06-07.mmsdb",
+    "kofam_hmm": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kofam_profiles.hmm",
+    "kofam_ko_list": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/kegg.2022-03-07.mmsdb",
+    "uniref": null,
+    "pfam": "/isilon/common/reference/databases/DRAM_db/DRAM_db_patch/pfam.mmspro",
+    "dbcan": null,
+    "viral": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/refseq_viral.20220416.mmsdb",
+    "peptidase": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/peptidases.20220416.mmsdb",
+    "vogdb": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_latest_hmms.txt"
+  },
+  "custom_dbs": null,
+  "database_descriptions": {
+    "pfam_hmm_dat": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/Pfam-A.hmm.dat.gz",
+    "dbcan_fam_activities": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/CAZyDB.07292021.fam-activities.txt",
+    "vog_annotations": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/vog_annotations_latest.tsv.gz"
+  },
+  "dram_sheets": {
+    "genome_summary_form": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/genome_summary_form.20220415.tsv",
+    "module_step_form": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/module_step_form.20220415.tsv",
+    "etc_module_database": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/etc_mdoule_database.20220415.tsv",
+    "function_heatmap_form": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/function_heatmap_form.20220415.tsv",
+    "amg_database": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/amg_database.20220415.tsv"
+  },
+  "description_db": "/isilon/common/reference/databases/DRAM_db/DRAM_db_20220415/DRAM_db_20220415_without_uniref.sqlite",
+  "dram_version": "1.4.6"
+}

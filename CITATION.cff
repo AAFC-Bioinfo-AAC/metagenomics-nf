@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: Brouard
+  given-names: Jean-Simon
+  orcid: 
+- family-names: 
+  given-names: 
+  orcid: 
+title: ABCC Metagenomics Nextflow Pipeline
+version: 
+doi: 
+date-released: 
+url: https://gccode.ssc-spc.gc.ca/abcc_rcba/pipelines/metagenomic_nf
