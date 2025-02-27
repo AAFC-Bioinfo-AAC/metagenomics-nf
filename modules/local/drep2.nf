@@ -53,7 +53,6 @@ process DREP2 {
     --S_algorithm fastANI \
     --multiround_primary_clustering \
     --greedy_secondary_clustering \
-    --run_tertiary_clustering \
     --genomeInfo checkM_results.csv ${datasetID}
 
   cp ${datasetID}/dereplicated_genomes/*.fa .
