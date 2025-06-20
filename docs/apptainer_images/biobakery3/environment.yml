@@ -1,0 +1,11 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+  - biobakery
+dependencies:
+  - python=3.7
+  - humann=3.6 
+  - metaphlan=4.0.3
+

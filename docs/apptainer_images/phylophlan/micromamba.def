@@ -1,0 +1,53 @@
+Bootstrap: docker
+From: mambaorg/micromamba:latest
+
+%files
+    environment.yml /environment.yml
+
+%post
+    micromamba install -n base --file environment.yml && \
+        micromamba clean --all --yes
+
+%help
+Apptainer micromamba container based on Docker mambaorg/micromamba image.
+
+To run commands inside a Micromamba environment:
+    apptainer run thisimage.sif COMMAND [ARGS...]
+
+To run apptainer exec commands inside a Micromamba environment:
+    apptainer exec thisimage.sif /usr/local/bin/_entrypoint.sh \
+    	COMMAND [ARGS...]
+
+To run apptainer shell commands inside a Micromamba environment:
+    apptainer shell --shell "/usr/local/bin/_entrypoint.sh bash -i" image.sif
+
+URLs:
+    Mamba: https://mamba.readthedocs.io/en/latest/index.html
+    Micromamba: https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html
+    micromamba-docker: https://micromamba-docker.readthedocs.io/en/latest/
+
+    Apptainer: https://www.apptainer.org
+
+    Conda: https://docs.conda.io/en/latest/
+    Miniconda: https://docs.anaconda.com/free/miniconda/
+
+Building this image on Alliance clusters:
+    # Create/edit an environment.yml file.
+    # apptainer exec thisimage.sif cat /environment.yml to see an example
+    module load StdEnv/2023
+    module load apptainer
+    unset APPTAINER_BIND    # as this may interfere with image building
+    apptainer build --fix-perms image.sif micromamba.def
+
+micromamba.def file "content":
+    Bootstrap= docker
+    From= mambaorg/micromamba:latest
+
+    "files" section
+        environment.yml /environment.yml
+
+    "post" section
+        micromamba install -n base --file environment.yml && \
+	    micromamba clean --all --yes
+
+

@@ -1,0 +1,10 @@
+*log.*
+stderr.*
+stdout.*
+*.log
+.nextflow*
+.Rproj.user
+*.bt2
+*.gz
+results/
+.env

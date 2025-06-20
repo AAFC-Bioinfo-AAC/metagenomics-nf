@@ -1,0 +1,9 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.10
+  - dram=1.4.6
+  - mmseqs2

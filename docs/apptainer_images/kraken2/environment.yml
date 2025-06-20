@@ -1,0 +1,9 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+dependencies:
+  - python=3.10
+  - kraken2=2.1.2
+  - bracken=2.9
