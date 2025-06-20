@@ -48,7 +48,6 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 [Output](#output)  
 [Credits](#credits)  
 [Contribution](#contribution)  
-[Copyright](#copyright)  
 [License](#license)  
 [Publications & additional resources](#publications-and-additional-resources)  
 
