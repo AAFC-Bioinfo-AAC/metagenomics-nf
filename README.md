@@ -1,4 +1,4 @@
-# Metagenomic_nf
+# Metagenomic-nf
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ABOUT
@@ -48,7 +48,6 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 [Output](#output)  
 [Credits](#credits)  
 [Contribution](#contribution)  
-[Copyright](#copyright)  
 [License](#license)  
 [Publications & additional resources](#publications-and-additional-resources)  
 
