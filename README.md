@@ -348,7 +348,7 @@ The metagenomic_nf workflow was written in the Nextflow language by Jean-Simon B
 ---
 
 ## CONTRIBUTION
-If you would like to contribute to this project, please consult [contributing guidelines](./CONTRIBUTING.md). 
+If you would like to contribute to this project, please review the guidelines in [CONTRIBUTING.md](./CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) to foster a respectful and inclusive environment.
 
 ---
 
