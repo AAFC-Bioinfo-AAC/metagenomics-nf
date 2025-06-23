@@ -59,13 +59,13 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
   - [CONTRIBUTION](#contribution)
   - [LICENSE](#license)
   - [PUBLICATIONS AND ADDITIONAL RESOURCES](#publications-and-additional-resources)
-      - [**1. General Nextflow Documentation**](#1-general-nextflow-documentation)
-      - [**2. Quality Control**](#2-quality-control)
-      - [**3. Taxonomic Classification**](#3-taxonomic-classification)
-      - [**4. Assembly \& Binning**](#4-assembly--binning)
-      - [**5. Functional Profiling**](#5-functional-profiling)
-      - [**6. Phylogenetic Analysis**](#6-phylogenetic-analysis)
-      - [**7. Dereplication \& MAG Refinement**](#7-dereplication--mag-refinement)
+    - [**1. General Nextflow Documentation**](#1-general-nextflow-documentation)
+    - [**2. Quality Control**](#2-quality-control)
+    - [**3. Taxonomic Classification**](#3-taxonomic-classification)
+    - [**4. Assembly \& Binning**](#4-assembly--binning)
+    - [**5. Functional Profiling**](#5-functional-profiling)
+    - [**6. Phylogenetic Analysis**](#6-phylogenetic-analysis)
+    - [**7. Dereplication \& MAG Refinement**](#7-dereplication--mag-refinement)
 
 ---
 
@@ -361,32 +361,32 @@ This project is distributed under the MIT License. For complete details and copy
 
 The Metagenomic_nf workflow integrates various state-of-the-art tools for metagenomics analysis. Below are key references and resources for the tools used in the pipeline:
 
-#### **1. General Nextflow Documentation**
+### **1. General Nextflow Documentation**
 - [Nextflow Documentation](https://www.nextflow.io/docs/latest/)
 - [Nextflow GitHub Repository](https://github.com/nextflow-io/nextflow)
 
-#### **2. Quality Control**
+### **2. Quality Control**
 - FastQC: [https://www.bioinformatics.babraham.ac.uk/projects/fastqc/](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 - MultiQC: [https://multiqc.info/](https://multiqc.info/)
 
-#### **3. Taxonomic Classification**
+### **3. Taxonomic Classification**
 - Kraken2: [https://ccb.jhu.edu/software/kraken2/](https://ccb.jhu.edu/software/kraken2/)
 - Bracken: [https://ccb.jhu.edu/software/bracken/](https://ccb.jhu.edu/software/bracken/)
 - Kaiju: [https://github.com/bioinformatics-centre/kaiju](https://github.com/bioinformatics-centre/kaiju)
 
-#### **4. Assembly & Binning**
+### **4. Assembly & Binning**
 - MEGAHIT: [https://github.com/voutcn/megahit](https://github.com/voutcn/megahit)
 - MetaBAT2: [https://bitbucket.org/berkeleylab/metabat/src/master/](https://bitbucket.org/berkeleylab/metabat/src/master/)
 - QUAST: [http://bioinf.spbau.ru/quast](http://bioinf.spbau.ru/quast)
 
-#### **5. Functional Profiling**
+### **5. Functional Profiling**
 - HUMAnN: [https://huttenhower.sph.harvard.edu/humann/](https://huttenhower.sph.harvard.edu/humann/)
 
-#### **6. Phylogenetic Analysis**
+### **6. Phylogenetic Analysis**
 - GTDB-Tk: [https://github.com/Ecogenomics/GTDBTk](https://github.com/Ecogenomics/GTDBTk)
 - PhyloPhlAn: [https://github.com/biobakery/phylophlan](https://github.com/biobakery/phylophlan)
 
-#### **7. Dereplication & MAG Refinement**
+### **7. Dereplication & MAG Refinement**
 - CheckM2: [https://github.com/chklovski/CheckM2](https://github.com/chklovski/CheckM2)
 - dRep: [https://github.com/MrOlm/drep](https://github.com/MrOlm/drep)
 
