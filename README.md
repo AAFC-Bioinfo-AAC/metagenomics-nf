@@ -1,4 +1,4 @@
-# Metagenomic-nf
+# Metagenomics-nf
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## About
@@ -27,6 +27,47 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 ---
 
 ## Table of contents
+
+- [Metagenomics-nf](#metagenomics-nf)
+  - [About](#about)
+  - [Table of contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Data](#data)
+  - [Parameters](#parameters)
+    - [**General Parameters**](#general-parameters)
+    - [**Workflow Execution Options**](#workflow-execution-options)
+    - [**Resource Allocation**](#resource-allocation)
+  - [Usage](#usage)
+    - [1. Dependencies](#1-dependencies)
+      - [1.1 - Apptainer](#11---apptainer)
+      - [1.2 - Nextflow](#12---nextflow)
+      - [1.3 - Databases](#13---databases)
+    - [2. Prerequisites](#2-prerequisites)
+      - [2.1 - Preparation of a reference genome for decontamination](#21---preparation-of-a-reference-genome-for-decontamination)
+        - [2.1.1 - Steps to create a Bowtie2 index: example with the pig genome](#211---steps-to-create-a-bowtie2-index-example-with-the-pig-genome)
+      - [2.2 - Preparation of reads and map file](#22---preparation-of-reads-and-map-file)
+      - [2.3 - Preparation of a co-assembly map file](#23---preparation-of-a-co-assembly-map-file)
+      - [2.4 - Preparation of run.sh and configuration files](#24---preparation-of-runsh-and-configuration-files)
+        - [2.4.1 - run.sh script](#241---runsh-script)
+        - [2.4.2 - .env file](#242---env-file)
+        - [2.4.3 - nextflow.config file](#243---nextflowconfig-file)
+    - [3. Running the pipeline](#3-running-the-pipeline)
+      - [3.1 - First launch \& resume a run using run.sh](#31---first-launch--resume-a-run-using-runsh)
+      - [3.2 - Monitoring progression](#32---monitoring-progression)
+  - [Output](#output)
+  - [Credits](#credits)
+  - [CONTRIBUTION](#contribution)
+  - [LICENSE](#license)
+  - [Publications and additional resources](#publications-and-additional-resources)
+    - [**1. General Nextflow Documentation**](#1-general-nextflow-documentation)
+    - [**2. Quality Control**](#2-quality-control)
+    - [**3. Taxonomic Classification**](#3-taxonomic-classification)
+    - [**4. Assembly \& Binning**](#4-assembly--binning)
+    - [**5. Functional Profiling**](#5-functional-profiling)
+    - [**6. Phylogenetic Analysis**](#6-phylogenetic-analysis)
+    - [**7. Dereplication \& MAG Refinement**](#7-dereplication--mag-refinement)
+
+---
 
 [About](#about)   
 [Overview](#overview)  
@@ -306,13 +347,13 @@ The metagenomic_nf workflow was written in the Nextflow language by Jean-Simon B
 
 ---
 
-## Contribution
-If you would like to contribute to this project, please consult [contributing guidelines](./CONTRIBUTING.md). 
+## CONTRIBUTION
+If you would like to contribute to this project, please review the guidelines in [CONTRIBUTING.md](./CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) to foster a respectful and inclusive environment.
 
 ---
 
-## License 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+## LICENSE 
+This project is distributed under the MIT License. For complete details and copyright information, see the [LICENSE](LICENSE) file.
 
 ---
 

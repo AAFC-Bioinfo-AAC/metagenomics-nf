@@ -8,3 +8,4 @@ stdout.*
 *.gz
 results/
 .env
+.vscode
