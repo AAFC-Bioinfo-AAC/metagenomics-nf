@@ -1,7 +1,7 @@
 # Metagenomic-nf
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## ABOUT
+## About
 This Nextflow workflow automates many different metagenomics analyses steps from quality filtering to the generation and curation of metagenomics assembled genomes (MAGs). It uses diverse strategies to mitigate the number and size of temporary/intermediate files.
 
 The pipeline includes several state-of-the-art programs in the field of metagenomics such as MetaBAT, dRep, CheckM2, QUAST, PhyloPhlAn, etc!
@@ -26,7 +26,7 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 
 ---
 
-## TABLE OF CONTENTS
+## Table of contents
 
 [About](#about)   
 [Overview](#overview)  
@@ -53,14 +53,14 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 
 ---
 
-## OVERVIEW
+## Overview
 <p align="center">
     <img src="./docs/misc/flowchart.png" alt="Metagenomics_nf flowchart." width="600" height="800">
 </p>
 
 ---
 
-## DATA
+## Data
 
 The pipeline processes metagenomic sequencing data. The different input data types include:
 
@@ -81,7 +81,7 @@ The pipeline processes metagenomic sequencing data. The different input data typ
 
 ---
 
-## PARAMETERS
+## Parameters
 
 Pipeline execution is configured using the `nextflow.config` file and command-line parameters. Key configurable parameters include:
 
@@ -121,7 +121,7 @@ Pipeline execution is configured using the `nextflow.config` file and command-li
 
 ---
 
-## USAGE
+## Usage
 
 ### 1. Dependencies
 
@@ -294,29 +294,29 @@ At the end of a run, a detailed report in html format named `report-YYYY-MM-DD-H
 
 ---
 
-## OUTPUT
+## Output
 Pipeline outputs are directed to the folder specified in the `results` parameter from the profile used in `nextflow.config`. By default this is the output directory.
 
 
 ---
 
-##  CREDITS
+##  Credits
 
 The metagenomic_nf workflow was written in the Nextflow language by Jean-Simon Brouard (AAFC/AAC Sherbrooke RDC). The main building blocks of this workflow come from the work of Devin Holman (AAFC/AAC Lacombe RDC) whereas the original scripts were written in Bash by Arun Kommadath (AAFC/AAC Lacombe). Sara Ricci, from the team of Renee Petri (AAFC/AAC Sherbrooke RDC) has also contributed to adapt this workflow for being used with cow samples. Mario Laterriere (AAFC/AAC Quebec RDC) has contributed by writing documentation and adapting the code in order that it can run seamlessly on any Slurm-based HPC infrastructures.
 
 ---
 
-## CONTRIBUTION
+## Contribution
 If you would like to contribute to this project, please consult [contributing guidelines](./CONTRIBUTING.md). 
 
 ---
 
-## LICENSE 
+## License 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## PUBLICATIONS AND ADDITIONAL RESOURCES
+## Publications and additional resources
 
 The Metagenomic_nf workflow integrates various state-of-the-art tools for metagenomics analysis. Below are key references and resources for the tools used in the pipeline:
 
@@ -350,4 +350,3 @@ The Metagenomic_nf workflow integrates various state-of-the-art tools for metage
 - dRep: [https://github.com/MrOlm/drep](https://github.com/MrOlm/drep)
 
 For additional inquiries or troubleshooting, consult the [Issues](https://github.com/AAFC-Bioinfo-AAC/metagenomic_nf/issues) section of this repository.
-
