@@ -353,7 +353,7 @@ If you would like to contribute to this project, please consult [contributing gu
 ---
 
 ## LICENSE 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is distributed under the MIT License. For complete details and copyright information, see the [LICENSE](LICENSE) file.
 
 ---
 
