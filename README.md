@@ -69,31 +69,6 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 
 ---
 
-[About](#about)   
-[Overview](#overview)  
-[Data](#data)  
-[Parameters](#parameters)  
-[Usage](#usage)  
-&nbsp;&nbsp;&nbsp;&nbsp;[1. Dependencies](#1-dependencies)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1.1 - Apptainer](#11---apptainer)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1.2 - Nextflow](#12---nextflow)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[1.3 - Databases](#13---databases)  
-&nbsp;&nbsp;&nbsp;&nbsp;[2. Prerequisites](#2-prerequisites)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.1 - Preparation of a reference genome for decontamination](#21---preparation-of-a-reference-genome-for-decontamination)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.2 - Preparation of a map file](#22---preparation-of-reads-and-map-file)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.3 - Preparation of a co-assembly map file](#23---preparation-of-a-co-assembly-map-file)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[2.4 - Preparation of run.sh and configuration files](#24---preparation-of-runsh-and-configuration-files)  
-&nbsp;&nbsp;&nbsp;&nbsp;[3. Running the Pipeline](#3-running-the-pipeline)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.1 - First launch & resume a run using run.sh](#31---first-launch--resume-a-run-using-runsh)  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[3.2 - Monitoring progression](#32---monitoring-progression)  
-[Output](#output)  
-[Credits](#credits)  
-[Contribution](#contribution)  
-[License](#license)  
-[Publications & additional resources](#publications-and-additional-resources)  
-
----
-
 ## Overview
 <p align="center">
     <img src="./docs/misc/flowchart.png" alt="Metagenomics_nf flowchart." width="600" height="800">
