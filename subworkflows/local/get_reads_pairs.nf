@@ -12,17 +12,24 @@ workflow GET_READS_PAIRS {
     
     main:
        data.flatten()
-       .filter( ~/^.*fastq.gz/ )
+       .filter( ~/^.*R1.fastq.gz/ )
        .map { file ->
-          def key_part1 = file.name.toString().tokenize('_').get(0)
-          key = key_part1
+          def key = file.name.toString().tokenize('_').get(0)
           return tuple(key, file)
        }
-       .groupTuple(size:2)
-       .flatten()
-       .collate ( 3 )
-       .set { read_pairs_ch }
+       .set { R1_ch }
       
+       data.flatten()
+       .filter( ~/^.*R2.fastq.gz/ )
+       .map { file ->
+          def key = file.name.toString().tokenize('_').get(0)
+          return tuple(key, file)
+       }
+       .set { R2_ch }
+
+      R1_ch.join(R2_ch)
+      .set { read_pairs_ch}
+
     emit:
       read_pairs_ch
 
