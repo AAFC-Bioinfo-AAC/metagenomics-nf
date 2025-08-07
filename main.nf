@@ -234,13 +234,13 @@ workflow {
     BOWTIE2_MAP(prepared_reads_and_index_ch)        
     JGI_SUMMARIZE(BOWTIE2_MAP.out)
     METABAT2_BIN_COASSEMBLY(COASSEMBLY.out.combine(JGI_SUMMARIZE.out, by: 0))
-    CHECKM(METABAT2_BIN_COASSEMBLY.out)
+    CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
   
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
-    CHECKM_SINGLE(METABAT2_BIN_SINGLE.out)
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
 
     // MAGs from the Individual assemblies branch
     KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
@@ -275,7 +275,7 @@ workflow {
     BOWTIE2_MAP_SINGLE(BOWTIE2_BUILD_SINGLE.out.join(prepared_reads_ch))
     JGI_SUMMARIZE_SINGLE(BOWTIE2_MAP_SINGLE.out)
     METABAT2_BIN_SINGLE(JGI_SUMMARIZE_SINGLE.out.join(indiv_assemblies_ch))
-    CHECKM_SINGLE(METABAT2_BIN_SINGLE.out)
+    CHECKM_SINGLE(params.checkm2_db, METABAT2_BIN_SINGLE.out)
     KEEP_HQ_BINS_2(METABAT2_BIN_SINGLE.out.join(CHECKM_SINGLE.out))
     DREP(KEEP_HQ_BINS_2.out)
 
