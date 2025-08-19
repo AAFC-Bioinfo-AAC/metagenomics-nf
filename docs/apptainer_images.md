@@ -1,7 +1,7 @@
 
 # Building a Custom Apptainer Container for Use with Nextflow
 
-These steps need to be done on a computer with root access.  It is a good practice to build apptainer images on a local computer and transfer them to your HPC. Find yml files to build all apptainer images for this pipeline [here](../docs/apptainer_images.md)
+These steps need to be done on a computer with root access.  It is a good practice to build apptainer images on a local computer and transfer them to your HPC. Find yml files to build all apptainer images for this pipeline [here](https://github.com/AAFC-Bioinfo-AAC/metagenomics-nf/blob/main/docs/apptainer_images.md)
 
 We will use [Apptainer Definition files](https://apptainer.org/docs/user/latest/definition_files.html#definition-files) provided by the [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html) team and in the example provided here, we will build a kraken2 image that can be used with the metagenomic_nf workflow­. 
 
