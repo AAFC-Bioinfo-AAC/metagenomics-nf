@@ -147,7 +147,7 @@ This pipeline is built with apptainer usage in mind, in order to utilize certain
 
 #### 1.2 - Nextflow
 
-This pipeline is built with the Nextflow language. If you are not familiar with this, you can read more [here](https://www.nextflow.io/). The [documentaton](https://www.nextflow.io/docs/latest/) is extensive and updated regularly. A good approach is to install Nextflow itself in a conda environment.
+This pipeline is built with the Nextflow language. If you are not familiar with this, you can read more [here](https://www.nextflow.io/). The [documentation](https://www.nextflow.io/docs/latest/) is extensive and updated regularly. A good approach is to install Nextflow itself in a conda environment.
 
 #### 1.3 - Databases
 
