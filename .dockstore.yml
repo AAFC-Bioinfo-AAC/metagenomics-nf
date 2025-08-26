@@ -1,0 +1,19 @@
+version: 1.2
+workflows:
+  - name: metagenomics-nf
+    subclass: NFL
+    primaryDescriptorPath: /main.nf
+    readMePath: /README.md
+    publish: True
+    authors:
+      - name: Jean-Simon Brouard
+        email: jean-simon.brouard@agr.gc.ca
+      - name: Devin Holman
+        email: Devin.Holman@agr.gc.ca
+      - name: Arun Kommadath
+        email: Arun.Kommadath@agr.gc.ca
+      - name: Sara Ricci
+      - name: Mario Laterriere
+        email: mario.laterriere@AGR.GC.CA
+    description: 
+      A Nextflow shotgun metagenomics pipeline for Illumina reads, automating quality filtering, assembly, binning, taxonomic classification, and MAG curation.
