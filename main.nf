@@ -160,6 +160,8 @@ workflow {
   if (!params.skip_coassembly ) {
     println "*You do both individual and coassembly steps*"
 
+    
+    
     /*
     * Create the `type_ch` channel using the 'type' column from the metadata
     * Example :
@@ -177,49 +179,59 @@ workflow {
       .distinct()
       .set { type_ch }
 
-    /*
-    * Create the `reads_plus_ch` channel
-    * First we join the information of the sample type to the reads_ch
-    * Both channels have the sampleID as primary key
-    * Then we move this information at the beginning of the tuple so it can be
-    * used as a new key
-    * After a groupTuple allows to regroup all reads belonging to the same type
-    * Example :
-    * [rumen, [.../renamed/66b_R1.fastq.gz], [.../renamed/66b_R2.fastq.gz], [66b]]
-    * [milk, [.../renamed/67b_R1.fastq.gz, .../68b_R1.fastq.gz], [.../renamed/67b_R2.fastq.gz, .../renamed/68b_R2.fastq.gz], [67b, 68b]]
-    */
-    prepared_reads_ch.join(type_ch)
-                     .map { row-> 
-                              def a = row[0]
-                              def b = row[1]
-                              def c = row[2]
-                              def d = row[3]
-                            return tuple(d,b,c,a)
-                          }
-                     .groupTuple()
-                     .set {reads_plus_ch}
-    
-    /*
-    * Create the `prepared_reads_like_ch` channel
-    * First we join the information of the sample type to the reads_ch
-    * Both channels have the sampleID as primary key
-    * Then we move this information at the beginning of the tuple so it can be
-    * used as a new key for joining with BOWTIE2_BUILD
-    */
-    prepared_reads_ch.join(type_ch)
-                     .map { row-> 
-                              def a = row[0]
-                              def b = row[1]
-                              def c = row[2]
-                              def d = row[3]
-                            return tuple(d,b,c,a)
-                          }
-                     .set {prepared_reads_like_ch}
+    // Actually doing co-assemblies...
+    if (!params.use_megahit_coassemblies ) {
 
-    //prepared_reads_like_ch.view()
+      /*
+      * Create the `reads_plus_ch` channel
+      * First we join the information of the sample type to the reads_ch
+      * Both channels have the sampleID as primary key
+      * Then we move this information at the beginning of the tuple so it can be
+      * used as a new key
+      * After a groupTuple allows to regroup all reads belonging to the same type
+      * Example :
+      * [rumen, [.../renamed/66b_R1.fastq.gz], [.../renamed/66b_R2.fastq.gz], [66b]]
+      * [milk, [.../renamed/67b_R1.fastq.gz, .../68b_R1.fastq.gz], [.../renamed/67b_R2.fastq.gz, .../renamed/68b_R2.fastq.gz], [67b, 68b]]
+      */
+      prepared_reads_ch.join(type_ch)
+                      .map { row-> 
+                                def a = row[0]
+                                def b = row[1]
+                                def c = row[2]
+                                def d = row[3]
+                              return tuple(d,b,c,a)
+                            }
+                      .groupTuple()
+                      .set {reads_plus_ch}
+      
+      /*
+      * Create the `prepared_reads_like_ch` channel
+      * First we join the information of the sample type to the reads_ch
+      * Both channels have the sampleID as primary key
+      * Then we move this information at the beginning of the tuple so it can be
+      * used as a new key for joining with BOWTIE2_BUILD
+      */
+      prepared_reads_ch.join(type_ch)
+                      .map { row-> 
+                                def a = row[0]
+                                def b = row[1]
+                                def c = row[2]
+                                def d = row[3]
+                              return tuple(d,b,c,a)
+                            }
+                      .set {prepared_reads_like_ch}
 
-    COASSEMBLY(reads_plus_ch)
-    BOWTIE2_BUILD(COASSEMBLY.out)
+      coassemblies_ch = COASSEMBLY(reads_plus_ch)
+      
+    // Providing already obtained Megahit coassemblies
+    } else {
+
+    // Using the GET_FOLDER subworkflow
+    coassemblies_ch = GET_FOLDER( Channel.fromPath( params.coassemblies, type: 'dir') )
+
+    }
+
+    BOWTIE2_BUILD(coassemblies_ch)
 
     /* Prepare the prepared_reads_and_index_ch channel containg the prepared reads
     *  and their associated co-assembly genome index. We need to use the combine operator (not join!) e.g. :
