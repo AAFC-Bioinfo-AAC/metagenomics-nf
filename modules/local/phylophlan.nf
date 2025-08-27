@@ -14,9 +14,6 @@ process PHYLOPHLAN {
   
   script:
     """
-    mkdir -p phylophlan_databases &&
-    chmod a+rwx phylophlan_databases &&
-
     # for generating the four default configuration files
     phylophlan_write_default_configs.sh &&
   

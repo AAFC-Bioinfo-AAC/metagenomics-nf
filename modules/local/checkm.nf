@@ -19,12 +19,14 @@ process CHECKM {
   script:
   """
   export HDF5_USE_FILE_LOCKING='FALSE'
+  mkdir -p ./tmp
   checkm2 predict \
     --database_path $db \
     --threads 20 \
     -x fa \
     --input Coassembled_bins \
+    --tmpdir ./tmp \
     --output_directory ${datasetID}
   """
-
+  
 }

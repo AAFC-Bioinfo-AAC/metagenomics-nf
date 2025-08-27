@@ -270,6 +270,7 @@ The `.env file` is a text file essential to the pipeline operation. It contains 
 |SLURM_ACCT| Your Slurm account|
 |PARTITION| The partition for tasks that require less than 512GB|
 |PARTITION_HIGH| Set this parameter to a partition with more than 1TB of memory|
+|PARTITION_SUPER| Set this parameter to a partition with more than 2TB of memory|
 |CLUSTERS| Specify the Slurm cluster|
 |APPTAINER_IMGS| The location of your apptainer images|
 |WORKDIR| The location of Nextflow's `work` directory. Can growth to several terabytes! Consider the option of using a folder located on a scratch partition.

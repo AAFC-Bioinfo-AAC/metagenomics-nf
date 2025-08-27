@@ -15,7 +15,7 @@ sbatch -D $PWD \
   --job-name=metagenomic_nf \
   --output=results/logs/stdout.out \
   --error=results/logs/stderr.err \
-  --time=48:00:00 \
+  --time=144:00:00 \
   --ntasks=1 \
   --nodes=1 \
   --cpus-per-task=2 \

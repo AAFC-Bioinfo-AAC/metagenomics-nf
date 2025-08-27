@@ -1,5 +1,7 @@
 process HUMANN_ABUNDANCE {
 
+  label 'mem_medium'
+  label 'cpus_xxlarge'
   publishDir "$params.results/humann/humann_results"
 
   input:

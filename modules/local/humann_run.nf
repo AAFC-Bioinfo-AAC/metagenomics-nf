@@ -1,7 +1,7 @@
 process HUMANN_RUN {
 
-  label 'mem_medium'
-  label 'cpus_xxlarge'
+  label 'mem_xlarge'
+  label 'cpus_xxxlarge'
 
   publishDir "$params.results/humann/humann_run"
   input:
