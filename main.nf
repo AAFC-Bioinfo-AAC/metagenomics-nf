@@ -179,8 +179,7 @@ workflow {
       .distinct()
       .set { type_ch }
 
-    // Actually doing co-assemblies...
-    if (!params.use_megahit_coassemblies ) {
+
 
       /*
       * Create the `reads_plus_ch` channel
@@ -221,6 +220,8 @@ workflow {
                             }
                       .set {prepared_reads_like_ch}
 
+    // Actually doing co-assemblies...
+    if (!params.use_megahit_coassemblies ) {
       coassemblies_ch = COASSEMBLY(reads_plus_ch)
       
     // Providing already obtained Megahit coassemblies
@@ -245,7 +246,7 @@ workflow {
 
     BOWTIE2_MAP(prepared_reads_and_index_ch)        
     JGI_SUMMARIZE(BOWTIE2_MAP.out)
-    METABAT2_BIN_COASSEMBLY(COASSEMBLY.out.combine(JGI_SUMMARIZE.out, by: 0))
+    METABAT2_BIN_COASSEMBLY(coassemblies_ch.combine(JGI_SUMMARIZE.out, by: 0))
     CHECKM(params.checkm2_db, METABAT2_BIN_COASSEMBLY.out)
   
     BOWTIE2_BUILD_SINGLE(indiv_assemblies_ch)
@@ -274,7 +275,7 @@ workflow {
      .collect()
      .set {hq_drep_MAGs_ch}
 
-    METAQUAST(COASSEMBLY.out)
+    METAQUAST(coassemblies_ch)
     GTDB_TK(params.gtdb_db, hq_drep_MAGs_ch)
     PHYLOPHLAN(params.phylophlan_db, hq_drep_MAGs_ch)
     COVERM(prepared_reads_ch, hq_drep_MAGs_ch)

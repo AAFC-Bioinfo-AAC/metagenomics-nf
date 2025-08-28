@@ -25,7 +25,7 @@ process COASSEMBLY {
   output:
     tuple \
     val (type), \
-    path ("${type}_Megahit_coassembly/*")
+    path ("${type}")
 
   script: 
   """
@@ -33,7 +33,7 @@ process COASSEMBLY {
   cat $readsR2 > coassembly_R2.fastq.gz
   megahit -1 coassembly_R1.fastq.gz \
           -2 coassembly_R2.fastq.gz \
-          -o ${type}_Megahit_coassembly \
+          -o ${type} \
           --out-prefix Coassembly \
           -t $task.cpus \
           --min-contig-len 1000 \
@@ -41,7 +41,7 @@ process COASSEMBLY {
           --k-list 21,41,61,81,99 &&
   
   # Remove intermediate files (intermediate contigs)
-  rm -rf ${type}_Megahit_coassembly/intermediate_contigs
+  rm -rf ${type}/intermediate_contigs
   """
 
 }
