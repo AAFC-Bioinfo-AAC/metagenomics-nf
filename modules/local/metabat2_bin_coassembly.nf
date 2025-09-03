@@ -7,7 +7,7 @@ process METABAT2_BIN_COASSEMBLY {
   input:
     tuple \
       val(type), \
-      path (megahit_coassembly_outfiles, stageAs: "megahit/*"), \
+      path (megahit_coassembly_outfiles), \
       val(datasetID), \
       path("${datasetID}_depth.txt")
  
@@ -20,7 +20,7 @@ process METABAT2_BIN_COASSEMBLY {
   """
   mkdir ${datasetID}
   metabat2 \
-    -i megahit/Coassembly.contigs.fa \
+    -i ${type}/Coassembly.contigs.fa \
     -a ${datasetID}_depth.txt \
     -o ${datasetID}/${datasetID}.bin \
     -t $task.cpus \

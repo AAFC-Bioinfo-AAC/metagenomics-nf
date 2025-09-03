@@ -7,14 +7,14 @@ process METAQUAST {
   input:
     tuple \
       val(type), \
-      path(coassembly, stageAs: "Megahit_coassembly/*")
+      path(coassembly)
 
   output:
     path ("${type}_QUAST_coassembly/*")
     
   script:
   """
-  metaquast.py Megahit_coassembly/Coassembly.contigs.fa \
+  metaquast.py ${type}/Coassembly.contigs.fa \
      --max-ref-number 0 \
     -t $task.cpus \
     -o ${type}_QUAST_coassembly

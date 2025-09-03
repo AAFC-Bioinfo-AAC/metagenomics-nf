@@ -5,17 +5,17 @@ process BOWTIE2_BUILD {
   input:
     tuple \
       val(type), \
-      path (megahit_coassembly_outfiles, stageAs: "megahit/*")
+      path (megahit_coassembly_outfiles)
 
   output:
     tuple \
       val(type), \
-      path ("${type}/*")
+      path ("${type}_index/*")
   
   script:
   """
-  mkdir ${type}
-  bowtie2-build megahit/Coassembly.contigs.fa ${type}/coassembly
+  mkdir ${type}_index
+  bowtie2-build ${type}/Coassembly.contigs.fa ${type}_index/coassembly
   """
   
 }
