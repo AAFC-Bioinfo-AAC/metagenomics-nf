@@ -329,7 +329,9 @@ If you would like to contribute to this project, please review the guidelines in
 ---
 
 ## LICENSE 
-This project is distributed under the MIT License. For complete details and copyright information, see the [LICENSE](LICENSE) file.
+See the [LICENSE](LICENSE) file for details. Visit [LicenseHub](https://licensehub.org) or [tl;drLegal](https://www.tldrlegal.com/) to view a plain-language summary of this license.
+
+**Copyright (c)** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
 
 ---
 
