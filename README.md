@@ -1,6 +1,11 @@
+
+<!-- omit in toc -->
 # Metagenomics-nf
+[![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
+[![EN](https://img.shields.io/badge/lang-EN-blue.svg)](https://github.com/AAFC-Bioinfo-AAC/metagenomics-nf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<!-- omit in toc -->
 ## About
 This Nextflow workflow automates many different metagenomics analyses steps from quality filtering to the generation and curation of metagenomics assembled genomes (MAGs). It uses diverse strategies to mitigate the number and size of temporary/intermediate files.
 
@@ -26,6 +31,7 @@ The primary input data are raw paired-end short-read FASTQ files, but the workfl
 
 ---
 
+<!-- omit in toc -->
 ## Table of contents
 
 - [Metagenomics-nf](#metagenomics-nf)
