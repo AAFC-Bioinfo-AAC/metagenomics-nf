@@ -1,11 +1,9 @@
-<!-- omit in toc -->
-# Metagenomics-nf
+# Metagenomics-nf<!-- omit in toc -->
 [![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
 [![EN](https://img.shields.io/badge/lang-EN-blue.svg)](https://github.com/AAFC-Bioinfo-AAC/metagenomics-nf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<!-- omit in toc -->
-## À propos
+## À propos<!-- omit in toc -->
 Ce workflow Nextflow automatise de nombreuses étapes d’analyses métagénomiques, de l'étape de contrôle de qualité des séquences jusqu’à l'obtention de *Metagenome-assembled genomes* (MAGs). Il utilise différentes stratégies pour limiter le nombre et la taille des fichiers temporaires ou intermédiaires.
 
 Le pipeline inclut plusieurs programmes de pointe dans le domaine de la métagénomique tels que MetaBAT, dRep, CheckM2, QUAST, PhyloPhlAn, etc. !
@@ -30,8 +28,7 @@ Les fichiers d’entrée principaux sont des fichiers FASTQ *paired-end*, mais l
 
 ---
 
-<!-- omit in toc -->
-## Table des matières
+## Table des matières<!-- omit in toc -->
 
 - [Metagenomics-nf](#metagenomics-nf)
   - [À propos](#à-propos)
