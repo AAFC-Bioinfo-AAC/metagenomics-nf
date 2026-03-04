@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+title: "Metagenomics-nf"
+message: "If you use this software, please cite it using the metadata from this file."
+type: workflow
+authors:
+  - family-names: Brouard
+    given-names:  Jean-Simon
+    affiliation: "Agriculture and Agri-Food Canada"
+  - family-names: Holman
+    given-names:  Devin
+    affiliation: "Agriculture and Agri-Food Canada"
+  - family-names: Kommadath
+    given-names:  Arun
+    affiliation: "Agriculture and Agri-Food Canada"
+  - family-names: Ricci
+    given-names: Sara
+    affiliation: "Agriculture and Agri-Food Canada"
+  - family-names: Laterriere
+    given-names: Mario
+    affiliation: "Agriculture and Agri-Food Canada"
+  - family-names: Petri
+    given-names: Renee
+    affiliation: "Agriculture and Agri-Food Canada"
+repository-code: "https://github.com/AAFC-Bioinfo-AAC/metagenomics-nf"
+abstract: "A Nextflow workflow that automates metagenomics analyses steps from quality filtering to the generation and curation of metagenomics assembled genomes (MAGs). The pipeline includes state-of-the-art programs such as MetaBAT, dRep, CheckM2, QUAST, and PhyloPhlAn."
+keywords:
+  - metagenomics
+  - nextflow
+  - bioinformatics
+  - workflow
+  - MAGs
+  - assembly
+  - binning
+  - taxonomy
+  - functional-profiling
+  - illumina-sequencing
+license: MIT
+version: 1.0.0
+date-released: 2025-06-20
