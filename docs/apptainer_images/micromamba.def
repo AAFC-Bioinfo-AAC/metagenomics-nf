@@ -5,8 +5,10 @@ From: mambaorg/micromamba:latest
     environment.yml /environment.yml
 
 %post
+    chmod 1777 /tmp && apt update && apt install -y procps
     micromamba install -n base --file environment.yml && \
         micromamba clean --all --yes
+    cd /usr/local/bin; for i in `ls /opt/conda/bin/`; do ln -s /opt/conda/bin/$i; done
 
 %help
 Apptainer micromamba container based on Docker mambaorg/micromamba image.
@@ -47,7 +49,8 @@ micromamba.def file "content":
         environment.yml /environment.yml
 
     "post" section
+        chmod 1777 /tmp && apt update && apt install -y procps
         micromamba install -n base --file environment.yml && \
-	    micromamba clean --all --yes
-
+            micromamba clean --all --yes
+        cd /usr/local/bin; for i in `ls /opt/conda/bin/`; do ln -s /opt/conda/bin/$i; done
 
