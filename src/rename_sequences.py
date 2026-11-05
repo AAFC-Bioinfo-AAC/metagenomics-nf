@@ -38,8 +38,8 @@ def get_files(start_dir, file_type):
 
 # Create a folder for renamed assemblies
 cwd = os.getcwd()
-if not os.path.exists(cwd + sys.argv[3]):
-    os.mkdir(cwd + sys.argv[3])
+if not os.path.exists(cwd + '/' + sys.argv[3]):
+    os.mkdir(cwd + '/' + sys.argv[3])
 
 # Create a dict where the key is 2nd column of the .tsv map file
 D = {}
@@ -61,8 +61,8 @@ for f in fsa_files:
     fname = (os.path.basename(f).split('.' + sys.argv[4])[0])
     if fname in D:
         print(fname, 'has been renamed in', D[fname])
-        #shutil.copyfile(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
-        os.symlink(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
+        shutil.copyfile(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
+        #os.symlink(f, sys.argv[3] + D[fname] + '.' + sys.argv[4])
     else:
         print(fname, 'could not have been renamed, no matching key!')
 

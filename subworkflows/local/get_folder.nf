@@ -5,15 +5,14 @@ elements: the sample ID, and the path containing a folder with stuff.
 
 workflow GET_FOLDER {
     
-    println "You are using the *GET_FOLDER* subworkflow."
 
-    take: data
+    take:
+       data
     
     main:
        data.flatten()
        .map { dir ->
-          def key_part1 = dir.name.toString()
-          key = key_part1
+          def key = dir.name.toString()
           return tuple(key, dir)
        }
        //.view()       

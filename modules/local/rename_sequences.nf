@@ -1,6 +1,6 @@
 process RENAME_SEQUENCES {
 
-  publishDir "$baseDir/data"
+  publishDir "$params.results/renamed_input_data"
 
   input:
     path (seq, stageAs: "data/*")
@@ -14,7 +14,7 @@ process RENAME_SEQUENCES {
   script:
   """
   mkdir renamed
-  $baseDir/src/rename_sequences.py $map_file \$PWD/data renamed/ fastq.gz > log.txt
+  $baseDir/src/rename_sequences.py ${map_file} "./data" "renamed/" "fastq.gz" > log.txt
   """
   
 }

@@ -42,7 +42,7 @@ process DREP2 {
   # of Matplotlib and to better support multiprocessing.
   # Otherwise, Matplotlib may create a temporary cache directory at /tmp/matplotlib-xxx
   mkdir tmp
-  export MPLCONFIGDIR=$PWD/tmp
+  export MPLCONFIGDIR=\$PWD/tmp
 
   # JSB add -centW 0 option to resolve a bug
   # https://github.com/MrOlm/drep/issues/120
