@@ -6,19 +6,10 @@
 */
 
 /* 
- * Enable DSL 2 syntax
+  Enable DSL 2 syntax
 */
 nextflow.enable.dsl = 2
 
-log.info """\
-
-==================================================
-M E T A G E N O M I C  -  Workflow - AAFC    v 2.0 
-==================================================
-genome   : $params.genome
-reads    : $params.reads
-results  : $params.results
-"""
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,6 +77,16 @@ include { clean_work_files as clean_sorted_bams } from './utilities'
 */
 
 workflow {
+
+  log.info """\
+
+  ==================================================
+  M E T A G E N O M I C  -  Workflow - AAFC    v 2.0
+  ==================================================
+  genome   : $params.genome
+  reads    : $params.reads
+  results  : $params.results
+  """.stripIndent()
 
   if( params.use_prepared_reads ) {
 

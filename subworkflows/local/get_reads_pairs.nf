@@ -6,8 +6,6 @@ file.
 
 workflow GET_READS_PAIRS {
     
-    println "You are using the *GET_READS_PAIRS* subworkflow."
-
     take: data
     
     main:

@@ -6,8 +6,6 @@ include { RENAME_SEQUENCES } from '../../modules/local/rename_sequences'
 
 workflow RENAME {
     
-    println "You are using the *RENAME* subworkflow."
-
     take: 
         data
         map_file
